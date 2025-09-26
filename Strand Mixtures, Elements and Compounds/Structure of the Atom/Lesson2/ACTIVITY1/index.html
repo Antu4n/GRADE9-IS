@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Fill the Atom Info</title>
+<style>
+    /* Font Imports and Keyframes */
+    @font-face {
+        font-family: 'Chevin Pro Medium';
+        src: url('../assets/Chevin_Pro.otf') format('opentype');
+    }
+    @keyframes glow-pulse-white {
+        0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); transform: scale(1); }
+        50% { box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+    }
+    @keyframes glow-pulse {
+        0%, 100% {
+            box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5);
+            transform: scale(1.1);
+        }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); } }
+
+    /* Root Variables */
+    :root {
+        --primary-color: #5D04B2;
+        --secondary-color: #FBB03B;
+        --correct-color: #4caf50;
+        --incorrect-color: #e74c3c;
+        --text-color-dark: #333;
+        --text-color-light: #fff;
+        --card-background-light: #ffffff;
+        --shadow-dark: rgba(0, 0, 0, 0.3);
+        --border-radius: 1rem;
+        --header-font: 'Chevin Pro Medium', sans-serif;
+    }
+
+    /* Global Reset & Base Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100vh; overflow: hidden; }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f4f8;
+        font-family: var(--header-font), sans-serif;
+        padding: 0.5rem;
+    }
+
+    #game-wrapper {
+        width: 100%;
+        max-width: 1200px;
+        aspect-ratio: 16 / 9;
+        box-shadow: 0 15px 40px var(--shadow-dark);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: var(--card-background-light);
+    }
+
+    #game-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .screen {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        transition: opacity 0.5s ease-in-out;
+        overflow: hidden;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; }
+    
+    #start-screen {
+       background-image: url('images/gamebg.jpg');
+       background-size: cover;
+       background-position: center;
+       justify-content: center;
+       align-items: center;
+       padding: 2rem;
+       text-align: center;
+    }
+    #start-screen h1 {
+       font-size: clamp(2.5rem, 5vw, 4.2rem);
+       color: var(--text-color-light);
+       margin-bottom: 1.2rem;
+       text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .start-button { 
+        background: #FBB03B; color: #fff; font-weight: 900;
+        font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
+        padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
+        text-shadow: 0 2px 0 #b88b2a; transition: all 0.2s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+
+    #game-screen { background: #f8f9ff; }
+
+    .game-top-section {
+        width: 100%; flex-shrink: 0; display: flex; justify-content: space-between;
+        align-items: center; background-color: var(--primary-color);
+        color: var(--text-color-light); padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2); gap: 1rem; flex-wrap: wrap;
+    }
+    
+    #game-title {
+        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 800;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1 1 300px; min-width: 0;
+    }
+
+    .progress-area { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1rem); flex-shrink: 0; }
+    #progress-container {
+        width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
+        border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
+        border: 2px solid #fff; position: relative; overflow: hidden;
+    }
+    #progress-bar {
+        height: 100%; width: 0%; background: #FFFF00;
+        border-radius: 0.8rem; transition: width 0.5s ease;
+    }
+    #progress-text {
+        color: var(--text-color-light); font-weight: 700;
+        font-size: clamp(0.75rem, 2vmin, 1rem); text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    .instructions-icon {
+        width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: all 0.3s ease; flex-shrink: 0; animation: glow-pulse-white 2s infinite;
+    }
+    .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+    .instructions-icon svg { fill: white; width: 20px; height: 20px; }
+
+    .game-content {
+        flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+        padding: clamp(0.5rem, 2vw, 1.5rem);
+        overflow: auto; position: relative;
+    }
+
+    /* --- Improved Table Styles --- */
+    #atom-table {
+        width: 100%;
+        max-width: 1100px;
+        border-collapse: separate;
+        border-spacing: clamp(4px, 1vmin, 10px);
+        animation: slideIn 0.5s ease-out;
+    }
+    #atom-table th, #atom-table td {
+        background: #fff;
+        text-align: center;
+        font-size: clamp(0.8rem, 2.2vmin, 1.1rem);
+        padding: clamp(0.5rem, 1.5vmin, 1.2rem);
+        border-radius: 8px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.07);
+        font-weight: bold;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    #atom-table th {
+        background: linear-gradient(145deg, var(--primary-color), #7a4ec7);
+        color: white;
+        text-transform: uppercase;
+        font-size: clamp(0.7rem, 1.8vmin, 1rem);
+        letter-spacing: 0.5px;
+        border-bottom: 3px solid rgba(0,0,0,0.1);
+    }
+    #atom-table td {
+        color: var(--text-color-dark);
+        font-family: sans-serif;
+    }
+    #atom-table td.element-name {
+        background-color: rgba(93, 4, 178, 0.08);
+        font-family: var(--header-font);
+        color: var(--primary-color);
+        font-weight: 900;
+        font-size: clamp(0.9rem, 2.4vmin, 1.2rem);
+    }
+    
+    #atom-table input[type="number"] {
+        width: 100%;
+        max-width: 90px;
+        border: 2px solid #ced4da;
+        border-radius: 6px;
+        padding: 0.5rem;
+        font-size: clamp(0.9rem, 2.2vmin, 1.2rem);
+        text-align: center;
+        font-weight: bold;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        appearance: textfield;         /* Standard property */
+        -moz-appearance: textfield;    /* Firefox */
+        -webkit-appearance: none;      /* Chrome/Safari */
+    }
+
+    #atom-table input[type="number"]::-webkit-outer-spin-button,
+    #atom-table input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    #atom-table input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(93, 4, 178, 0.25);
+    }
+    #atom-table input.correct { border-color: var(--correct-color); background: #e8f5e9; }
+    #atom-table input.incorrect { border-color: var(--incorrect-color); background: #fbe9e7; }
+    
+    .action-buttons button {
+        font-family: var(--header-font);
+        font-size: clamp(0.7rem, 1.8vmin, 0.9rem);
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 20px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 0 0.2rem;
+        min-width: 80px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .check-btn { background-color: var(--correct-color); }
+    .try-again-btn { background-color: #f39c12; }
+    .action-buttons button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .action-buttons button:disabled { background-color: #bdc3c7; cursor: not-allowed; box-shadow: none; transform: none; }
+
+    #controls {
+        display: flex; justify-content: center; gap: 1rem;
+        padding: 0.75rem; background-color: #e9ecef; border-top: 1px solid #dee2e6;
+    }
+    
+    .ctrl-btn {
+        font-family: var(--header-font); font-size: clamp(0.9rem, 2vw, 1.1rem); font-weight: bold;
+        color: white; border: none; border-radius: 50px; padding: clamp(0.5rem, 2vh, 0.7rem) clamp(1rem, 4vw, 1.8rem);
+        cursor: pointer; transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.4); min-width: 140px;
+    }
+    .ctrl-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.1); }
+    .ctrl-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.2); }
+    .ctrl-btn:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 -2px 0 rgba(0,0,0,0.1); }
+    
+    #resetBtn { background: linear-gradient(145deg, #e67e22, #d35400); }
+
+    /* Hint Icon Styles */
+    .hint-icon {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 50px;
+        height: 50px;
+        background: var(--secondary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 1001;
+        box-shadow: 0 4px 15px rgba(251, 176, 59, 0.4);
+        animation: glow-pulse 2s infinite ease-in-out;
+        border: 3px solid white;
+    }
+    .hint-icon:hover {
+        animation-play-state: paused;
+        transform: scale(1.1);
+    }
+    .hint-icon svg {
+        fill: white;
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Modal Styles */
+    .modal-overlay, .overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+        z-index: 3000; display: flex; justify-content: center; align-items: center;
+        animation: fadeIn 0.3s ease;
+    }
+    .modal-overlay.hidden, .overlay.hidden { display: none; }
+    .modal-content, .modal {
+        background: var(--card-background-light); padding: 2.5rem;
+        border-radius: var(--border-radius); text-align: center;
+        width: 90%; max-width: 600px;
+        animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+    }
+    .modal-content h2, .modal h2 {
+      font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
+      color: var(--primary-color);
+    }
+    .modal-content p, .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); }
+     .modal ul {
+        list-style-type: none; text-align: left; margin-top: 1rem; padding: 0;
+    }
+    .modal li { margin-bottom: 0.8rem; padding-left: 1.5rem; position: relative; }
+    .modal li::before {
+        content: '⚛️'; position: absolute; left: 0;
+    }
+
+    .modal-btn {
+        width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+        border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+        background-color: var(--primary-color); transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 1.5rem;
+    }
+    .modal-btn:hover { transform: scale(1.02); }
+
+    #activity-intro-overlay .modal-content, #instructions-overlay .modal-content { border-top: 8px solid var(--primary-color); }
+    #activity-intro-overlay .modal-content p {
+        text-align: left; background: #f8f9fa; padding: 1.5rem;
+        border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
+        line-height: 1.5; font-size: 1.1rem; color: var(--text-color-dark);
+    }
+    #instructions-overlay .modal-content ul {
+        text-align: left; padding: 0; font-size: 1.1rem; line-height: 1.5;
+    }
+    #instructions-overlay .modal-content li {
+        margin-bottom: 0.8rem; font-size: 1.1em; line-height: 1.5;
+    }
+    
+    #feedback-modal-overlay .modal-content { border-top: 8px solid; }
+
+    /* Hint Modal Styles */
+    #hint-overlay .modal-content {
+        max-width: 500px;
+        border-top: 5px solid var(--secondary-color);
+        padding: 2rem;
+    }
+    #hint-overlay h2 {
+        color: var(--secondary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    #hint-overlay ul {
+        list-style: none !important;
+        padding: 0 !important;
+        text-align: left;
+    }
+    #hint-overlay li {
+        font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark);
+        margin-bottom: 1rem; padding-left: 1.5rem; position: relative;
+    }
+    #hint-overlay li::before { content: '💡'; position: absolute; left: 0; top: 2px; }
+    #hint-overlay .modal-btn { background: var(--secondary-color); }
+
+    /* Completion & Takeaways Overlay Styles */
+    #completion-overlay { 
+        background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
+        flex-direction: column; justify-content: center; align-items: center;
+    }
+    .completion-title-banner { 
+        font-size: clamp(2rem, 7vmin, 4rem); text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        text-align: center; color: #fff; font-family: var(--header-font);
+        position: absolute; top: 5%; width: 100%;
+        font-weight: 700;
+    }
+    #completion-overlay .modal {
+        background: transparent; box-shadow: none; padding: 0; overflow: visible;
+        width: auto; max-width: none;
+    }
+    #completion-image { 
+        width: clamp(400px, 70%, 700px); max-width: 85%; height: auto;
+        border: 3px solid var(--secondary-color); border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-top: 0.5rem;
+    }
+    .completion-buttons {
+        position: absolute; bottom: 2rem; width: 100%; display: flex;
+        justify-content: space-between; gap: 1.5rem; padding: 0 2rem;
+    }
+    .completion-btn {
+       background: #FBB03B; color: #fff; font-weight: 700;
+       font-size: 1.1rem; border: 0.1875rem solid #fff;
+       border-radius: 3rem; padding: 0.75rem 2.25rem;
+       margin-top: 1rem; cursor: pointer; letter-spacing: 0.02em;
+       transition: all 0.2s; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+    }
+    .completion-btn:hover { transform: scale(1.05); }
+    
+    .visually-hidden {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+    }
+    
+    @media (max-width: 991px) {
+       #game-wrapper {
+            width: 100vw !important; height: 100vh !important;
+            min-width: 100vw !important; min-height: 100vh !important;
+            border-radius: 0 !important; max-width: none !important;
+            aspect-ratio: unset !important; box-shadow: none;
+        }
+        .game-content { justify-content: flex-start; }
+        #atom-table th, #atom-table td { padding: 0.5rem; }
+        #atom-table { border-spacing: 4px; }
+        .action-buttons button { font-size: 0.8rem; min-width: 60px; }
+
+        #completion-image { max-width: 60%; }
+        .completion-buttons {align-items: center; bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+        #instructions-overlay .modal-content { height: 90vh; overflow-y: auto; }
+    }
+    
+    @media (max-width: 768px) {
+        body { padding: 0; }
+        #atom-table th, #atom-table td { font-size: 0.7rem; }
+        #atom-table input[type="number"] { font-size: 0.8rem; }
+        .action-buttons { display: flex; flex-direction: column; gap: 4px; }
+        .action-buttons button { width: 100%; }
+    }
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+   <div id="game-container">
+        <div id="start-screen" class="screen">
+            <h1>Fill the Atom Info</h1>
+            <button class="start-button">Start Activity</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-top-section">
+               <h1 id="game-title">Table Complete: Fill the Atom Info</h1>
+               <div class="progress-area">
+                   <div id="progress-container"><div id="progress-bar"></div></div>
+                   <div id="progress-text">0 / 3</div>
+               </div>
+               <div class="instructions-icon" id="instructions-icon">
+                   <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+               </div>
+            </div>
+            <main class="game-content">
+                <table id="atom-table">
+                    <thead>
+                        <tr>
+                            <th>Element</th>
+                            <th>Protons</th>
+                            <th>Neutrons</th>
+                            <th>Atomic Number</th>
+                            <th>Mass Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="row-oxygen">
+                            <td class="element-name">Oxygen</td>
+                            <td>8</td><td>8</td><td>8</td><td>16</td>
+                            <td></td>
+                        </tr>
+                        <tr id="row-fluorine">
+                            <td class="element-name">Fluorine</td>
+                            <td>9</td><td>10</td><td>9</td><td>19</td>
+                            <td></td>
+                        </tr>
+                        <tr id="row-sodium" data-row-id="sodium">
+                            <td class="element-name">Sodium</td>
+                            <td>11</td>
+                            <td><input type="number" data-field="neutrons" aria-label="Sodium Neutrons"></td>
+                            <td>11</td>
+                            <td><input type="number" data-field="mass" aria-label="Sodium Mass Number"></td>
+                            <td class="action-buttons">
+                                <button class="check-btn">Check</button>
+                                <button class="try-again-btn">Retry</button>
+                            </td>
+                        </tr>
+                        <tr id="row-neon" data-row-id="neon">
+                            <td class="element-name">Neon</td>
+                            <td><input type="number" data-field="protons" aria-label="Neon Protons"></td>
+                            <td>10</td>
+                            <td>10</td>
+                            <td><input type="number" data-field="mass" aria-label="Neon Mass Number"></td>
+                            <td class="action-buttons">
+                                <button class="check-btn">Check</button>
+                                <button class="try-again-btn">Retry</button>
+                            </td>
+                        </tr>
+                        <tr id="row-nitrogen" data-row-id="nitrogen">
+                            <td class="element-name">Nitrogen</td>
+                            <td><input type="number" data-field="protons" aria-label="Nitrogen Protons"></td>
+                            <td><input type="number" data-field="neutrons" aria-label="Nitrogen Neutrons"></td>
+                            <td>7</td>
+                            <td>14</td>
+                            <td class="action-buttons">
+                                <button class="check-btn">Check</button>
+                                <button class="try-again-btn">Retry</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </main>
+            <div id="controls">
+                <button id="resetBtn" class="ctrl-btn">Reset Table</button>
+            </div>
+             <div class="hint-icon" id="hint-button">
+                <svg viewBox="0 0 24 24">
+                   <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <div id="activity-intro-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 style= 'color: var(--primary-color);'>Activity Introduction</h2>
+                <p>Chemists use tables to organise facts about atoms. In this challenge, your job is to complete missing information using what you know about atomic number, mass number, protons, and neutrons. Some values are already filled in. Use them to solve the rest. Let us complete the atom profiles!</p>
+                <button class="modal-btn" id="intro-continue-btn">Continue</button>
+            </div>
+        </div>
+
+        <div id="instructions-overlay" class="modal-overlay hidden">
+           <div class="modal-content">
+               <h2 style = 'color: var(--primary-color);margin-bottom: 1.5rem; font-size: 2.2rem;'>Learner Instructions</h2>
+               <ul>
+                   <li>Use the periodic table logic to find the answers.</li>
+                   <li>Click into the empty cells and type your answer.</li>
+                   <li>Use the "Check" button to get feedback on each row.</li>
+                   <li>Try to complete all rows correctly.</li>
+               </ul>
+               <button class="modal-btn" id="close-instructions-btn">Got it!</button>
+           </div>
+        </div>
+
+        <div id="hint-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2>💡 Hint</h2>
+                <ul>
+                    <li>Atomic Number = Protons</li>
+                    <li>Mass Number = Protons + Neutrons</li>
+                    <li>Neutrons = Mass Number – Protons</li>
+                </ul>
+                <button class="modal-btn" id="hint-close-btn">Got it!</button>
+            </div>
+        </div>
+       
+        <div id="feedback-modal-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 id="feedback-title"></h2><p id="feedback-text"></p>
+                <button class="modal-btn" id="feedback-continue-btn">Continue</button>
+            </div>
+        </div>
+
+        <div id="completion-overlay" class="overlay hidden">
+            <div class="completion-title-banner">Activity Wrap Up!</div>
+            <div class="modal">
+                <img id="completion-image" src="images/complete.jpg" alt="Activity Complete" onerror="this.style.display='none'">
+            </div>
+            <div class="completion-buttons">
+                <button class="completion-btn btn-restart">Restart Activity</button>
+                <button class="completion-btn btn-next">Next Activity</button>
+            </div>
+        </div>
+        
+        <div id="aria-live-announcer" class="visually-hidden" aria-live="polite"></div>
+        
+    <audio id="ding-sound" src="audio/ding.mp3" preload="auto"></audio>
+    <audio id="buzz-sound" src="audio/buzz.mp3" preload="auto"></audio>
+    <audio id="intro-sound" src="audio/intro.mp3" preload="auto"></audio>
+    <audio id="outro-sound" src="audio/outro.mp3" preload="auto"></audio>
+   </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+
+    // --- DOM Elements ---
+    const startScreen = document.getElementById('start-screen'), gameScreen = document.getElementById('game-screen');
+    const startBtn = document.querySelector('.start-button');
+    const resetBtn = document.getElementById('resetBtn');
+    const announcer = document.getElementById('aria-live-announcer');
+    const progressBar = document.getElementById('progress-bar'), progressText = document.getElementById('progress-text');
+    const activityIntroOverlay = document.getElementById('activity-intro-overlay'), introContinueBtn = document.getElementById('intro-continue-btn');
+    const instructionsIcon = document.getElementById('instructions-icon'), instructionsOverlay = document.getElementById('instructions-overlay'), closeInstructionsBtn = document.getElementById('close-instructions-btn');
+    const feedbackModalOverlay = document.getElementById('feedback-modal-overlay'), feedbackTitle = document.getElementById('feedback-title'), feedbackText = document.getElementById('feedback-text'), feedbackContinueBtn = document.getElementById('feedback-continue-btn');
+    const completionOverlay = document.getElementById('completion-overlay');
+    const dingSound = document.getElementById('ding-sound'), buzzSound = document.getElementById('buzz-sound'), introSound = document.getElementById('intro-sound'), outroSound = document.getElementById('outro-sound');
+    const hintButton = document.getElementById('hint-button'), hintOverlay = document.getElementById('hint-overlay'), hintCloseBtn = document.getElementById('hint-close-btn');
+
+    // --- Game State & Data ---
+    const TOTAL_PROGRESS_STEPS = 3;
+    let completedRows = new Set();
+    let isPaused = true;
+
+    const solutions = {
+        sodium: { neutrons: 12, mass: 23 },
+        neon: { protons: 10, mass: 20 },
+        nitrogen: { protons: 7, neutrons: 7 }
+    };
+    
+    // --- Sound ---
+    function playSound(sound) { if(sound) { sound.currentTime = 0; sound.play().catch(e => {}); } }
+    function stopSound(sound) { if(sound) { sound.pause(); } }
+
+    // --- Activity Setup ---
+    function setupActivity() {
+        isPaused = false;
+        completedRows.clear();
+        document.querySelectorAll('tr[data-row-id]').forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            const buttons = row.querySelectorAll('button');
+            
+            inputs.forEach(input => {
+                input.value = '';
+                input.disabled = false;
+                input.classList.remove('correct', 'incorrect');
+            });
+
+            buttons.forEach(button => button.disabled = false);
+        });
+        updateProgress();
+        announcer.textContent = 'Table has been reset.';
+    }
+    
+    // --- UI, Feedback & State Checks ---
+    function updateProgress() {
+        const progress = completedRows.size;
+        progressBar.style.width = `${(progress / TOTAL_PROGRESS_STEPS) * 100}%`;
+        progressText.textContent = `${progress} / ${TOTAL_PROGRESS_STEPS}`;
+        // Completion overlay logic moved to feedbackContinueBtn click handler
+    }
+
+    function showFeedbackModal(type, title, message) {
+        isPaused = true;
+        const modalContent = feedbackModalOverlay.querySelector('.modal-content');
+        const modalBtn = feedbackModalOverlay.querySelector('.modal-btn');
+        feedbackTitle.textContent = title;
+        feedbackText.textContent = message;
+
+        const color = type === 'correct' ? 'var(--correct-color)' : 'var(--incorrect-color)';
+        modalContent.style.borderColor = color;
+        feedbackTitle.style.color = color;
+        modalBtn.style.backgroundColor = color;
+        modalBtn.textContent = 'Continue';
+        
+        feedbackModalOverlay.classList.remove('hidden');
+        if (type === 'correct') {
+            playSound(dingSound);
+        } else {
+            playSound(buzzSound);
+        }
+    }
+
+    function checkRow(row) {
+        const rowId = row.dataset.rowId;
+        const inputs = row.querySelectorAll('input');
+        const solution = solutions[rowId];
+        let allCorrect = true;
+
+        inputs.forEach(input => {
+            const field = input.dataset.field;
+            const userAnswer = parseInt(input.value, 10);
+            const correctAnswer = solution[field];
+            
+            input.classList.remove('correct', 'incorrect');
+
+            if (userAnswer === correctAnswer) {
+                input.classList.add('correct');
+            } else {
+                input.classList.add('incorrect');
+                allCorrect = false;
+            }
+        });
+
+        if (allCorrect) {
+            completedRows.add(rowId);
+            inputs.forEach(input => input.disabled = true);
+            row.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            showFeedbackModal('correct', 'Correct!', `Excellent! You've correctly filled in the details for ${rowId.charAt(0).toUpperCase() + rowId.slice(1)}.`);
+            updateProgress();
+        } else {
+            playSound(buzzSound);
+            announcer.textContent = 'Some answers are incorrect. Please try again.';
+        }
+    }
+
+    function resetRow(row) {
+        const inputs = row.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('correct', 'incorrect');
+        });
+        announcer.textContent = 'Row inputs cleared.';
+    }
+
+    // --- Main Init ---
+    function init() {
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            activityIntroOverlay.classList.remove('hidden');
+            isPaused = true;
+            playSound(introSound);
+            setupActivity();
+            sendEvent(ActivityEvent.START_ACTIVITY, { activityName: 'Fill the Atom Info' });
+        });
+
+        introContinueBtn.addEventListener('click', () => {
+            activityIntroOverlay.classList.add('hidden');
+            isPaused = false;
+            stopSound(introSound);
+        });
+
+        instructionsIcon.addEventListener('click', () => {
+            instructionsOverlay.classList.remove('hidden');
+            isPaused = true;
+        });
+
+        closeInstructionsBtn.addEventListener('click', () => {
+            instructionsOverlay.classList.add('hidden');
+            if (completedRows.size < TOTAL_PROGRESS_STEPS) {
+                isPaused = false;
+            }
+        });
+        
+        feedbackContinueBtn.addEventListener('click', () => {
+            feedbackModalOverlay.classList.add('hidden');
+            if (completedRows.size < TOTAL_PROGRESS_STEPS) {
+                isPaused = false;
+            } else {
+                // All rows completed, show completion overlay only now
+                isPaused = true;
+                completionOverlay.classList.remove('hidden');
+                playSound(outroSound);
+            }
+        });
+
+        hintButton.addEventListener('click', () => {
+            hintOverlay.classList.remove('hidden');
+            isPaused = true;
+        });
+
+        hintCloseBtn.addEventListener('click', () => {
+            hintOverlay.classList.add('hidden');
+            if (completedRows.size < TOTAL_PROGRESS_STEPS) {
+                isPaused = false;
+            }
+        });
+
+        document.querySelectorAll('.check-btn').forEach(btn => {
+            btn.addEventListener('click', () => checkRow(btn.closest('tr')));
+        });
+
+        document.querySelectorAll('.try-again-btn').forEach(btn => {
+            btn.addEventListener('click', () => resetRow(btn.closest('tr')));
+        });
+
+        resetBtn.addEventListener('click', setupActivity);
+
+        completionOverlay.querySelector('.btn-restart').addEventListener('click', () => {
+            stopSound(outroSound);
+            completionOverlay.classList.add('hidden');
+            setupActivity();
+        });
+        completionOverlay.querySelector('.btn-next').addEventListener('click', () => {
+            stopSound(outroSound);
+            // Replace with actual next activity URL if needed
+            window.location.href = '../ACTIVITY2/index.html';
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Fill the Atom Info' });
+
+        });
+    }
+
+    init();
+});
+</script>
+<script src ="../eventSender.js"></script>
+</body>
+</html>

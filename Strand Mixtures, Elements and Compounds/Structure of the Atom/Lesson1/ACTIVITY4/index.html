@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Atom Builder Puzzle</title>
+<style>
+    /* Font Imports and Keyframes */
+    @font-face {
+        font-family: 'Chevin Pro Medium';
+        src: url('../assets/Chevin_Pro.otf') format('opentype');
+    }
+    @keyframes glow-pulse-white {
+        0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); transform: scale(1); }
+        50% { box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+    /* Root Variables */
+    :root {
+        --primary-color: #5D04B2;
+        --secondary-color: #fbb03b;
+        --correct-color: #4caf50;
+        --incorrect-color: #e74c3c;
+        --text-color-dark: #333;
+        --text-color-light: #fff;
+        --card-background-light: #ffffff;
+        --shadow-dark: rgba(0, 0, 0, 0.3);
+        --border-radius: 1rem;
+        --header-font: 'Chevin Pro Medium', sans-serif;
+    }
+
+    /* Global Reset & Base Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100vh; overflow: hidden; }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f4f8;
+        font-family: var(--header-font), sans-serif;
+        padding: 0.5rem;
+    }
+
+    #game-wrapper {
+        width: 100%;
+        max-width: 1200px;
+        aspect-ratio: 16 / 9;
+        box-shadow: 0 15px 40px var(--shadow-dark);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: var(--card-background-light);
+    }
+
+    #game-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .screen {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        transition: opacity 0.5s ease-in-out;
+        overflow: hidden;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; }
+    
+    #start-screen {
+       background-image: url('images/gamebg.jpg');
+       background-size: cover;
+       background-position: center;
+       justify-content: center;
+       align-items: center;
+       padding: 2rem;
+       text-align: center;
+    }
+    #start-screen h1 {
+       font-size: clamp(2.5rem, 5vw, 4.2rem);
+       color: var(--text-color-light);
+       margin-bottom: 1.2rem;
+       text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .start-button { 
+        background: #FBB03B; color: #fff; font-weight: 900;
+        font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
+        padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
+        text-shadow: 0 2px 0 #b88b2a; transition: all 0.2s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+
+    #game-screen { background: #f8f9ff; }
+
+    .game-top-section {
+        width: 100%; flex-shrink: 0; display: flex; justify-content: space-between;
+        align-items: center; background-color: var(--primary-color);
+        color: var(--text-color-light); padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2); gap: 1rem; flex-wrap: wrap;
+    }
+    
+    #game-title {
+        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 800;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1 1 300px; min-width: 0;
+    }
+
+    .progress-area { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1rem); flex-shrink: 0; }
+    #progress-container {
+        width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
+        border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
+        border: 2px solid #fff; position: relative; overflow: hidden;
+    }
+    #progress-bar {
+        height: 100%; width: 0%; background: #FFFF00;
+        border-radius: 0.8rem; transition: width 0.5s ease;
+    }
+    #progress-text {
+        color: var(--text-color-light); font-weight: 700;
+        font-size: clamp(0.75rem, 2vmin, 1rem); text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    .instructions-icon {
+        width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: all 0.3s ease; flex-shrink: 0; animation: glow-pulse-white 2s infinite;
+    }
+    .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+    .instructions-icon svg { fill: white; width: 20px; height: 20px; }
+
+
+    .game-content {
+        flex: 1; display: flex; padding: clamp(0.5rem, 1vw, 1rem);
+        overflow: hidden; position: relative;
+    }
+
+    #canvas-container {
+        flex: 1; height: 100%; position: relative;
+        min-width: 0; display: flex; align-items: center; justify-content: center;
+    }
+
+    canvas {
+        display: block; background-color: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        cursor: grab; touch-action: none;
+    }
+    
+    #controls {
+        display: flex; justify-content: center; gap: 1rem;
+        padding: 0.75rem; background-color: #e9ecef; border-top: 1px solid #dee2e6;
+    }
+    
+    .ctrl-btn {
+        font-family: var(--header-font); font-size: clamp(0.9rem, 2vw, 1.1rem); font-weight: bold;
+        color: white; border: none; border-radius: 50px; padding: clamp(0.5rem, 2vh, 0.7rem) clamp(1rem, 4vw, 1.8rem);
+        cursor: pointer; transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.4); min-width: 140px;
+    }
+    .ctrl-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.1); }
+    .ctrl-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.2); }
+    .ctrl-btn:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 -2px 0 rgba(0,0,0,0.1); }
+    
+    #resetBtn { background: linear-gradient(145deg, #e67e22, #d35400); }
+
+    /* Modal Styles */
+    .modal-overlay, .overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+        z-index: 3000; display: flex; justify-content: center; align-items: center;
+        animation: fadeIn 0.3s ease;
+    }
+    .modal-overlay.hidden, .overlay.hidden { display: none; }
+    .modal-content, .modal {
+        background: var(--card-background-light); padding: 2.5rem;
+        border-radius: var(--border-radius); text-align: center;
+        width: 90%; max-width: 600px;
+        animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+    }
+    .modal-content h2, .modal h2 {
+      font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
+      color: var(--primary-color);
+    }
+    .modal-content p, .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); }
+     .modal ul {
+        list-style-type: none; text-align: left; margin-top: 1rem; padding: 0;
+    }
+    .modal li { margin-bottom: 0.8rem; padding-left: 1.5rem; position: relative; }
+    .modal li::before {
+        content: '🧩'; position: absolute; left: 0;
+    }
+
+    .modal-btn {
+        width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+        border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+        background-color: var(--primary-color); transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 1.5rem;
+    }
+    .modal-btn:hover { transform: scale(1.02); }
+
+    #activity-intro-overlay .modal-content, #instructions-overlay .modal-content { border-top: 8px solid var(--primary-color); }
+    #activity-intro-overlay .modal-content p {
+        text-align: left; background: #f8f9fa; padding: 1.5rem;
+        border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
+        line-height: 1.5; font-size: 1.1rem; color: var(--text-color-dark);
+    }
+    #instructions-overlay .modal-content ul {
+        text-align: left; padding: 0; font-size: 1.1rem; line-height: 1.5;
+    }
+    #instructions-overlay .modal-content li {
+        margin-bottom: 0.8rem; font-size: 1.1em; line-height: 1.5;
+    }
+    #instructions-overlay .modal-content .hint-list { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee; }
+    #instructions-overlay .modal-content .hint-list li::before { content: '💡'; }
+
+    #feedback-modal-overlay .modal-content { border-top: 8px solid; }
+
+    /* Completion & Takeaways Overlay Styles */
+    #completion-overlay { 
+        background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
+        flex-direction: column; justify-content: center; align-items: center;
+    }
+    .completion-title-banner { 
+        font-size: clamp(2rem, 7vmin, 4rem); text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        text-align: center; color: #fff; font-family: var(--header-font);
+        position: absolute; top: 5%; width: 100%;
+    }
+    #completion-overlay .modal {
+        background: transparent; box-shadow: none; padding: 0; overflow: visible;
+        width: auto; max-width: none;
+    }
+    #completion-image { 
+        width: clamp(400px, 70%, 700px); max-width: 85%; height: auto;
+        border: 3px solid var(--secondary-color); border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-top: 0.5rem;
+    }
+    .completion-buttons {
+        position: absolute; bottom: 2rem; width: 100%; display: flex;
+        justify-content: space-between; gap: 1.5rem; padding: 0 2rem;
+    }
+    .completion-btn {
+       background: #FBB03B; color: #fff; font-weight: 700;
+       font-size: 1.1rem; border: 0.1875rem solid #fff;
+       border-radius: 3rem; padding: 0.75rem 2.25rem;
+       margin-top: 1rem; cursor: pointer; letter-spacing: 0.02em;
+       transition: all 0.2s; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+    }
+    .completion-btn:hover { transform: scale(1.05); }
+    
+    .visually-hidden {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+    }
+    
+    @media (max-width: 991px) {
+       #game-wrapper {
+            width: 100vw !important; height: 100vh !important;
+            min-width: 100vw !important; min-height: 100vh !important;
+            border-radius: 0 !important; max-width: none !important;
+            aspect-ratio: unset !important; box-shadow: none;
+        }
+        #completion-image { max-width: 60%; }
+        .completion-buttons {align-items: center; bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+        #instructions-overlay .modal-content { height: 90vh; overflow-y: auto; }
+
+        /* Increase draggable item size for smaller screens */
+        .atom-item, .draggable-item {
+            width: 280px !important;
+            height: 280px !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        body { padding: 0; }
+    }
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+   <div id="game-container">
+        <div id="start-screen" class="screen">
+            <h1>Atom Builder</h1>
+            <button class="start-button">Start Activity</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-top-section">
+               <h1 id="game-title">Atom Builder</h1>
+               <div class="progress-area">
+                   <div id="progress-container"><div id="progress-bar"></div></div>
+                   <div id="progress-text">0 / 3</div>
+               </div>
+               <div class="instructions-icon" id="instructions-icon">
+                   <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+               </div>
+            </div>
+            <div class="game-content">
+                <main id="canvas-container">
+                    <canvas id="activityCanvas" role="img" aria-label="Interactive atom builder puzzle."></canvas>
+                </main>
+            </div>
+            <div id="controls">
+                <button id="resetBtn" class="ctrl-btn">Reset Puzzle</button>
+            </div>
+        </div>
+
+        <div id="activity-intro-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 style= 'color: var(--primary-color);'>Activity Introduction</h2>
+                <p>Atoms are like tiny puzzles made of special pieces. In this game, you will build your own atom by placing the nucleus, protons, neutrons, and electrons where they belong. Think carefully, every particle has a place and a role. Let us construct the atom together!</p>
+                <button class="modal-btn" id="intro-continue-btn">Continue</button>
+            </div>
+        </div>
+
+        <div id="instructions-overlay" class="modal-overlay hidden">
+           <div class="modal-content">
+               <h2 style = 'color: var(--primary-color);margin-bottom: 1.5rem; font-size: 2.2rem;'>Learner Instructions</h2>
+               <ul>
+                   <li>Drag the nucleus to the atom centre.</li>
+                   <li>Add protons (🔴) and neutrons (⚪) into the nucleus.</li>
+                   <li>Drag electrons (🔵) into the correct energy levels.</li>
+               </ul>
+               <ul class="hint-list">
+                   <li>Protons are red and go in the nucleus.</li>
+                   <li>Neutrons are grey and also stay in the nucleus.</li>
+                   <li>Electrons are blue and orbit in shells outside the nucleus.</li>
+                   <li>First shell holds up to 2 electrons.</li>
+                   <li>Second shell holds up to 8 electrons.</li>
+               </ul>
+               <button class="modal-btn" id="close-instructions-btn">Got it!</button>
+           </div>
+        </div>
+       
+        <div id="feedback-modal-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 id="feedback-title"></h2><p id="feedback-text"></p>
+                <button class="modal-btn" id="feedback-continue-btn">Continue</button>
+            </div>
+        </div>
+
+        <div id="completion-overlay" class="overlay hidden">
+            <div class="completion-title-banner">Activity Wrap Up!</div>
+            <div class="modal">
+                <img id="completion-image" src="images/complete.jpg" alt="Activity Complete" onerror="this.style.display='none'">
+            </div>
+            <div class="completion-buttons">
+                <button class="completion-btn btn-previous">Previous Activity</button>
+                <button class="completion-btn btn-restart">Restart Activity</button>
+                <button class="completion-btn btn-next">Next Activity</button>
+            </div>
+        </div>
+        
+        <div id="aria-live-announcer" class="visually-hidden" aria-live="polite"></div>
+        
+    <audio id="ding-sound" src="audio/ding.mp3" preload="auto"></audio>
+    <audio id="buzz-sound" src="audio/buzz.mp3" preload="auto"></audio>
+    <audio id="intro-sound" src="audio/intro.mp3" preload="auto"></audio>
+    <audio id="outro-sound" src="audio/outro.mp3" preload="auto"></audio>
+   </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Event Handling ---
+    const sendEvent = (eventName, eventData) => {
+        if (window.parent) {
+            const event = new CustomEvent('lessonEvent', { detail: { name: eventName, data: eventData } });
+            window.parent.document.dispatchEvent(event);
+        }
+    };
+    const LessonEvent = { END_LESSON: 'END_LESSON' };
+    const ActivityEvent = { END_ACTIVITY: 'END_ACTIVITY' };
+
+    // --- DOM Elements ---
+    const startScreen = document.getElementById('start-screen'), gameScreen = document.getElementById('game-screen');
+    const startBtn = document.querySelector('.start-button');
+    const canvas = document.getElementById('activityCanvas'), ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvas-container');
+    const gameTitle = document.getElementById('game-title');
+    const resetBtn = document.getElementById('resetBtn');
+    const announcer = document.getElementById('aria-live-announcer');
+    const progressBar = document.getElementById('progress-bar'), progressText = document.getElementById('progress-text');
+    const activityIntroOverlay = document.getElementById('activity-intro-overlay'), introContinueBtn = document.getElementById('intro-continue-btn');
+    const instructionsIcon = document.getElementById('instructions-icon'), instructionsOverlay = document.getElementById('instructions-overlay'), closeInstructionsBtn = document.getElementById('close-instructions-btn');
+    const feedbackModalOverlay = document.getElementById('feedback-modal-overlay'), feedbackTitle = document.getElementById('feedback-title'), feedbackText = document.getElementById('feedback-text'), feedbackContinueBtn = document.getElementById('feedback-continue-btn');
+    const completionOverlay = document.getElementById('completion-overlay');
+    const dingSound = document.getElementById('ding-sound'), buzzSound = document.getElementById('buzz-sound'), introSound = document.getElementById('intro-sound'), outroSound = document.getElementById('outro-sound');
+
+    // Canvas & Sizing
+    let W = 960, H = 540; const dpr = window.devicePixelRatio || 1;
+
+    // Game State
+    let state = { items: [], zones: [] };
+    let images = {}, imagesLoaded = 0, isPaused = true, atomCorrectlyBuilt = false;
+    const TOTAL_PROGRESS_STEPS = 3;
+    const imageSources = {
+        proton: 'images/proton.png',
+        neutron: 'images/neutron.png',
+        electron: 'images/electron.png',
+        nucleus: 'images/nucleus.png'
+    };
+    let draggedItem = null, pointerOffset = { x: 0, y: 0 };
+    
+    // Asset Loading & Sound
+    function loadImages(callback) {
+        const numImages = Object.keys(imageSources).length;
+        if (numImages === 0) return callback();
+        let loadedCount = 0;
+        for (const key in imageSources) {
+            images[key] = new Image();
+            images[key].src = imageSources[key];
+            const onImageLoad = () => { if (++loadedCount === numImages) callback(); };
+            images[key].onload = onImageLoad;
+            images[key].onerror = () => { console.error(`Failed to load image: ${imageSources[key]}`); onImageLoad(); };
+        }
+    }
+    function playSound(sound) { if(sound) { sound.currentTime = 0; sound.play().catch(e => {}); } }
+    function stopSound(sound) { if(sound) { sound.pause(); } }
+
+    // Activity Setup
+    function setupActivity() {
+        isPaused = false;
+        atomCorrectlyBuilt = false;
+        state = { phase: 1, items: [], zones: [], activityComplete: false };
+        const particleBayY = H * 0.9;
+
+        // Define responsive radii for items based on canvas width
+        const isSmallScreen = W < 992;
+        const nucleusR = isSmallScreen ? W * 0.14 : W * 0.1;
+        const particleR = isSmallScreen ? W * 0.055 : W * 0.04;
+        const electronR = isSmallScreen ? W * 0.035 : W * 0.025;
+
+        // Create one nucleus
+        state.items.push({ id: 'nucleus_item', kind: 'nucleus', img: images.nucleus, r: nucleusR, homeX: W * 0.1, homeY: particleBayY, placedIn: null, shake: 0, x: W * 0.1, y: particleBayY });
+        
+        // Create a few particles for choice
+        for (let i = 0; i < 2; i++) {
+            state.items.push({ id: `p${i}`, kind: 'proton', img: images.proton, r: particleR, homeX: W * 0.28 + i * W * 0.09, homeY: particleBayY, placedIn: null, shake: 0, x: W * 0.28 + i * W * 0.09, y: particleBayY });
+            state.items.push({ id: `n${i}`, kind: 'neutron', img: images.neutron, r: particleR, homeX: W * 0.48 + i * W * 0.09, homeY: particleBayY, placedIn: null, shake: 0, x: W * 0.48 + i * W * 0.09, y: particleBayY });
+        }
+
+        // Create enough electrons for both shells
+        for (let i = 0; i < 10; i++) {
+            state.items.push({ id: `e${i}`, kind: 'electron', img: images.electron, r: electronR, homeX: W * 0.68 + i * W * 0.03, homeY: particleBayY, placedIn: null, shake: 0, x: W * 0.68 + i * W * 0.03, y: particleBayY });
+        }
+        
+        state.zones = [
+            { id: 'nucleus_slot', kind: 'nucleus_slot', x: W / 2, y: H * 0.45, r: W * 0.12, accepts: ['nucleus'], items: [], capacity: 1, placed: false },
+            { id: 'orbit1', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.28, accepts: ['electron'], items: [], capacity: 2 },
+            { id: 'orbit2', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.42, accepts: ['electron'], items: [], capacity: 8 }
+        ];
+
+        updateProgress();
+    }
+    
+    // UI, Feedback & State Checks
+    function updateProgress() {
+        let progressStep = 0;
+        const nucleusZone = state.zones.find(z => z.id === 'nucleus_slot');
+        const orbit1 = state.zones.find(z => z.id === 'orbit1');
+        const orbit2 = state.zones.find(z => z.id === 'orbit2');
+
+        const nucleusInPlace = nucleusZone && nucleusZone.items.some(i => i.kind === 'nucleus');
+        if (nucleusInPlace) {
+            progressStep = 1;
+        }
+
+        const particlesInNucleus = nucleusInPlace &&
+                                 nucleusZone.items.filter(i => i.kind === 'proton').length >= 1 &&
+                                 nucleusZone.items.filter(i => i.kind === 'neutron').length >= 1;
+        if (particlesInNucleus) {
+            progressStep = 2;
+        }
+
+        const electronsInPlace = orbit1.items.length === 2 && orbit2.items.length === 8;
+        if (particlesInNucleus && electronsInPlace) {
+            progressStep = 3;
+        }
+        
+        progressBar.style.width = `${(progressStep / TOTAL_PROGRESS_STEPS) * 100}%`;
+        progressText.textContent = `${progressStep} / ${TOTAL_PROGRESS_STEPS}`;
+
+        if (progressStep === 3 && !state.activityComplete) {
+            state.activityComplete = true;
+            atomCorrectlyBuilt = true;
+            setTimeout(() => {
+                showFeedbackModal('correct', 'Amazing Construction!', 'You have placed every part of the atom correctly. Protons and neutrons stay in the nucleus, while electrons orbit in energy levels. Understanding this structure is key to exploring chemistry. Keep building your science knowledge!');
+            }, 500);
+        }
+    }
+
+    function showFeedbackModal(type, title, message) {
+        isPaused = true;
+        const modalContent = feedbackModalOverlay.querySelector('.modal-content');
+        const modalBtn = feedbackModalOverlay.querySelector('.modal-btn');
+        feedbackTitle.textContent = title;
+        feedbackText.textContent = message;
+
+        const color = type === 'correct' ? 'var(--correct-color)' : 'var(--incorrect-color)';
+        modalContent.style.borderColor = color;
+        feedbackTitle.style.color = color;
+        modalBtn.style.backgroundColor = color;
+        modalBtn.textContent = 'Continue';
+        
+        feedbackModalOverlay.classList.remove('hidden');
+        if (type === 'correct') {
+            playSound(dingSound);
+        } else {
+            playSound(buzzSound);
+        }
+    }
+
+    function repositionNucleusItems(zone) {
+        const itemsInNucleus = zone.items.filter(i => i.kind === 'proton' || i.kind === 'neutron');
+        if (itemsInNucleus.length === 1) {
+            itemsInNucleus[0].x = zone.x;
+            itemsInNucleus[0].y = zone.y;
+        } else if (itemsInNucleus.length > 1) {
+            itemsInNucleus[0].x = zone.x - zone.r * 0.3;
+            itemsInNucleus[0].y = zone.y;
+            itemsInNucleus[1].x = zone.x + zone.r * 0.3;
+            itemsInNucleus[1].y = zone.y;
+        }
+    }
+
+    // Interaction & Animations
+    function shakeAndReturn(item) {
+        item.shake = 0.5; // duration of shake in seconds
+    }
+    function updateAnimations(dt) {
+        state.items.forEach(item => {
+            if (item.shake > 0) {
+                item.shake -= dt;
+                if (item.shake <= 0) {
+                    item.shake = 0;
+                    item.x = item.homeX;
+                    item.y = item.homeY;
+                }
+            }
+        });
+    }
+
+    // Drawing
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        if (!state.items || state.items.length === 0) return;
+        drawGuides();
+        const itemsToDraw = [...state.items.filter(i => i !== draggedItem), draggedItem].filter(Boolean);
+        
+        itemsToDraw.forEach(item => {
+            const shakeX = item.shake > 0 ? Math.sin(item.shake * Math.PI * 16) * (W * 0.01) : 0;
+            
+            if (item.img && item.img.complete && item.img.naturalHeight !== 0) {
+                ctx.drawImage(item.img, item.x - item.r + shakeX, item.y - item.r, item.r * 2, item.r * 2);
+            } else {
+                ctx.save();
+                let color = '#95a5a6';
+                if (item.kind === 'proton') color = '#e74c3c';
+                if (item.kind === 'neutron') color = '#bdc3c7';
+                if (item.kind === 'electron') color = '#3498db';
+                if (item.kind === 'nucleus') color = 'rgba(155, 89, 182, 0.5)';
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(item.x + shakeX, item.y, item.r, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                let letter = '';
+                let fontSize = item.r;
+
+                if (item.kind === 'proton') letter = 'P';
+                else if (item.kind === 'neutron') letter = 'N';
+                else if (item.kind === 'electron') letter = 'e';
+                else if (item.kind === 'nucleus') {
+                    letter = 'N';
+                    fontSize = item.r; // Make the nucleus letter proportional
+                }
+
+                if (letter) {
+                    ctx.font = `bold ${fontSize}px sans-serif`;
+                    ctx.fillText(letter, item.x + shakeX, item.y);
+                }
+                ctx.restore();
+            }
+        });
+    }
+
+    function drawGuides() {
+        ctx.save();
+        ctx.lineWidth = W * 0.003;
+        ctx.strokeStyle = '#d0d0d0';
+        ctx.fillStyle = 'rgba(200, 220, 255, 0.2)';
+        
+        state.zones.forEach(z => {
+            if (z.kind.includes('slot')) {
+                 ctx.beginPath();
+                 ctx.arc(z.x, z.y, z.r, 0, 2 * Math.PI);
+                 if (z.items.length === 0) ctx.fill();
+            } else if (z.kind === 'orbit') {
+                ctx.setLineDash([W*0.01, W*0.01]);
+                ctx.beginPath();
+                ctx.arc(z.x, z.y, z.r, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+        });
+        ctx.restore();
+    }
+    
+    // Event Handlers for Mouse and Touch
+    function getLocalPoint(e) {
+        const r = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (clientX - r.left) * (W / r.width), y: (clientY - r.top) * (H / r.height) };
+    }
+
+    function onPointerDown(e) {
+        if (isPaused || state.activityComplete) return;
+        e.preventDefault();
+        const p = getLocalPoint(e);
+        for (let i = state.items.length - 1; i >= 0; i--) {
+            const item = state.items[i];
+            if (item.kind === 'nucleus' && item.placedIn) continue;
+            if (Math.hypot(p.x - item.x, p.y - item.y) < item.r) {
+                draggedItem = item;
+                pointerOffset = { x: p.x - item.x, y: p.y - item.y };
+                canvas.style.cursor = 'grabbing';
+                if (item.placedIn) {
+                    const zone = item.placedIn;
+                    zone.items = zone.items.filter(i => i.id !== item.id);
+                    item.placedIn = null;
+                    if (zone.id === 'nucleus_slot') repositionNucleusItems(zone);
+                }
+                updateProgress();
+                break;
+            }
+        }
+    }
+
+    function onPointerMove(e) {
+        if (!draggedItem) return;
+        e.preventDefault();
+        const p = getLocalPoint(e);
+        draggedItem.x = p.x - pointerOffset.x;
+        draggedItem.y = p.y - pointerOffset.y;
+    }
+
+    function onPointerUp() {
+        if (!draggedItem) return;
+        canvas.style.cursor = 'grab';
+        let snapped = false;
+
+        for (const zone of state.zones) {
+            const dist = zone.kind === 'orbit' ? Math.abs(Math.hypot(draggedItem.x - zone.x, draggedItem.y - zone.y) - zone.r) : Math.hypot(draggedItem.x - zone.x, draggedItem.y - zone.y);
+            const snapThreshold = zone.kind === 'orbit' ? W * 0.03 : zone.r;
+            
+            if (dist < snapThreshold && zone.accepts.includes(draggedItem.kind)) {
+                 if (draggedItem.kind === 'nucleus' && zone.kind === 'nucleus_slot') {
+                    if (zone.items.length < zone.capacity) {
+                        draggedItem.placedIn = zone; zone.items.push(draggedItem);
+                        draggedItem.x = zone.x; draggedItem.y = zone.y;
+                        zone.accepts.push('proton', 'neutron');
+                        state.phase = 2;
+                        showFeedbackModal('correct', 'Good Start!', 'The nucleus is the centre of the atom. Now let us fill it with particles.');
+                        snapped = true; break;
+                    }
+                }
+                else if ((draggedItem.kind === 'proton' || draggedItem.kind === 'neutron') && zone.kind === 'nucleus_slot') {
+                     if (state.phase < 2) {
+                        showFeedbackModal('incorrect', 'Try Again', 'The nucleus must go at the atom’s core. Look for the centre slot.');
+                        snapped = true;
+                     } else {
+                        draggedItem.placedIn = zone; zone.items.push(draggedItem);
+                        repositionNucleusItems(zone);
+                        const msg = draggedItem.kind === 'proton' ? 'Correct! Protons are positively charged and sit in the nucleus.' : 'Well done! Neutrons stay in the nucleus and have no charge.';
+                        announce(msg);
+                        snapped = true;
+                     }
+                     break;
+                }
+                 else if (draggedItem.kind === 'electron' && zone.kind === 'orbit') {
+                     if (state.phase < 2) {
+                         showFeedbackModal('incorrect', 'Wait!', 'Place the nucleus and fill it before adding electrons.');
+                         snapped = true;
+                     } else if (zone.items.length < zone.capacity) {
+                         draggedItem.placedIn = zone; zone.items.push(draggedItem);
+                         const angle = Math.atan2(draggedItem.y-zone.y, draggedItem.x-zone.x);
+                         draggedItem.x = zone.x + zone.r * Math.cos(angle); draggedItem.y = zone.y + zone.r * Math.sin(angle);
+                         const shellMsg = zone.id === 'orbit1' ? 'Excellent! The first shell holds a maximum of 2 electrons.' : 'Great! The second shell can hold up to 8 electrons.';
+                         announce(shellMsg);
+                         snapped = true;
+                     } else {
+                         if (zone.id === 'orbit1') {
+                            showFeedbackModal('incorrect', 'Try Again', 'Too many! The first shell can only hold 2 electrons. Try the next shell.');
+                         } else {
+                            showFeedbackModal('incorrect', 'Try Again', 'Careful! The second shell is full after 8 electrons.');
+                         }
+                         snapped = true;
+                     }
+                     break;
+                 }
+            }
+        }
+        
+        if (!snapped) {
+            if (draggedItem.kind === 'proton') {
+                 showFeedbackModal('incorrect', 'Try Again', 'Protons do not orbit. Move them into the centre — the nucleus.');
+            } else if (draggedItem.kind === 'neutron') {
+                 showFeedbackModal('incorrect', 'Try Again', 'Neutrons belong in the centre. Only electrons orbit.');
+            } else if (draggedItem.kind === 'nucleus') {
+                 showFeedbackModal('incorrect', 'Try Again', 'The nucleus must go at the atom’s core. Look for the centre slot.');
+            } else if (draggedItem.kind === 'electron') {
+                 showFeedbackModal('incorrect', 'Wrong Place!', 'Electrons orbit the nucleus in the shells. Drag them to one of the dashed lines.');
+            }
+            shakeAndReturn(draggedItem);
+        }
+        
+        draggedItem = null;
+        updateProgress();
+    }
+    
+    // Main Loop & Init
+    let lastTime = 0;
+    function loop(t) {
+        if(!lastTime) lastTime=t; const dt=(t-lastTime)/1000; lastTime=t;
+        if(!isPaused) updateAnimations(dt);
+        draw(); requestAnimationFrame(loop);
+    }
+    
+    function resize() {
+        const r = canvasContainer.getBoundingClientRect(); if (r.width === 0 || r.height === 0) return;
+        const aspect = 16 / 9; let w = r.width, h = r.width / aspect;
+        if (h > r.height) { h = r.height; w = r.height * aspect; }
+        canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
+        canvas.width = Math.floor(w*dpr); canvas.height = Math.floor(h*dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0); W = w; H = h;
+        setupActivity();
+    }
+
+    function announce(text) { announcer.textContent = text; }
+    
+    function init() {
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden'); gameScreen.classList.remove('hidden');
+            activityIntroOverlay.classList.remove('hidden'); isPaused = true;
+            resize(); 
+            playSound(introSound);
+        });
+        introContinueBtn.addEventListener('click', () => {
+            activityIntroOverlay.classList.add('hidden'); isPaused = false; stopSound(introSound);
+        });
+        instructionsIcon.addEventListener('click', () => { instructionsOverlay.classList.remove('hidden'); isPaused = true; });
+        closeInstructionsBtn.addEventListener('click', () => { instructionsOverlay.classList.add('hidden'); if(!state.activityComplete) isPaused = false; });
+        
+        feedbackContinueBtn.addEventListener('click', () => {
+            feedbackModalOverlay.classList.add('hidden');
+            if (atomCorrectlyBuilt) {
+                isPaused = true;
+                sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Atom Builder' });
+                completionOverlay.classList.remove('hidden');
+                playSound(outroSound);
+            } else {
+                isPaused = false;
+            }
+        });
+
+        resetBtn.addEventListener('click', setupActivity);
+        completionOverlay.querySelector('.btn-previous').addEventListener('click', () => {
+            stopSound(outroSound);
+            window.location.href = '../ACTIVITY3/index.html';
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Atom Builder' });
+        });
+        completionOverlay.querySelector('.btn-restart').addEventListener('click', () => {
+            stopSound(outroSound); completionOverlay.classList.add('hidden'); setupActivity();
+
+        });
+        completionOverlay.querySelector('.btn-next').addEventListener('click', () => {
+            stopSound(outroSound);
+            window.location.href = '../ACTIVITY5/index.html';
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Atom Builder' });
+        });
+        
+        canvas.addEventListener('mousedown', onPointerDown); window.addEventListener('mouseup', onPointerUp);
+        canvas.addEventListener('mousemove', onPointerMove);
+        canvas.addEventListener('touchstart', onPointerDown, { passive: false }); window.addEventListener('touchend', onPointerUp);
+        canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('resize', resize);
+        loadImages(() => { requestAnimationFrame(loop); });
+    }
+    init();
+});
+</script>
+<script src="../eventSender.js"></script>
+</body>
+</html>
