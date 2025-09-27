@@ -7,8 +7,8 @@
 <style>
     /* ====== FONT IMPORTS ====== */
     @font-face {
-      font-family: 'Chevin Pro Medium';
-      src: url('../assets/Chevin_Pro.otf') format('opentype');
+      font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
     }
     ::-webkit-scrollbar{
         display: none;
@@ -23,7 +23,7 @@
       --text-color-dark: #2c3e50;
       --text-color-light: #fff;
       --border-radius: 1rem;
-      --header-font: 'Chevin Pro Medium', 'Poppins', sans-serif;
+      --header-font: 'Fredoka', Arial, sans-serif;
       --body-font: var(--header-font);
       --game-bg: #ecf0f1;
       --item-bg: #ffffff;
@@ -128,6 +128,7 @@
       color: var(--text-color-light);
       font-size: 3.2rem;
       font-family: var(--header-font);
+      font-weight: 500;
     }
     
     .start-button {
@@ -314,7 +315,7 @@
         border: 2px solid var(--item-border);
         border-radius: 0.5rem;
         padding: 0.5rem 1rem;
-        font-weight: 700;
+        font-weight: 500;
         font-size: 1.8rem;
         color: var(--text-color-dark);
         text-align: center;
@@ -342,7 +343,7 @@
     .modal { background: #fff; padding: 2.5rem; border-radius: 1rem; text-align: center; width: 90%; max-width: 600px; animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    .modal h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem; font-family: var(--header-font); }
+    .modal h2 { font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem; font-family: var(--header-font); }
     .modal p, .modal li { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); }
     #activity-intro-overlay .modal { border-top: 8px solid var(--primary-color); }
     #activity-intro-overlay .modal h2 { color: var(--primary-color); }
@@ -366,13 +367,13 @@
     
     /* ===== COMPLETION OVERLAY ===== */
     #completion-overlay { background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center; color: #fff;flex-direction: column; justify-content: center; align-items: center; gap: 1.5rem; padding: 2rem; }
-    .completion-title-banner { font-size: clamp(2rem, 7vmin, 3.5rem); text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3); text-align: center; font-family: var(--header-font); }
+    .completion-title-banner { font-size: clamp(2rem, 7vmin, 3.5rem); text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3); text-align: center; font-family: var(--header-font); font-weight: 500; }
      .completion-buttons {
         position: absolute; bottom: 2rem; width: 100%; display: flex;
         justify-content: space-between; gap: 1.5rem; padding: 0 2rem;
     }
     .completion-btn {
-       background: #FBB03B; color: #fff; font-weight: 700;
+       background: #FBB03B; color: #fff; font-weight: 600;
        font-size: 1.1rem; border: 0.1875rem solid #fff;
        border-radius: 3rem; padding: 0.75rem 2.25rem;
        margin-top: 1rem; cursor: pointer; letter-spacing: 0.02em;
