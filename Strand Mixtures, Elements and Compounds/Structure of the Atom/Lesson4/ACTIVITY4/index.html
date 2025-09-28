@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atom Detective | Spot the Difference</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ====== FONT IMPORTS ====== */
+        @font-face {
+            font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+        }
+
+        /* ====== ROOT VARIABLES & SCALING ====== */
+        :root {
+            --primary-color: #5D04B2;
+            --secondary-color: #FBB03B;
+            --correct-color: #5cb85c;
+            --incorrect-color: #d9534f;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --border-radius: 1rem;
+            --header-font: 'Fredoka', sans-serif;
+            --body-font: var(--header-font);
+        }
+        
+        html {
+             font-size: 1.8vmin;
+        }
+
+        /* ===== HIDE SCROLLBAR ===== */
+        body::-webkit-scrollbar, .scenario-content::-webkit-scrollbar, .modal::-webkit-scrollbar { display: none; }
+        body, .scenario-content, .modal { scrollbar-width: none; -ms-overflow-style: none; }
+
+        /* ====== GLOBAL BASE ====== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; background: #f0f4f8;
+            font-family: var(--body-font);
+            overflow: hidden;
+        }
+        #game-wrapper {
+            width: 100%; max-width: 1200px; aspect-ratio: 16 / 9;
+            overflow: hidden;
+            display: flex; flex-direction: column; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        #game-container {
+            width: 100%; height: 100%; background: #fff;
+            position: relative; display: flex; flex-direction: column;
+        }
+        .screen {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+            pointer-events: all; visibility: visible;
+        }
+        .hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+
+        /* ===== START SCREEN ===== */
+        #start-screen {
+            color: var(--text-color-light); text-align: center; padding: 2rem;
+            background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
+        }
+        #start-screen h1 {
+            color: var(--text-color-light); font-size: 3.2rem;
+            font-family: var(--header-font);
+        }
+        .start-button { 
+            background: #FBB03B; color: #fff; font-weight: 900;
+            font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
+            padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
+            letter-spacing: 0.02em; text-shadow: 0 2px 0 #b88b2a;
+            transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+
+
+        /* ===== GAME SCREEN STYLES ===== */
+        #game-screen { 
+            justify-content: flex-start; 
+            overflow: hidden; 
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+        
+        .game-top-section { 
+            width: 100%; background-color: var(--primary-color); 
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+            display: flex; justify-content: space-between; align-items: center;
+            color: #fff; z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+        #game-title {
+            font-weight: 800;
+            margin: 0; font-family: var(--header-font);
+        }
+        .top-right-controls { display: flex; align-items: center; gap: 1rem; }
+        
+        #progress-container { 
+            width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
+            border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
+            border: 2px solid #fff; position: relative; overflow: hidden;
+        }
+        #progress-bar {
+            height: 100%; width: 0%; background: #FFFF00;
+            border-radius: 0.8rem; transition: width 0.5s ease;
+        }
+        #progress-text {
+            font-weight: 700; color: #fff;
+            text-shadow: none;
+        }
+
+        .instructions-icon {
+            width: 2.5rem; height: 2.5rem; background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+            z-index: 15; flex-shrink: 0;
+            animation: glow-pulse-white 2s infinite;
+        }
+        .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+        .instructions-icon svg { width: 1.25rem; height: 1.25rem; fill: white;}
+
+        /* ===== MODALS ===== */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: flex; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .overlay.hidden { display: none; visibility: hidden; opacity: 0; }
+        .modal {
+            background: #fff; padding: 2.5rem; border-radius: 1rem;
+            text-align: center; width: 90%; max-width: 600px;
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+        .modal h2 {
+            font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
+            font-family: var(--header-font);
+        }
+        .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark, #333); }
+        .modal ul { text-align: left; padding-left: 2rem; font-size: 1.2rem; }
+        .modal ul li { margin-bottom: 0.75rem; }
+        
+        #activity-intro-overlay .modal { border-top: 8px solid var(--primary-color); }
+        #activity-intro-overlay .modal h2 { color: var(--primary-color); }
+        
+        #instructions-overlay .modal { border-top: 8px solid var(--primary-color); }
+        #instructions-overlay .modal h2 { color: var(--primary-color); }
+        #instructions-overlay .modal ol { text-align: left; padding-left: 2rem; font-size: 1.2rem; }
+        #instructions-overlay .modal ol li { margin-bottom: 0.75rem; }
+        .hint-panel { background: #f8f9fa; padding: 1.5rem; border-radius: 0.75rem; border-left: 4px solid var(--secondary-color); margin-top: 1.5rem; }
+        .hint-panel h3 { text-align: left; margin-bottom: 1rem; color: var(--primary-color); }
+
+        /* Modal Buttons */
+        .modal button {
+            width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+            border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s; margin-top: 1rem;
+        }
+        .modal button:hover { transform: scale(1.02); }
+        #activity-intro-overlay button, #instructions-overlay button { background-color: var(--primary-color); }
+
+        /* Feedback Modals */
+        .feedback-modal { max-width: 480px; }
+        .feedback-header { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .feedback-header h2 { font-size: 2rem; font-weight: 700; }
+        .feedback-header.correct h2 { color: var(--correct-color); }
+        .feedback-header.incorrect h2 { color: var(--incorrect-color); }
+        .feedback-btn.correct { background-color: var(--correct-color); }
+        .feedback-btn.incorrect { background-color: var(--incorrect-color); }
+        #feedback-correct-overlay .modal { border-top: 8px solid var(--correct-color); }
+        #feedback-incorrect-overlay .modal { border-top: 8px solid var(--incorrect-color); }
+
+        /* ===== COMPLETION SCREEN ===== */
+        #completion-overlay { 
+            background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
+            color: #fff; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; gap: 1rem; padding: 1rem; text-align: center;
+        }
+        .completion-title-banner { 
+            font-size: clamp(2rem, 6vmin, 3.5rem);
+            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
+            font-family: var(--header-font); font-weight: 700; padding: 0 1rem;
+        }
+        .completion-content { padding: 1rem 2rem; background: rgba(0,0,0,0.4); border-radius: 1rem; max-width: 80%; }
+        
+        .completion-buttons {
+            display: flex; justify-content: center; gap: 1rem;
+            flex-wrap: wrap; margin-top: 1.5rem;
+        }
+    
+        .completion-btn {
+            background: #FBB03B; color: #fff; font-weight: 700;
+            font-size: 1.1rem; border: 0.1875rem solid #fff; border-radius: 3rem;
+            padding: 0.75rem 2.25rem; cursor: pointer;
+            letter-spacing: 0.02em; transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+        }
+        .completion-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        }
+        .btn-next {
+            background-color: var(--secondary-color);
+            border-color: #fff;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        /* ===== SCENARIO LAYOUT (UPDATED STYLES) ===== */
+        .scenario-content {
+            flex: 1; padding: 1rem 2rem; overflow: auto;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 1rem;
+            opacity: 1; transition: opacity 0.3s ease-in-out;
+        }
+        .scenario-content.fade-out { opacity: 0; }
+
+        .diagrams-container {
+            display: flex; justify-content: center; align-items: flex-start;
+            gap: 3rem; width: 100%; margin-bottom: 1rem;
+        }
+        .diagram-wrapper { text-align: center; }
+        .diagram-image {
+            max-height: 35vh;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,0.15));
+        }
+        .diagram-label {
+            font-size: 1.5rem; font-weight: 700; color: var(--primary-color);
+            margin-top: 0.5rem;
+        }
+
+        .question-text {
+            font-size: 1.6rem; color: #333; font-weight: 600;
+            text-align: center; margin-bottom: 1.5rem; max-width: 80%;
+        }
+
+        .options-container { 
+            display: grid; grid-template-columns: 1fr; 
+            gap: 1rem; width: 100%; max-width: 600px; margin-bottom: 1rem;
+        }
+        .option-button {
+            background: #f0f4f8; border: 3px solid #ddd;
+            border-radius: 1rem; padding: 1rem; cursor: pointer;
+            transition: all 0.3s ease; font-size: 1.2rem;
+            color: var(--text-color-dark); font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            text-align: left;
+        }
+        .option-button:hover:not(.selected) {
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        .option-button.selected {
+            border-color: var(--primary-color); background-color: #e8dff5;
+            box-shadow: 0 6px 15px rgba(93, 4, 178, 0.2);
+        }
+        .option-button.correct {
+            background: var(--correct-color); color: white; border-color: #fff;
+        }
+        .option-button.incorrect {
+            background: var(--incorrect-color); color: white; animation: shake 0.5s;
+        }
+        .option-button:disabled { cursor: not-allowed; opacity: 0.8; }
+        
+        #check-answer-btn {
+            background-color: var(--primary-color); color: #fff;
+            padding: 1rem 3rem; border: none; border-radius: 3rem;
+            font-size: 1.2rem; font-weight: 700; cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        #check-answer-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(93, 4, 178, 0.4);
+        }
+        #check-answer-btn:disabled { background-color: #aaa; cursor: not-allowed; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+        /* ===== Glowing Pulsating Effect Keyframes ====== */
+        @keyframes glow-pulse-white {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(255, 255, 255, 1); transform: scale(1.1); }
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media(min-width: 1200px){
+            .question-text { font-size: 1.8rem; }
+            .option-button { font-size: 1.3rem; }
+        }
+        @media (max-width: 1199px) {
+            html { font-size: 2.2vmin; }
+        }
+        @media (max-width:1024px){
+             #game-wrapper {
+                width: 100vw; height: 100vh; min-width: 100vw; min-height: 100vh;
+                border-radius: 0; max-width: none; aspect-ratio: unset;
+            }
+        }
+        @media (max-width: 991px){
+            html { font-size: 3vmin; }
+            .question-text { font-size: 1.4rem; max-width: 95%;}
+            .option-button { font-size: 1.2rem; }
+        }
+        @media (max-width: 768px) {
+            html { font-size: 3.3vmin; }
+            .scenario-content { padding: 1rem; }
+            .diagrams-container { flex-direction: column; align-items: center; gap: 1rem; }
+            .diagram-image { max-height: 25vh; }
+            .question-text { font-size: 1.3rem; }
+            .options-container { gap: 0.75rem; }
+            .completion-title-banner { font-size: 1.8rem; }
+            .completion-btn { min-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <div id="game-container">
+        <div id="start-screen" class="screen">
+            <h1>Atom Detective: Spot the Difference</h1>
+            <button class="start-button" onclick="showActivityIntro();">Start Activity</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-top-section">
+                <h1 id="game-title">Atom Detective</h1>
+                <div class="top-right-controls">
+                    <div id="progress-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                    <span id="progress-text">0 / 4</span>
+                    <div class="instructions-icon" onclick="showInstructions()">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scenario-content" id="scenario-content">
+                <div class="diagrams-container">
+                    <div class="diagram-wrapper">
+                        <img id="diagram-image-1" src="" alt="Atom Diagram 1" class="diagram-image">
+                        <p id="diagram-label-1" class="diagram-label"></p>
+                    </div>
+                     <div class="diagram-wrapper">
+                        <img id="diagram-image-2" src="" alt="Atom Diagram 2" class="diagram-image">
+                        <p id="diagram-label-2" class="diagram-label"></p>
+                    </div>
+                </div>
+
+                <p class="question-text" id="question-text"></p>
+                
+                <div class="options-container" id="options-container"></div>
+                
+                <button id="check-answer-btn" onclick="checkAnswer()">Check Answer</button>
+            </div>
+        </div>
+
+        <div id="completion-overlay" class="overlay hidden">
+             <div>
+                <div class="completion-title-banner" id="completion-title">Activity Complete!</div>
+                <div class="completion-content">
+                    <p id="completion-text"></p>
+                </div>
+                <div class="completion-buttons">
+                    <button class="completion-btn btn-prev" onclick="goToPreviousActivity()">Previous Activity</button>
+                    <button class="completion-btn btn-restart" onclick="restartGame()">Restart Activity</button>
+                    <button class="completion-btn btn-next" onclick="goToNextActivity()">Next Activity</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="activity-intro-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2>Electron Detective Time!</h2>
+                <p>Time to become an electron detective! Look closely at the atom diagrams. Each dot or cross shows an electron. The outermost ring tells you how reactive an atom is. Ready to spot the key differences?</p>
+                <button onclick="closeModal('activity-intro-overlay')">Let's Go!</button>
+            </div>
+        </div>
+
+        <div id="instructions-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2>Instructions</h2>
+                <ol>
+                    <li>Look at the two diagrams carefully.</li>
+                    <li>Focus on the outermost shell — this is the valence shell.</li>
+                    <li>Read the question below the diagrams.</li>
+                    <li>Choose the correct option that answers the question.</li>
+                    <li>Click 'Check Answer' to see feedback.</li>
+                </ol>
+                <div class="hint-panel">
+                    <h3>💡 Key Reminders:</h3>
+                    <ul>
+                        <li>The <b>valence shell</b> is the outermost electron shell.</li>
+                        <li>Atoms with 1–3 valence electrons usually <b>lose</b> them during bonding.</li>
+                        <li>Atoms with 5–7 valence electrons usually <b>gain</b> electrons to fill their shell.</li>
+                        <li>A full outer shell means the atom is <b>stable</b> and not reactive.</li>
+                    </ul>
+                </div>
+                <button onclick="closeModal('instructions-overlay')">Got it!</button>
+            </div>
+        </div>
+        
+        <div id="feedback-correct-overlay" class="overlay hidden">
+            <div class="modal feedback-modal">
+                <div class="feedback-header correct"><h2>Correct!</h2></div>
+                <p id="correct-feedback-text"></p>
+                <button class="feedback-btn correct" onclick="closeModal('feedback-correct-overlay')">Continue</button>
+            </div>
+        </div>
+        
+        <div id="feedback-incorrect-overlay" class="overlay hidden">
+            <div class="modal feedback-modal">
+                <div class="feedback-header incorrect"><h2>Not Quite</h2></div>
+                <p id="incorrect-feedback-text"></p>
+                <button class="feedback-btn incorrect" onclick="closeModal('feedback-incorrect-overlay')">Try Again</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src = "../eventSender.js"></script>
+<script>
+    const activityData = {
+        conclusionText: "Well done comparing valence electrons! The number in the outer shell tells us whether an atom will lose or gain electrons. This is key in predicting how it reacts with other elements.",
+        scenarios: [
+            {
+                title: "Sodium vs. Magnesium",
+                elements: ["Sodium", "Magnesium"],
+                images: ["images/sodium.png", "images/magnesium.png"],
+                question: "Which atom has more electrons in its outer shell?",
+                options: [
+                    { text: "Sodium", feedback: "Sodium’s last shell contains 1 electron, not more than magnesium. Check the outermost ring on both diagrams." },
+                    { text: "Magnesium", feedback: "Correct! Magnesium has 2 electrons in the outermost shell. Sodium has only 1." },
+                    { text: "Both have the same", feedback: "Sodium has 1, and magnesium has 2 in the outermost shell — they are not the same." }
+                ],
+                correctIndex: 1
+            },
+            {
+                title: "Magnesium vs. Aluminium",
+                elements: ["Magnesium", "Aluminium"],
+                images: ["images/magnesium.png", "images/aluminium.png"],
+                question: "Which element is more likely to lose 3 electrons during bonding?",
+                options: [
+                    { text: "Magnesium", feedback: "Magnesium has 2 outer electrons and typically loses only 2, not 3." },
+                    { text: "Aluminium", feedback: "Correct! Aluminium has 3 outer electrons and tends to lose all three to become stable." },
+                    { text: "Neither", feedback: "One of them — aluminium — is highly likely to lose 3 electrons. Look at the third shell." }
+                ],
+                correctIndex: 1
+            },
+            {
+                title: "Fluorine vs. Neon",
+                elements: ["Fluorine", "Neon"],
+                images: ["images/fluorine.png", "images/neon.png"],
+                question: "Which atom is more chemically reactive?",
+                options: [
+                    { text: "Fluorine", feedback: "Correct! Fluorine needs just 1 more electron to complete its shell, making it highly reactive." },
+                    { text: "Neon", feedback: "Neon already has a full outer shell with 8 electrons. It is very stable and does not easily react." },
+                    { text: "Both are equally reactive", feedback: "Only fluorine is reactive — neon is a noble gas, meaning it is stable and inert." }
+                ],
+                correctIndex: 0
+            },
+            {
+                title: "Sodium vs. Chlorine",
+                elements: ["Sodium", "Chlorine"],
+                images: ["images/sodium.png", "images/chlorine.png"],
+                question: "Which atom is more likely to lose an electron?",
+                options: [
+                    { text: "Sodium", feedback: "Correct! Sodium has 1 valence electron and easily loses it to become stable." },
+                    { text: "Chlorine", feedback: "Chlorine tends to gain 1 electron to complete its shell — not lose its 7 outer electrons." },
+                    { text: "Neither", feedback: "Sodium is very likely to lose its single outer electron. Review the electron arrangement." }
+                ],
+                correctIndex: 0
+            }
+        ]
+    };
+
+    let currentScenarioIndex = 0;
+    const totalScenarios = activityData.scenarios.length;
+    let selectedOptionIndex = null;
+    let answerChecked = false;
+
+    let introAudio, dingAudio, buzzAudio, outroAudio;
+
+    function initAudio() {
+        try {
+            introAudio = new Audio('audio/intro.mp3');
+            dingAudio = new Audio('audio/ding.mp3');
+            buzzAudio = new Audio('audio/buzz.mp3');
+            outroAudio = new Audio('audio/outro.mp3');
+        } catch (e) {
+            console.warn("Audio could not be loaded.");
+            const mockAudio = { play: () => {}, pause: () => {}, currentTime: 0 };
+            introAudio = dingAudio = buzzAudio = outroAudio = mockAudio;
+        }
+    }
+
+    function playSound(audio) { if(audio) { audio.currentTime = 0; audio.play().catch(e => {}); } }
+    function stopSound(audio) { if(audio) { audio.pause(); } }
+
+    function initGame() {
+        document.getElementById('progress-text').textContent = `0 / ${totalScenarios}`;
+        loadScenario();
+    }
+    
+    function loadScenario() {
+        answerChecked = false;
+        selectedOptionIndex = null;
+        
+        const scenario = activityData.scenarios[currentScenarioIndex];
+        
+        document.getElementById('diagram-image-1').src = scenario.images[0];
+        document.getElementById('diagram-label-1').textContent = scenario.elements[0];
+        document.getElementById('diagram-image-2').src = scenario.images[1];
+        document.getElementById('diagram-label-2').textContent = scenario.elements[1];
+        document.getElementById('question-text').textContent = scenario.question;
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        scenario.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'option-button';
+            button.innerHTML = option.text;
+            button.onclick = () => selectOption(index, button);
+            optionsContainer.appendChild(button);
+        });
+        
+        document.getElementById('check-answer-btn').disabled = true;
+        updateProgress();
+    }
+
+    function selectOption(index, button) {
+        if (answerChecked) return;
+        
+        selectedOptionIndex = index;
+        const buttons = document.querySelectorAll('.option-button');
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected');
+
+        document.getElementById('check-answer-btn').disabled = false;
+    }
+
+    function checkAnswer() {
+        if (selectedOptionIndex === null) return;
+        answerChecked = true;
+
+        const scenario = activityData.scenarios[currentScenarioIndex];
+        const buttons = document.querySelectorAll('.option-button');
+        
+        buttons.forEach(btn => btn.disabled = true);
+        document.getElementById('check-answer-btn').disabled = true;
+
+        const isCorrect = selectedOptionIndex === scenario.correctIndex;
+        const selectedButton = buttons[selectedOptionIndex];
+        const feedback = scenario.options[selectedOptionIndex].feedback;
+        
+        if (isCorrect) {
+            selectedButton.classList.add('correct');
+            playSound(dingAudio);
+            setTimeout(() => {
+                showFeedbackPopup('correct', feedback);
+            }, 500);
+        } else {
+            selectedButton.classList.add('incorrect');
+            playSound(buzzAudio);
+            setTimeout(() => {
+                showFeedbackPopup('incorrect', feedback);
+            }, 500);
+        }
+    }
+
+    function goToNextScenario() {
+        const container = document.getElementById('scenario-content');
+        container.classList.add('fade-out');
+        setTimeout(() => {
+            currentScenarioIndex++;
+            if (currentScenarioIndex < totalScenarios) {
+                loadScenario();
+                container.classList.remove('fade-out');
+            } else {
+                endActivity();
+            }
+        }, 300);
+    }
+    
+    function updateProgress() {
+        const progress = currentScenarioIndex;
+        document.getElementById('progress-bar').style.width = `${(progress / totalScenarios) * 100}%`;
+        document.getElementById('progress-text').textContent = `${progress} / ${totalScenarios}`;
+    }
+
+    function showFeedbackPopup(type, message) {
+        document.getElementById(`${type}-feedback-text`).innerHTML = message;
+        document.getElementById(`feedback-${type}-overlay`).classList.remove('hidden');
+    }
+    
+    function showActivityIntro() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('activity-intro-overlay').classList.remove('hidden');
+        playSound(introAudio);
+        sendEvent(ActivityEvent.START_ACTIVITY, {activityName: 'Atom Detective'});
+    }
+
+    function showInstructions() { document.getElementById('instructions-overlay').classList.remove('hidden'); }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+        
+        if (id === 'activity-intro-overlay') { 
+            stopSound(introAudio); 
+            initGame(); 
+        } else if (id === 'feedback-correct-overlay') { 
+            goToNextScenario();
+        } else if (id === 'feedback-incorrect-overlay') {
+            // Re-enable options for another try
+            answerChecked = false;
+            const buttons = document.querySelectorAll('.option-button');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('incorrect', 'selected');
+            });
+            selectedOptionIndex = null;
+        }
+    }
+    
+    function endActivity() {
+        document.getElementById('progress-bar').style.width = `100%`;
+        document.getElementById('progress-text').textContent = `${totalScenarios} / ${totalScenarios}`;
+        document.getElementById('completion-text').innerHTML = activityData.conclusionText;
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('completion-overlay').classList.remove('hidden');
+        playSound(outroAudio);
+    }
+    
+    function restartGame() {
+        stopSound(outroAudio);
+        document.getElementById('completion-overlay').classList.add('hidden');
+        currentScenarioIndex = 0;
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('scenario-content').classList.remove('fade-out');
+        loadScenario();
+    }
+
+    function goToPreviousActivity() { 
+        // Example: window.location.href = "../ACTIVITY1/index.html";
+        console.log("Navigating to previous activity...");
+        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Atom Detective'});
+    }
+
+    function goToNextActivity() {
+        // Example: window.location.href = "../ACTIVITY3/index.html";
+        console.log("Navigating to next activity...");
+        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Atom Detective'});
+    }
+    
+    window.onload = () => { initAudio(); };
+</script>
+</body>
+</html>
