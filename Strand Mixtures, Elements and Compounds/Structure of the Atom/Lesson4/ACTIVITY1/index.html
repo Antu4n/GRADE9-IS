@@ -21,6 +21,9 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); } }
 
+    ::-webkit-scrollbar{
+        display: none;
+    }
     /* Root Variables */
     :root {
         --primary-color: #5D04B2;
@@ -246,6 +249,12 @@
     .modal-btn:hover { transform: scale(1.02); }
 
     #activity-intro-overlay .modal-content, #instructions-overlay .modal-content { border-top: 8px solid var(--primary-color); }
+
+    #instructions-overlay .modal-content {
+    border-top: 8px solid var(--primary-color);
+    height: 50vh;
+    overflow-y: auto;
+}
     #activity-intro-overlay .modal-content p {
         text-align: left; background: #f8f9fa; padding: 1.5rem;
         border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
@@ -258,7 +267,7 @@
         margin-bottom: 0.8rem; font-size: 1.1em; line-height: 1.5;
     }
     #instructions-overlay .modal-content .hint-list { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee; }
-    #instructions-overlay .modal-content .hint-list li::before, #hint-overlay .modal-content .hint-list li::before { content: '💡'; }
+    #instructions-overlay .modal-content .hint-list li::before, #hint-overlay .modal-content .hint-list li::before { content: ''; }
 
     #hint-overlay .modal-content { border-top: 8px solid var(--secondary-color); }
     #hint-overlay h2 { color: var(--secondary-color); }
@@ -312,8 +321,11 @@
             aspect-ratio: unset !important; box-shadow: none;
         }
         #completion-image { max-width: 60%; }
-        .completion-buttons {align-items: center; bottom: 1rem; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .completion-buttons {align-items: center; bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
         #activity-intro-overlay .modal-content, #instructions-overlay .modal-content, #hint-overlay .modal-content { height: 90vh; overflow-y: auto; }
+        .completion-title-banner{
+            top: 2%;
+        }
     }
     
     @media (max-width: 768px) {
@@ -435,14 +447,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Event Handling ---
-    const sendEvent = (eventName, eventData) => {
-        if (window.parent) {
-            const event = new CustomEvent('lessonEvent', { detail: { name: eventName, data: eventData } });
-            window.parent.document.dispatchEvent(event);
-        }
-    };
-    const ActivityEvent = { END_ACTIVITY: 'END_ACTIVITY' };
+    
 
     // --- Game Data ---
     const ELEMENTS_DATA = [
@@ -588,7 +593,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showCompletionScreen(){
         isPaused = true;
-        sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Sketch That Atom' });
         gameScreen.classList.add('hidden');
         completionOverlay.classList.remove('hidden');
         playSound(outroSound);

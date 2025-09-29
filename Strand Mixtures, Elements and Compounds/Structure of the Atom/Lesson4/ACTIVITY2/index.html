@@ -70,6 +70,7 @@
         #start-screen h1 {
             color: var(--text-color-light); font-size: 3.2rem;
             font-family: var(--header-font);
+            font-weight: 600;
         }
         .start-button { 
             background: #FBB03B; color: #fff; font-weight: 900;
@@ -100,7 +101,7 @@
             flex-shrink: 0;
         }
         #game-title {
-            font-weight: 800;
+            font-weight: 600;
             margin: 0; font-family: var(--header-font);
         }
         .top-right-controls { display: flex; align-items: center; gap: 1rem; }
@@ -152,7 +153,7 @@
             font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
             font-family: var(--header-font);
         }
-        .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark, #333); }
+        .modal p, .modal ul, .modal ol { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark, #333); }
         
         #activity-intro-overlay .modal { border-top: 8px solid var(--primary-color); }
         #activity-intro-overlay .modal h2 { color: var(--primary-color); }
@@ -161,13 +162,14 @@
             border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
         }
         
-        #instructions-overlay .modal { border-top: 8px solid var(--primary-color); }
-        #instructions-overlay .modal h2 { color: var(--primary-color); }
-        #instructions-overlay .modal ol, #instructions-overlay .modal ul { text-align: left; padding-left: 2rem; font-size: 1.2rem; }
-        #instructions-overlay .modal li { margin-bottom: 0.75rem; }
+        #instructions-overlay .modal, #hint-overlay .modal { border-top: 8px solid var(--primary-color); }
+        #instructions-overlay .modal h2, #hint-overlay .modal h2 { color: var(--primary-color); }
+        #instructions-overlay .modal ol, #instructions-overlay .modal ul, #hint-overlay .modal ul { text-align: left; padding-left: 2rem; }
+        #instructions-overlay .modal li, #hint-overlay .modal li { margin-bottom: 0.75rem; }
         #instructions-overlay .modal h3 { text-align: left; margin-top: 1.5rem; font-size: 1.4rem; color: var(--primary-color); }
-
-
+        #hint-overlay .modal h3{
+            color: var(--secondary-color);
+        }
         /* Modal Buttons */
         .modal button {
             width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
@@ -175,7 +177,7 @@
             transition: transform 0.2s, box-shadow 0.2s; margin-top: 1rem;
         }
         .modal button:hover { transform: scale(1.02); }
-        #activity-intro-overlay button, #instructions-overlay button { background-color: var(--primary-color); }
+        #activity-intro-overlay button, #instructions-overlay button, #hint-overlay button { background-color: var(--primary-color); }
 
         /* Feedback Modals */
         .feedback-modal { max-width: 480px; }
@@ -188,44 +190,110 @@
         #feedback-correct-overlay .modal { border-top: 8px solid var(--correct-color); }
         #feedback-incorrect-overlay .modal { border-top: 8px solid var(--incorrect-color); }
 
+        /* ===== START: HINT STYLES ===== */
+        .hint-icon {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            width: 50px;
+            height: 50px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            box-shadow: 0 4px 15px rgba(251, 176, 59, 0.4);
+            animation: glow-pulse 2s infinite;
+        }
+        .hint-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(251, 176, 59, 0.8);
+            animation: none;
+        }
+        .hint-icon svg {
+            fill: white;
+            width: 24px;
+            height: 24px;
+        }
+        #hint-overlay .modal { border-top: 8px solid var(--secondary-color); }
+        #hint-overlay .modal h2 { color: var(--secondary-color); }
+        #hint-overlay .modal button { background-color: var(--secondary-color); }
+        /* ===== END: HINT STYLES ===== */
+
+
         /* ===== COMPLETION SCREEN ===== */
         #completion-overlay { 
             background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
-            color: #fff; display: flex; flex-direction: column; justify-content: center;
+            color: #fff; display: flex; flex-direction: column; justify-content: flex-start;
             align-items: center; gap: 1rem; padding: 1rem; text-align: center;
+            padding-top: 3%;
+            z-index: 200;
         }
-        .completion-title-banner { 
-            font-size: clamp(2rem, 6vmin, 3.5rem);
+        .completion-header { 
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
             text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
-            font-family: var(--header-font); font-weight: 700; padding: 0 1rem;
+            text-align: center;
+            font-weight: 600;
         }
-        #completion-narration {
-            font-size: 1.3rem; max-width: 800px;
-            line-height: 1.6; margin-top: 1rem;
-            background-color: rgba(0,0,0,0.4);
-            padding: 1rem; border-radius: 1rem;
+        .completion-modal-content {
+            background: transparent;
+            box-shadow: none;
+            width: 80%;
+            height: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            overflow: visible;
+            margin-top: 0;
+            border: none;
+            margin-bottom: 1rem;
         }
-        .completion-buttons {
-            display: flex; justify-content: center; gap: 1rem;
-            flex-wrap: wrap; margin-top: 1.5rem;
+        .completion-image {
+            display: block;
+            margin: 0.5rem auto;
+            max-width: 50vw;
+            width: 70%;
+            height: auto;
+            object-fit: contain;
+            animation: fadeIn 0.5s ease-out;
+            border: 2px solid var(--secondary-color);
+            border-radius: 1rem;
         }
-    
-        .completion-btn {
-            background: #FBB03B; color: #fff; font-weight: 700;
-            font-size: 1.1rem; border: 0.1875rem solid #fff; border-radius: 3rem;
-            padding: 0.75rem 2.25rem; cursor: pointer;
-            letter-spacing: 0.02em; transition: all 0.2s;
-            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+        .completion-buttons-footer { 
+            position: absolute;
+            bottom: 1.5rem;
+            left: 0; right: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+            padding: 0 1.25rem;
         }
-        .completion-btn:hover { 
-            transform: scale(1.05); 
-            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        .completion-btn { 
+            font-family: var(--header-font);
+            background: #FBB03B;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.5rem;
+            border: 0.3rem solid #fff;
+            border-radius: 3rem;
+            padding: 0.75rem 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0.4rem 0.8rem rgba(0,0,0,0.2);
+            text-shadow: 0 0.2rem 0 #b88b2a;
+            text-decoration: none;
+            min-width: 14rem;
+            text-align: center;
         }
-        .btn-next {
-            background-color: var(--secondary-color);
-            border-color: #fff;
-            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
-        }
+        .completion-btn:hover { transform: scale(1.06); box-shadow: 0 0.6rem 2.4rem rgba(0,0,0,0.18); }
 
         /* ===== SCENARIO LAYOUT (UPDATED STYLES) ===== */
         .scenario-title {
@@ -306,6 +374,16 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
 
         /* ===== Glowing Pulsating Effect Keyframes ====== */
+        @keyframes glow-pulse {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5);
+                transform: scale(1.1);
+            }
+        }
         @keyframes glow-pulse-white {
             0%, 100% {
                 box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
@@ -333,9 +411,14 @@
         }
         @media (max-width: 991px){
             html { font-size: 3vmin; }
-            .scenario-container { max-width: 95%; padding: 1rem; gap: 4rem; flex-direction: column; }
-            .scenario-image { flex-basis: auto; max-width: 50%; max-height: 35vh;}
-            .scenario-details { flex-basis: auto; }
+            .scenario-container { max-width: 95%; padding: 1rem; gap: 4rem; }
+            .scenario-image {
+                flex-basis: auto;
+                max-width: 50%;
+                max-height: 100vh;
+                height: 60vh;
+            }     
+           .scenario-details { flex-basis: auto; }
             .scenario-story { font-size: 1.3rem; margin-bottom: 1rem;}
             .option-button { font-size: 1.2rem; padding: 1rem; }
             .completion-btn {
@@ -349,11 +432,19 @@
             }
             .options-container { gap: 0.5rem; }
         }
+        @media(min-width: 768px) and (max-width: 991px) {
+             .completion-image {
+                max-width:45vw
+             }
+            
+        }
         @media (max-width: 768px) {
             html { font-size: 3.3vmin; }
-            .completion-title-banner { font-size: 1.8rem; }
-            .completion-buttons { gap: 0.75rem; padding: 1rem; }
-            .completion-btn { justify-self: center !important; min-width: 120px; }
+            .completion-header { font-size: 3rem; }
+            .completion-buttons-footer {
+                gap: 1rem;
+                bottom: 1rem;
+            }
             .scenario-title { font-size: 1.8rem; }
             .scenario-content { padding: 1rem; }
             .scenario-container { gap: 1rem; }
@@ -365,7 +456,7 @@
 <div id="game-wrapper">
     <div id="game-container">
         <div id="start-screen" class="screen">
-            <h1>Diagram Detective – MCQ Challenge</h1>
+            <h1>Diagram Detective</h1>
             <button class="start-button" onclick="showActivityIntro();">Start Activity</button>
         </div>
 
@@ -396,44 +487,49 @@
                     </div>
                 </div>
             </div>
+            <div class="hint-icon" id="hint-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"></path></svg>
+            </div>
         </div>
 
-        <div id="completion-overlay" class="overlay hidden">
-            <div class="completion-title-banner" id="completion-title">Activity Wrap Up!</div>
-            <p id="completion-narration"></p>
-            <div class="completion-buttons">
-                <button class="completion-btn btn-prev" onclick="goToPreviousActivity()">Previous Activity</button>
-                <button class="completion-btn btn-restart" onclick="restartGame()">Restart Activity</button>
-                <button class="completion-btn btn-next" onclick="goToNextActivity()">Next Activity</button>
+        <div id="completion-overlay" class="screen hidden">
+            <h2 class="completion-header">Activity Wrap Up!</h2>
+             <div class="completion-modal-content">
+                <img src="images/complete.jpg" alt="Illustration of a stylized atom" class="completion-image" onerror="this.src='https://placehold.co/400x300/e67e22/ffffff?text=Complete!'; this.onerror=null;">
+            </div>
+            <div class="completion-buttons-footer">
+                <button class="completion-btn" onclick="goToPreviousActivity()">Previous Activity</button>
+                <button class="completion-btn" onclick="restartGame()">Restart Activity</button>
+                <button class="completion-btn" onclick="goToNextActivity()">Next Activity</button>
             </div>
         </div>
 
         <div id="activity-intro-overlay" class="overlay hidden">
             <div class="modal">
-                <h2>Welcome to "Diagram Detective"</h2>
+                <h2>Activity Introduction</h2>
                 <p>Put on your science detective hat! Each atom diagram shows how electrons are arranged in shells. Look closely, count carefully, and match it with the right answer.</p>
-                <button onclick="closeModal('activity-intro-overlay')">Let's Go!</button>
+                <button onclick="closeModal('activity-intro-overlay')">Continue</button>
             </div>
         </div>
 
         <div id="instructions-overlay" class="overlay hidden">
             <div class="modal">
-                <h2>Instructions & Hints</h2>
+                <h2>Learner Instructions</h2>
                 <ol>
                     <li>Study each dot and cross diagram of an atom carefully.</li>
                     <li>Count the electrons in each shell.</li>
                     <li>Choose the correct electron arrangement or element name that matches the diagram.</li>
                     <li>Review the feedback to understand why your choice was correct or incorrect.</li>
                 </ol>
-                <h3>Key Reminders:</h3>
-                <ul>
-                    <li>Shell 1 → maximum 2 electrons</li>
-                    <li>Shell 2 → maximum 8 electrons</li>
-                    <li>Shell 3 → maximum 8 electrons</li>
-                    <li>Electrons fill shells from the inside out.</li>
-                    <li>Atomic number = total number of electrons.</li>
-                </ul>
                 <button onclick="closeModal('instructions-overlay')">Got it!</button>
+            </div>
+        </div>
+
+        <div id="hint-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2>Here's a Hint!</h2>
+                <div id="hint-text"></div>
+                <button onclick="closeModal('hint-overlay')">Got it!</button>
             </div>
         </div>
         
@@ -455,7 +551,6 @@
     </div>
 </div>
 
-<script src = "../eventSender.js"></script>
 <script>
     const activityData = {
         conclusionText: "You did a great job analysing atomic diagrams! Visual decoding of atoms is a powerful skill in chemistry. Keep practising, and soon you will be able to identify any element by its electron structure.",
@@ -463,7 +558,7 @@
             {
                 title: "Question 1",
                 story: "This diagram shows an atom with its electrons arranged in shells. What is the correct electron arrangement?",
-                image: "images/diagram1.svg",
+                image: "images/scenario1.jpg",
                 options: [
                     { text: "2.7", feedback: "2.7 means 7 in the second shell, but this one has 8. Count carefully." },
                     { text: "2.8", feedback: "First shell has 2 electrons, second shell is full with 8." },
@@ -475,7 +570,7 @@
             {
                 title: "Question 2",
                 story: "Analyse the electron shells of this atom. Which element is represented by this diagram?",
-                image: "images/diagram2.svg",
+                image: "images/scenario2.jpg",
                 options: [
                     { text: "Neon", feedback: "Neon has 2.8 and no electrons in the third shell." },
                     { text: "Sodium", feedback: "Correct! Sodium has electron arrangement 2.8.1, atomic number 11." },
@@ -487,7 +582,7 @@
             {
                 title: "Question 3",
                 story: "Carefully count all the electrons shown in this atomic diagram. What is the total number of electrons?",
-                image: "images/diagram3.svg",
+                image: "images/scenario3.jpg",
                 options: [
                     { text: "8", feedback: "2 + 4 = 6. Check the second shell again." },
                     { text: "6", feedback: "Correct! This is carbon with electron arrangement 2.4." },
@@ -523,6 +618,23 @@
 
     function initGame() {
         loadScenario();
+        
+        // Populate hint text from document
+        document.getElementById('hint-text').innerHTML = `
+            <h3>Key Reminders:</h3>
+            <ul>
+                <li>Shell 1 → maximum 2 electrons</li>
+                <li>Shell 2 → maximum 8 electrons</li>
+                <li>Shell 3 → maximum 8 electrons</li>
+                <li>Electrons fill shells from the inside out.</li>
+                <li>Atomic number = total number of electrons.</li>
+            </ul>
+        `;
+        
+        // Add hint event listeners
+        document.getElementById('hint-icon').addEventListener('click', () => {
+            document.getElementById('hint-overlay').classList.remove('hidden');
+        });
     }
     
     function loadScenario() {
@@ -643,7 +755,6 @@
         document.getElementById('progress-text').textContent = `${totalScenarios} / ${totalScenarios}`;
         document.getElementById('game-screen').classList.add('hidden');
         document.getElementById('completion-overlay').classList.remove('hidden');
-        document.getElementById('completion-narration').textContent = activityData.conclusionText;
         playSound(outroAudio);
     }
     
@@ -668,5 +779,7 @@
     
     window.onload = () => { initAudio(); };
 </script>
+<script src = "../eventSender.js"></script>
+
 </body>
 </html>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Count the Valence Electrons! | Atomic Structure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ====== FONT IMPORTS ====== */
+        @font-face {
+            font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+        }
+
+        /* ====== ROOT VARIABLES & SCALING ====== */
+        :root {
+            --primary-color: #5D04B2;
+            --secondary-color: #FBB03B;
+            --correct-color: #5cb85c;
+            --incorrect-color: #d9534f;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --border-radius: 1rem;
+            --header-font: 'Fredoka', 'Poppins', sans-serif;
+            --body-font: var(--header-font);
+        }
+        
+        html {
+             font-size: 1.8vmin;
+        }
+
+        /* ===== HIDE SCROLLBAR ===== */
+        body::-webkit-scrollbar, .scenario-content::-webkit-scrollbar, .modal::-webkit-scrollbar { display: none; }
+        body, .scenario-content, .modal { scrollbar-width: none; -ms-overflow-style: none; }
+
+        /* ====== GLOBAL BASE ====== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; background: #f0f4f8;
+            font-family: var(--body-font);
+            overflow: hidden;
+        }
+        #game-wrapper {
+            width: 100%; max-width: 1200px; aspect-ratio: 16 / 9;
+            overflow: hidden;
+            display: flex; flex-direction: column; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        #game-container {
+            width: 100%; height: 100%; background: #fff;
+            position: relative; display: flex; flex-direction: column;
+        }
+        .screen {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+            pointer-events: all; visibility: visible;
+        }
+        .hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+
+        /* ===== START SCREEN ===== */
+        #start-screen {
+            color: var(--text-color-light); text-align: center; padding: 2rem;
+            background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
+        }
+        #start-screen h1 {
+            color: var(--text-color-light); font-size: 3.2rem;
+            font-family: var(--header-font);
+            font-weight: 500;
+        }
+        .start-button { 
+            background: #FBB03B; color: #fff; font-weight: 900;
+            font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
+            padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
+            letter-spacing: 0.02em; text-shadow: 0 2px 0 #b88b2a;
+            transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+
+
+        /* ===== GAME SCREEN STYLES ===== */
+        #game-screen { 
+            justify-content: flex-start; 
+            overflow: hidden; 
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+        
+        .game-top-section { 
+            width: 100%; background-color: var(--primary-color); 
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+            display: flex; justify-content: space-between; align-items: center;
+            color: #fff; z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+        #game-title {
+            font-weight: 600;
+            margin: 0; font-family: var(--header-font);
+        }
+        .top-right-controls { display: flex; align-items: center; gap: 1rem; }
+        
+        #progress-container { 
+            width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
+            border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
+            border: 2px solid #fff; position: relative; overflow: hidden;
+        }
+        #progress-bar {
+            height: 100%; width: 0%; background: #FFFF00;
+            border-radius: 0.8rem; transition: width 0.5s ease;
+        }
+        #progress-text {
+            font-weight: 700; color: #fff;
+            text-shadow: none;
+        }
+
+        .instructions-icon {
+            width: 2.5rem; height: 2.5rem; background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+            z-index: 15; flex-shrink: 0;
+            animation: glow-pulse-white 2s infinite;
+        }
+        .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+        .instructions-icon svg { width: 1.25rem; height: 1.25rem; fill: white;}
+
+        /* ===== MODALS ===== */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: flex; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .overlay.hidden { display: none; visibility: hidden; opacity: 0; }
+        .modal {
+            background: #fff; padding: 2.5rem; border-radius: 1rem;
+            text-align: center; width: 90%; max-width: 600px;
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+        .modal h2 {
+            font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
+            font-family: var(--header-font);
+        }
+        .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark, #333); }
+        .modal ul { text-align: left; padding-left: 2rem; font-size: 1.2rem; list-style-type: '🧪'; padding-left: 1.5rem;}
+        .modal ul li { margin-bottom: 0.75rem; padding-left: 0.5rem; }
+        
+        #activity-intro-overlay .modal { border-top: 8px solid var(--primary-color); }
+        #activity-intro-overlay .modal h2 { color: var(--primary-color); }
+        #activity-intro-overlay .modal p {
+            text-align: left; background: #f8f9fa; padding: 1.5rem;
+            border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
+        }
+        
+        #instructions-overlay .modal { border-top: 8px solid var(--primary-color); }
+        #instructions-overlay .modal h2 { color: var(--primary-color); }
+        #instructions-overlay .hint-box { background: #fffbe6; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem; border-left: 4px solid var(--secondary-color); }
+
+
+        /* Modal Buttons */
+        .modal button {
+            width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+            border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s; margin-top: 1rem;
+        }
+        .modal button:hover { transform: scale(1.02); }
+        #activity-intro-overlay button, #instructions-overlay button { background-color: var(--primary-color); }
+
+        /* Feedback Modals */
+        .feedback-modal { max-width: 480px; }
+        .feedback-header { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .feedback-header h2 { font-size: 2rem; font-weight: 700; }
+        .feedback-header.correct h2 { color: var(--correct-color); }
+        .feedback-header.incorrect h2 { color: var(--incorrect-color); }
+        .feedback-btn.correct { background-color: var(--correct-color); }
+        .feedback-btn.incorrect { background-color: var(--incorrect-color); }
+        #feedback-correct-overlay .modal { border-top: 8px solid var(--correct-color); }
+        #feedback-incorrect-overlay .modal { border-top: 8px solid var(--incorrect-color); }
+
+        /* Hint Icon & Modal */
+        .hint-icon {
+            position: absolute; bottom: 1.5rem; right: 1.5rem; width: 3.125rem; height: 3.125rem;
+            background: var(--secondary-color); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+            z-index: 1001;
+            border: 0.1875rem solid white;
+            animation: glow-pulse 2s infinite;
+        }
+        .hint-icon:hover { transform: scale(1.1); }
+        .hint-icon svg { fill: white; width: 1.5rem; height: 1.5rem; }
+        
+        #hint-overlay .modal { border-top: 8px solid var(--secondary-color); }
+        #hint-overlay h2 { color: var(--secondary-color); }
+        #hint-overlay button { background-color: var(--secondary-color); }
+        #hint-overlay .modal ul { list-style-type: '💡'; }
+
+        /* ===== COMPLETION SCREEN ===== */
+        #completion-overlay { 
+            background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
+            color: #fff; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; gap: 1rem; padding: 1rem; text-align: center;
+        }
+        .completion-title-banner { 
+            font-size: clamp(2rem, 6vmin, 3.5rem);
+            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
+            font-family: var(--header-font); font-weight: 600; padding: 0 1rem;
+        }
+        
+        #completion-message {
+            font-size: 1.3rem; max-width: 800px; margin-top: -0.5rem; margin-bottom: 0.5rem;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+
+        .completion-image-container {
+            width: 90%; max-width: 700px; height: auto;
+            position: relative; margin-top: 1rem;
+        }
+        #completion-image { 
+            width: 100%; height: auto; border: 3px solid var(--secondary-color); border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .completion-buttons {
+            position: absolute; bottom: 0; width: 100%; display: flex; justify-content: space-between;
+            gap: 1rem; flex-wrap: wrap; padding: 0 2rem 2rem 2rem; box-sizing: border-box;
+        }
+    
+        .completion-btn {
+            background: #FBB03B; color: #fff; font-weight: 700;
+            font-size: 1.1rem; border: 0.1875rem solid #fff; border-radius: 3rem;
+            padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
+            letter-spacing: 0.02em; transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+        }
+        .completion-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        }
+        .btn-next {
+            background-color: var(--secondary-color); border-color: #fff;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        /* ===== SCENARIO LAYOUT (UPDATED FOR THIS ACTIVITY) ===== */
+        .question-title {
+            font-family: var(--header-font); color: var(--primary-color);
+            font-size: 2.2rem; text-align: center; padding: 1rem;
+            width: 100%; margin-bottom: 0; flex-shrink: 0; text-shadow: none;
+        }
+        
+        .question-content {
+            flex: 1; padding: 1rem 2rem; overflow: auto; display: flex;
+            flex-direction: row; gap: 2rem; justify-content: center; align-items: center;
+            position: relative; /* Added for hint icon positioning */
+        }
+
+        .image-section {
+            flex: 0.8; display: flex; justify-content: center; align-items: center;
+        }
+
+        #question-image {
+            width: 100%; max-width: 400px; height: auto; border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15); object-fit: cover; aspect-ratio: 1 / 1;
+        }
+
+        .question-container {
+            flex: 1.2; display: flex; flex-direction: column; gap: 1rem;
+            align-items: center; width: 100%; padding: 0; opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .question-container.fade-out { opacity: 0; }
+        
+        .arrangement-display {
+            font-size: 3rem; font-weight: 900; letter-spacing: 0.1em;
+            color: var(--primary-color); background: #f0f4f8; padding: 2rem 3rem; border-radius: 1rem;
+            border: 4px dashed var(--secondary-color); margin-bottom: 2rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .question-details { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        
+        .options-container { 
+            display: grid; grid-template-columns: repeat(2, 1fr); 
+            gap: 1.5rem; width: 100%; max-width: 600px;
+        }
+        .option-button {
+            background: linear-gradient(45deg, #FFD700, #FBB03B);
+            border: 3px solid white; border-radius: 1rem; padding: 1rem; cursor: pointer;
+            transition: all 0.3s ease; font-size: 1.8rem; font-weight: 800;
+            color: var(--text-color-dark); box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+        
+        .option-button:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(251, 176, 59, 0.4);
+        }
+        .option-button.correct {
+            background: var(--correct-color); color: white; border-color: #fff; transform: scale(1.02);
+            box-shadow: 0 0 15px var(--correct-color);
+        }
+        .option-button.incorrect {
+            background: var(--incorrect-color); color: white; animation: shake 0.5s;
+            box-shadow: 0 0 15px var(--incorrect-color);
+        }
+        .option-button:disabled { cursor: not-allowed; opacity: 0.7; }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+        /* ===== Glowing Pulsating Effect Keyframes ====== */
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5); transform: scale(1.1); }
+        }
+        @keyframes glow-pulse-white {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7);
+                transform: scale(1.1);
+            }
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media(min-width: 1200px){
+            .option-button { font-size: 1.9rem; }
+            #question-image { max-width: 100%;  }
+        }
+        @media (max-width: 1199px) { html { font-size: 2.2vmin; } }
+        @media (max-width:1024px){
+             #game-wrapper {
+                width: 100vw; height: 100vh; min-width: 100vw; min-height: 100vh;
+                border-radius: 0; max-width: none; aspect-ratio: unset;
+            }
+        }
+        @media (max-width: 991px){
+            html { font-size: 3vmin; }
+            .question-container { max-width: 95%; padding: 1rem; gap: 1rem; }
+            .option-button { font-size: 1.6rem; padding: 1rem; }
+            .completion-btn {
+                font-family: var(--header-font); background: #FBB03B; color: #fff;
+                font-weight: 900; 
+                font-size: clamp(1.3rem, 2.5vmin, 1.5rem); 
+                border: 3px solid #fff; border-radius: 3rem;
+                padding: clamp(0.7rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+                cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                 text-decoration: none; min-width: 140px;
+            }
+            .options-container { gap: 1rem; }
+            .arrangement-display { font-size: 2.5rem; padding: 1.5rem 2rem; }
+             #completion-image {
+                width: clamp(400px, 100%, 700px); max-width: 63%; height: auto;
+                border: 3px solid #FBB03B; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                margin-top: 0.5rem;
+            }
+        }
+        @media(min-width: 768px) and (max-width: 991px){
+            .completion-image-container { margin-bottom: 5rem; }
+        }
+        @media (max-width: 768px) {
+            html { font-size: 3.3vmin; }
+            .completion-title-banner { font-size: 2.2rem; }
+            #completion-image { max-width: 66%; }
+            .completion-buttons { gap: 0.75rem; position: static; padding: 1rem; flex-direction: column; align-items: center; margin-top: auto;}
+            .completion-btn { justify-self: center !important; min-width: 120px; }
+            .question-title { font-size: 1.8rem; }
+            .question-content { 
+                padding: 1rem; overflow-y: auto; flex-direction: column;
+            }
+            .image-section { width: 80%; max-width: 50%; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <div id="game-container">
+        <div id="start-screen" class="screen">
+            <h1>Count the Valence Electrons!</h1>
+            <button class="start-button" onclick="showActivityIntro();">Start Activity</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-top-section">
+                <h1 id="game-title">Count the Valence Electrons!</h1>
+                <div class="top-right-controls">
+                    <div id="progress-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                    <span id="progress-text">0 / 5</span>
+                    <div class="instructions-icon" onclick="showInstructions()">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="question-title" id="question-title"></h2>
+            
+            <div class="question-content">
+                <div class="image-section">
+                    <img id="question-image" src="" alt="Electron shell diagram">
+                </div>
+                <div class="question-container" id="question-container">
+                    <div class="question-details">
+                        <div id="arrangement-display" class="arrangement-display"></div>
+                        <div class="options-container" id="options-container"></div>
+                    </div>
+                </div>
+                <div class="hint-icon" id="hint-icon">
+                    <svg viewBox="0 0 24 24"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"></path></svg>
+                </div>
+            </div>
+        </div>
+
+        <div id="completion-overlay" class="overlay hidden">
+            <div class="completion-title-banner" id="completion-title">Activity Wrap Up!</div>
+            <div class="completion-image-container">
+                <img id="completion-image" src="images/complete.jpg" alt="Activity Complete">
+            </div>
+            <div class="completion-buttons">
+                <button class="completion-btn btn-prev" onclick="goToPreviousActivity()">Previous Activity</button>
+                <button class="completion-btn btn-restart" onclick="restartGame()">Restart Activity</button>
+                <button class="completion-btn btn-next" onclick="goToNextActivity()">Next Activity</button>
+            </div>
+        </div>
+
+        <div id="activity-intro-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2>Activity Introduction</h2>
+                <p>Every element hides a secret in its outer shell. That secret? The valence electrons! These outer electrons determine how elements react and combine. In this challenge, count the valence electrons from each arrangement. Stay sharp, outermost shell only!</p>
+                <button onclick="closeModal('activity-intro-overlay')">Continue</button>
+            </div>
+        </div>
+
+        <div id="instructions-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2>Learner Instructions</h2>
+                <ul>
+                    <li>Look at the electron arrangement given in the question.</li>
+                    <li>Focus on the <strong>outermost shell</strong> only.</li>
+                    <li>Select the number that represents the valence electrons.</li>
+                    <li>Check the feedback to see if your choice was correct or incorrect.</li>
+                </ul>
+                <button onclick="closeModal('instructions-overlay')">Got it!</button>
+            </div>
+        </div>
+        
+        <div id="hint-overlay" class="overlay hidden">
+           <div class="modal">
+               <h2>Key Reminders</h2>
+               <ul>
+                    <li>Valence electrons are the electrons in the <strong>outermost shell</strong>.</li>
+                    <li>The <strong>first shell</strong> holds up to 2 electrons, the <strong>second</strong> up to 8, and the <strong>third</strong> also up to 8.</li>
+                    <li>Do not add all electrons together — only count the ones in the <strong>last shell</strong>.</li>
+               </ul>
+               <button id="close-hint-btn">Got it</button>
+           </div>
+        </div>
+
+        <div id="feedback-correct-overlay" class="overlay hidden">
+            <div class="modal feedback-modal">
+                <div class="feedback-header correct"><h2>Correct!</h2></div>
+                <p id="correct-feedback-text"></p>
+                <button class="feedback-btn correct" onclick="closeModal('feedback-correct-overlay')">Continue</button>
+            </div>
+        </div>
+        
+        <div id="feedback-incorrect-overlay" class="overlay hidden">
+            <div class="modal feedback-modal">
+                <div class="feedback-header incorrect"><h2>Not Quite</h2></div>
+                <p id="incorrect-feedback-text"></p>
+                <button class="feedback-btn incorrect" onclick="handleTryAgain()">Try Again</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src = "../eventSender.js"></script>
+<script>
+    const activityData = {
+        questions: [
+            {
+                title: "Question 1",
+                arrangement: "2.8.6",
+                image: "images/scenario1.jpg",
+                options: [
+                    { text: "2", feedback: "These belong to the first shell. Valence electrons are only in the outermost shell." },
+                    { text: "8", feedback: "This is the second shell. Check the last shell for valence electrons." },
+                    { text: "6", feedback: "The outermost shell has 6 electrons—these are the valence electrons." },
+                    { text: "16", feedback: "That is the total number of electrons, not the valence electrons." }
+                ],
+                correctAnswer: "6"
+            },
+            {
+                title: "Question 2",
+                arrangement: "2.1",
+                image: "images/scenario2.jpg",
+                options: [
+                    { text: "1", feedback: "Only 1 electron sits in the outermost shell, so the valence number is 1." },
+                    { text: "2", feedback: "The first shell has 2, but it is not the outermost in this case." },
+                    { text: "3", feedback: "Count carefully. There are only 2 shells—check the last one." },
+                    { text: "0", feedback: "There is 1 electron in the outermost shell." }
+                ],
+                correctAnswer: "1"
+            },
+            {
+                title: "Question 3",
+                arrangement: "2.8.8.1",
+                image: "images/scenario3.jpg",
+                options: [
+                    { text: "8", feedback: "This is from the third shell. But there is a fourth shell with more electrons." },
+                    { text: "1", feedback: "The outermost shell has 1 electron—this is the valence count." },
+                    { text: "17", feedback: "This is the total of all electrons. Focus only on the last shell." },
+                    { text: "0", feedback: "There is 1 electron in the outermost shell." }
+                ],
+                correctAnswer: "1"
+            },
+            {
+                title: "Question 4",
+                arrangement: "2.5",
+                image: "images/scenario4.jpg",
+                options: [
+                    { text: "5", feedback: "The outer shell has 5 electrons." },
+                    { text: "2", feedback: "This is from the first shell, not the outermost." },
+                    { text: "7", feedback: "Look closely. Only 5 are in the last shell." },
+                    { text: "10", feedback: "That is more than the total electrons." }
+                ],
+                correctAnswer: "5"
+            },
+            {
+                title: "Question 5",
+                arrangement: "2.8.7",
+                image: "images/scenario5.jpg",
+                options: [
+                    { text: "7", feedback: "The third shell holds 7 electrons, making them valence electrons." },
+                    { text: "8", feedback: "That is the number in the second shell, not the outermost." },
+                    { text: "1", feedback: "Only 1 electron would be found in atoms like sodium. Look again." },
+                    { text: "17", feedback: "That is the total number of electrons." }
+                ],
+                correctAnswer: "7"
+            }
+        ]
+    };
+
+    let currentQuestionIndex = 0;
+    const totalQuestions = activityData.questions.length;
+    let selectedOptionIndex = null;
+    let introAudio, dingAudio, buzzAudio, outroAudio;
+    let currentShuffledOptions = [];
+
+    function initAudio() {
+        try {
+            introAudio = new Audio('audio/intro.mp3');
+            dingAudio = new Audio('audio/ding.mp3');
+            buzzAudio = new Audio('audio/buzz.mp3');
+            outroAudio = new Audio('audio/outro.mp3');
+        } catch (e) {
+            console.warn("Audio could not be loaded.");
+            const mockAudio = { play: () => {}, pause: () => {}, currentTime: 0 };
+            introAudio = dingAudio = buzzAudio = outroAudio = mockAudio;
+        }
+    }
+
+    function playSound(audio) { if(audio) { audio.currentTime = 0; audio.play().catch(e => {}); } }
+    function stopSound(audio) { if(audio) { audio.pause(); } }
+
+    function initGame() {
+        loadQuestion();
+    }
+    
+    function loadQuestion() {
+        selectedOptionIndex = null;
+        const question = activityData.questions[currentQuestionIndex];
+        
+        currentShuffledOptions = [...question.options]; 
+        for (let i = currentShuffledOptions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [currentShuffledOptions[i], currentShuffledOptions[j]] = [currentShuffledOptions[j], currentShuffledOptions[i]];
+        }
+
+        document.getElementById('question-image').src = question.image;
+        document.getElementById('question-title').textContent = question.title;
+        document.getElementById('arrangement-display').textContent = question.arrangement;
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        currentShuffledOptions.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'option-button';
+            button.innerHTML = option.text;
+            button.onclick = () => selectOption(index);
+            optionsContainer.appendChild(button);
+        });
+        
+        updateProgress();
+    }
+
+    function selectOption(index) {
+        if (selectedOptionIndex !== null) return;
+        selectedOptionIndex = index;
+        
+        const question = activityData.questions[currentQuestionIndex];
+        const buttons = document.getElementById('options-container').querySelectorAll('.option-button');
+        
+        buttons.forEach(btn => btn.disabled = true);
+
+        const selectedOption = currentShuffledOptions[index];
+        const isCorrect = selectedOption.text === question.correctAnswer;
+
+        if (isCorrect) {
+            buttons[index].classList.add('correct');
+            playSound(dingAudio);
+            setTimeout(() => {
+                showFeedbackPopup('correct', selectedOption.feedback);
+            }, 500);
+        } else {
+            buttons[index].classList.add('incorrect');
+            playSound(buzzAudio);
+            setTimeout(() => {
+                showFeedbackPopup('incorrect', selectedOption.feedback);
+            }, 500);
+        }
+    }
+
+    function handleTryAgain() {
+        closeModal('feedback-incorrect-overlay');
+        const buttons = document.getElementById('options-container').querySelectorAll('.option-button');
+        buttons.forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('incorrect');
+        });
+        selectedOptionIndex = null;
+    }
+
+    function goToNextQuestion() {
+        const container = document.getElementById('question-container');
+        container.classList.add('fade-out');
+        setTimeout(() => {
+            if (currentQuestionIndex < totalQuestions - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+                container.classList.remove('fade-out');
+            } else {
+                endActivity();
+            }
+        }, 300);
+    }
+    
+    function updateProgress() {
+        const progress = currentQuestionIndex;
+        document.getElementById('progress-bar').style.width = `${(progress / totalQuestions) * 100}%`;
+        document.getElementById('progress-text').textContent = `${progress} / ${totalQuestions}`;
+    }
+
+    function showFeedbackPopup(type, message) {
+        document.getElementById(`${type}-feedback-text`).innerHTML = message;
+        document.getElementById(`feedback-${type}-overlay`).classList.remove('hidden');
+    }
+    
+    function showActivityIntro() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('activity-intro-overlay').classList.remove('hidden');
+        playSound(introAudio);
+        sendEvent(ActivityEvent.START_ACTIVITY, {activityName: 'Count the Valence Electrons!'});
+    }
+
+    function showInstructions() { document.getElementById('instructions-overlay').classList.remove('hidden'); }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+        if (id === 'activity-intro-overlay') { 
+            stopSound(introAudio); 
+            initGame(); 
+        }
+        if (id === 'feedback-correct-overlay') { 
+           goToNextQuestion();
+        }
+    }
+    
+    function endActivity() {
+        document.getElementById('progress-bar').style.width = `100%`;
+        document.getElementById('progress-text').textContent = `${totalQuestions} / ${totalQuestions}`;
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('completion-overlay').classList.remove('hidden');
+        playSound(outroAudio);
+    }
+    
+    function restartGame() {
+        stopSound(outroAudio);
+        document.getElementById('completion-overlay').classList.add('hidden');
+        currentQuestionIndex = 0;
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('question-container').classList.remove('fade-out');
+        loadQuestion();
+    }
+
+    function goToPreviousActivity() { 
+        window.location.href = "../ACTIVITY2/index.html";
+        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Count the Valence Electrons!'});
+    }
+
+    function goToNextActivity() {
+        window.location.href = "../ACTIVITY4/index.html"; // Assuming next is Activity 4
+        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Count the Valence Electrons!'});
+    }
+    
+    window.onload = () => { 
+        initAudio(); 
+        const hintIcon = document.getElementById('hint-icon');
+        const hintOverlay = document.getElementById('hint-overlay');
+        const closeHintBtn = document.getElementById('close-hint-btn');
+
+        if(hintIcon) {
+            hintIcon.addEventListener('click', () => {
+                hintOverlay.classList.remove('hidden');
+            });
+        }
+        if(closeHintBtn) {
+            closeHintBtn.addEventListener('click', () => {
+                hintOverlay.classList.add('hidden');
+            });
+        }
+    };
+</script>
+</body>
+</html>

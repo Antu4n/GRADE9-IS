@@ -117,7 +117,7 @@
     }
     
     #game-title {
-        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 800;
+        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 600;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1 1 300px; min-width: 0;
     }
 
@@ -310,14 +310,23 @@
             border-radius: 0 !important; max-width: none !important;
             aspect-ratio: unset !important; box-shadow: none;
         }
-        #completion-image { max-width: 60%; }
+        #completion-image { max-width: 50%; }
         .completion-buttons {align-items: center; bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
         #activity-intro-overlay .modal-content, #instructions-overlay .modal-content, #hint-overlay .modal-content { height: 90vh; overflow-y: auto; }
 
     }
     
     @media (max-width: 768px) {
-        body { padding: 0; }
+            body { padding: 0; }
+            .completion-btn {
+                font-size: 0.9rem;
+                padding: 0.5rem 1.2rem;
+                border-radius: 2rem;
+            }
+            .completion-buttons {
+                gap: 0.5rem;
+                padding: 0 0.5rem;
+            }
     }
 </style>
 </head>
@@ -367,10 +376,9 @@
                <h2 style = 'color: var(--primary-color);margin-bottom: 1.5rem; font-size: 2.2rem;'>Learner Instructions</h2>
                <ul>
                    <li>Look at the atom’s current configuration.</li>
-                   <li>Count the total electrons shown.</li>
-                   <li>Check the element’s atomic number.</li>
                    <li>Drag and drop electrons to the correct shells based on filling rules (2–8–8).</li>
-                   <li>You can drag unneeded electrons to the bottom area to remove them.</li>
+                   <li>If you need more electrons, drag them from the <b>Electron Source</b> on the left.</li>
+                   <li>If you have too many, drop them in the <b>Electron Drop Zone</b> on the right.</li>
                    <li>Submit your fix to receive feedback.</li>
                </ul>
                <button class="modal-btn" id="close-instructions-btn">Got it!</button>
@@ -407,6 +415,7 @@
                 <img id="completion-image" src="images/complete.jpg" alt="Activity Complete" onerror="this.style.display='none'">
             </div>
             <div class="completion-buttons">
+                <button class="completion-btn btn-previous">Previous Activity</button>
                 <button class="completion-btn btn-restart">Restart Activity</button>
                 <button class="completion-btn btn-next">Next Activity</button>
             </div>
@@ -423,15 +432,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Event Handling ---
-    const sendEvent = (eventName, eventData) => {
-        if (window.parent) {
-            const event = new CustomEvent('lessonEvent', { detail: { name: eventName, data: eventData } });
-            window.parent.document.dispatchEvent(event);
-        }
-    };
-    const ActivityEvent = { START_ACTIVITY: 'START_ACTIVITY', END_ACTIVITY: 'END_ACTIVITY' };
-
     // --- Game Data ---
     const ACTIVITY3_DATA = [
         {
@@ -449,7 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
             element: 'Fluorine',
             symbol: 'F',
             atomicNumber: 9,
-            // To handle multiple incorrect cases, we can randomly pick one or have a fixed one. Let's use the first one.
             incorrectArrangement: '2.6',
             correctArrangement: '2.7',
             correctFeedback: "Correct: Fluorine’s atomic number is 9 → 2 in 1st shell, 7 in 2nd.",
@@ -549,15 +548,17 @@ document.addEventListener('DOMContentLoaded', () => {
         state = { items: [], zones: [] };
         const electronR = H * 0.06; 
         
-        // Define zones including the 'bay' area at the bottom
+        // Define zones: orbits, a source bay (left), and a drop bay (right)
         state.zones = [
-            { id: 'orbit1', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.20, accepts: ['electron'], items: [], capacity: 2 },
-            { id: 'orbit2', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.32, accepts: ['electron'], items: [], capacity: 8 },
-            { id: 'orbit3', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.44, accepts: ['electron'], items: [], capacity: 8 },
-            { id: 'bay', kind: 'bay', x: W / 2, y: H * 0.96, w: W*0.8, h: H*0.12, accepts: ['electron'], items: [], capacity: 20 }
+            { id: 'orbit1', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.20, accepts: ['electron'], items: [] },
+            { id: 'orbit2', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.32, accepts: ['electron'], items: [] },
+            { id: 'orbit3', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.44, accepts: ['electron'], items: [] },
+            { id: 'source', kind: 'bay', x: W * 0.25, y: H * 0.95, w: W*0.45, h: H*0.1, label: "Electron Source", accepts: ['electron'], items: [] },
+            { id: 'bay', kind: 'bay', x: W * 0.75, y: H * 0.95, w: W*0.45, h: H*0.1, label: "Electron Drop Zone", accepts: ['electron'], items: [] }
         ];
+        const sourceBay = state.zones.find(z => z.id === 'source');
 
-        // Create electrons based on the incorrect arrangement
+        // Create electrons based on the initial incorrect arrangement
         const arrangement = problem.incorrectArrangement.split('.').map(Number);
         let electronCount = 0;
         arrangement.forEach((num, shellIndex) => {
@@ -566,7 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const angle = (2 * Math.PI / num) * i;
                 const electron = {
                     id: `e${electronCount++}`, kind: 'electron', img: images.electron, r: electronR,
-                    homeX: 0, homeY: 0, // Home is determined by arrangement now
                     placedIn: zone, shake: 0,
                     x: zone.x + zone.r * Math.cos(angle),
                     y: zone.y + zone.r * Math.sin(angle)
@@ -576,7 +576,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        checkBtn.disabled = false; // Always enabled in this activity
+        // Add 2 new draggable electrons to the source bay
+        for (let i = 0; i < 2; i++) {
+            const newElectron = {
+                id: `new_e${i}`, kind: 'electron', img: images.electron, r: electronR,
+                placedIn: sourceBay, shake: 0,
+                x: sourceBay.x - sourceBay.w/4 + (i * sourceBay.w/2),
+                y: sourceBay.y
+            };
+            state.items.push(newElectron);
+            sourceBay.items.push(newElectron);
+        }
+
+        checkBtn.disabled = false;
         updateProgress();
     }
     
@@ -643,17 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showCompletionScreen(){
         isPaused = true;
-        sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Error Buster' });
         completionOverlay.classList.remove('hidden');
         playSound(outroSound);
-        completionOverlay.querySelector('.completion-title-banner').textContent = "Atomic Accuracy Master!";
-    }
-
-    // Interaction & Animations
-    function shakeAndReturn(item) {
-        // In this version, we don't return to a 'home', we just snap back to the last valid position.
-        // For simplicity, let's reset the whole board on a bad drop.
-        loadElement(currentElementIndex);
     }
     
     // Drawing
@@ -684,9 +687,8 @@ document.addEventListener('DOMContentLoaded', () => {
              ctx.stroke();
         });
 
-        // Draw electron bay
-        const bayZone = state.zones.find(z => z.kind === 'bay');
-        if (bayZone) {
+        // Draw all 'bay' type zones (source and drop)
+        state.zones.filter(z => z.kind === 'bay').forEach(bayZone => {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.strokeStyle = '#aaaaaa';
             ctx.lineWidth = 1;
@@ -698,9 +700,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = `italic ${H*0.04}px ${getComputedStyle(document.body).fontFamily}`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText("Electron Drop Zone", bayZone.x, bayZone.y);
-
-        }
+            ctx.fillText(bayZone.label, bayZone.x, bayZone.y);
+        });
 
         const nucleusRadius = H * 0.12;
         ctx.setLineDash([]);
@@ -719,9 +720,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.textBaseline = 'middle';
             const fontSizeSymbol = problem.symbol.length > 1 ? nucleusRadius * 0.7 : nucleusRadius * 0.9;
             ctx.font = `bold ${fontSizeSymbol}px ${getComputedStyle(document.body).fontFamily}`;
-            ctx.fillText(problem.symbol, W / 2, H * 0.45 - H*0.01);
-            
-             }
+            // The symbol is now centered vertically in the nucleus
+            ctx.fillText(problem.symbol, W / 2, H * 0.45);
+        }
 
         ctx.restore();
     }
@@ -743,9 +744,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (Math.hypot(p.x - item.x, p.y - item.y) < item.r) {
                 if (item.placedIn) {
                     const zone = item.placedIn;
-                    zone.items = zone.items.filter(i => i.id !== item.id);
+                    // If electron is from the source, create a copy to drag
+                    if (zone.id === 'source') {
+                        draggedItem = { ...item, id: `drag_${Date.now()}`}; // Create a copy
+                        state.items.push(draggedItem); // Add copy to state
+                        // The original stays in the source bay
+                    } else {
+                        zone.items = zone.items.filter(i => i.id !== item.id);
+                        draggedItem = item;
+                    }
                 }
-                draggedItem = item;
                 pointerOffset = { x: p.x - item.x, y: p.y - item.y };
                 canvas.style.cursor = 'grabbing';
                 break;
@@ -769,23 +777,34 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const zone of state.zones) {
             if (zone.kind === 'orbit') {
                 const dist = Math.abs(Math.hypot(draggedItem.x - zone.x, draggedItem.y - zone.y) - zone.r);
-                if (dist < W * 0.03 && zone.items.length < zone.capacity) {
+                // REMOVED: Shell capacity check
+                if (dist < W * 0.03) {
                     draggedItem.placedIn = zone; 
                     zone.items.push(draggedItem);
-                    const angle = Math.atan2(draggedItem.y-zone.y, draggedItem.x-zone.x);
-                    draggedItem.x = zone.x + zone.r * Math.cos(angle);
-                    draggedItem.y = zone.y + zone.r * Math.sin(angle);
+                    // Re-arrange all electrons in the shell evenly
+                    zone.items.forEach((item, i) => {
+                        const angle = (2 * Math.PI / zone.items.length) * i;
+                        item.x = zone.x + zone.r * Math.cos(angle);
+                        item.y = zone.y + zone.r * Math.sin(angle);
+                    });
                     snapped = true;
                     break;
                 }
             } else if (zone.kind === 'bay') {
                 if (draggedItem.x > zone.x - zone.w/2 && draggedItem.x < zone.x + zone.w/2 &&
                     draggedItem.y > zone.y - zone.h/2 && draggedItem.y < zone.y + zone.h/2) {
-                     draggedItem.placedIn = zone; 
-                     zone.items.push(draggedItem);
-                     // Randomly place inside bay for visual variety
-                     draggedItem.x = zone.x - zone.w/2.2 + Math.random() * (zone.w * 0.9);
-                     draggedItem.y = zone.y - zone.h/2.2 + Math.random() * (zone.h * 0.9);
+                     
+                     // If it's the drop zone, move the electron into it
+                     if (zone.id === 'bay') {
+                         draggedItem.placedIn = zone;
+                         zone.items.push(draggedItem);
+                         // Place inside bay for visual confirmation
+                         draggedItem.x = zone.x - zone.w/2.2 + Math.random() * (zone.w * 0.9);
+                         draggedItem.y = zone.y - zone.h/2.2 + Math.random() * (zone.h * 0.9);
+                     } else {
+                        // If it's the source zone, it's a dragged copy, so remove it
+                         state.items = state.items.filter(i => i.id !== draggedItem.id);
+                     }
                      snapped = true;
                      break;
                 }
@@ -793,15 +812,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (!snapped) {
-             // If not snapped, put it back where it came from by reloading the problem state
-             loadElement(currentElementIndex);
+             // If not snapped, remove the dragged item if it was a copy, otherwise reset
+             if(draggedItem.id.startsWith('drag_')){
+                 state.items = state.items.filter(i => i.id !== draggedItem.id);
+             } else {
+                 loadElement(currentElementIndex); // Reset if an existing electron is dropped nowhere
+             }
         }
         draggedItem = null;
     }
     
-    let lastTime = 0;
     function loop(t) {
-        if(!lastTime) lastTime=t;
         draw(); 
         requestAnimationFrame(loop);
     }
@@ -840,16 +861,23 @@ document.addEventListener('DOMContentLoaded', () => {
         resetBtn.addEventListener('click', () => loadElement(currentElementIndex));
         checkBtn.addEventListener('click', checkConfiguration);
 
-        completionOverlay.querySelector('.btn-restart').addEventListener('click', () => {
-            stopSound(outroSound); completionOverlay.classList.add('hidden'); 
-            currentElementIndex = 0;
-            initializeGame();
+          completionOverlay.querySelector('.btn-restart').addEventListener('click', () => {
+            stopSound(outroSound);
+            completionOverlay.classList.add('hidden'); // Hide the completion screen
+            gameScreen.classList.remove('hidden');    // Show the game screen
+            startScreen.classList.add('hidden');      // Ensure the start screen is hidden
+            currentElementIndex = 0;                  // Reset the progress to the first question
+            loadElement(currentElementIndex);         // Load the first element to restart the activity
         });
+
       
         completionOverlay.querySelector('.btn-next').addEventListener('click', () => {
-            // This would navigate to the next activity if it existed
-            // For now, it just ends.
             sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Error Buster' });
+            window.location.href = '../ACTIVITY4/index.html';
+        });
+        completionOverlay.querySelector('.btn-previous').addEventListener('click', () => {
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Error Buster' });
+            window.location.href = '../ACTIVITY2/index.html';
         });
         
         canvas.addEventListener('mousedown', onPointerDown); window.addEventListener('mouseup', onPointerUp);
@@ -875,4 +903,3 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src ="../eventSender.js"></script>
 </body>
 </html>
-

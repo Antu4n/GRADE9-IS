@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atomic Vocabulary Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ====== FONT IMPORTS ====== */
+        @font-face {
+            font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+        }
+        ::-webkit-scrollbar { display: none; }
+
+        /* ====== ROOT VARIABLES & SCALING ====== */
+        :root {
+            --primary-color: #5D04B2;
+            --secondary-color: #FBB03B;
+            --correct-color: #5cb85c;
+            --incorrect-color: #d9534f;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --border-radius: 1.12rem;
+            --header-font: 'Fredoka', 'Poppins', sans-serif;
+            --body-font: var(--header-font);
+        }
+
+        /* ====== GLOBAL BASE ====== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; background: #f0f4f8;
+            font-family: var(--header-font);
+            overflow: hidden; /* Prevents scrolling on the body */
+        }
+        #game-wrapper {
+            width: 100%; max-width: 1200px; aspect-ratio: 16 / 9;
+            overflow: hidden;
+            display: flex; flex-direction: column; box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        #game-container {
+            width: 100%; height: 100%; background: #fff;
+            position: relative; display: flex; flex-direction: column;
+        }
+        .screen {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+            pointer-events: all;
+            visibility: visible;
+        }
+        .hidden { 
+            opacity: 0; 
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        /* ===== START SCREEN ===== */
+        #start-screen {
+            background-image: url(images/gamebg.jpg); color: var(--text-color-light);
+            text-align: center; padding: 2rem;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        #start-screen h1 {
+            color: var(--text-color-light); font-size: 3.4rem; text-align: center;
+            font-family: var(--header-font);font-weight: 500;
+        }
+        .start-button {
+            margin-top: 2rem; padding: 1.2rem 3rem; border-radius: 2rem;
+            border: 3px solid #fff; background: var(--secondary-color); color: #fff;
+            font-weight: bold; cursor: pointer; font-family: var(--header-font);
+            font-size: 1.4rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .start-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        /* ===== GAME SCREEN STYLES ===== */
+        #game-screen {
+            justify-content: flex-start;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .game-top-section {
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color-light);
+            position: absolute;
+            top: 0; left: 0; z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        #game-title {
+            font-size: clamp(1.2rem, 4vmin, 1.8rem);
+            font-weight: 800;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #progress-container {
+            width: clamp(100px, 20vw, 200px);
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 1rem;
+            height: clamp(15px, 2.5vmin, 20px);
+            border: 2px solid #fff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #FFFF00; /* progress yellow */
+            border-radius: 0.8rem;
+            transition: width 0.5s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #progress-text {
+            position: relative;
+            z-index: 1;
+            font-weight: 700;
+            font-size: clamp(0.75rem, 2vmin, 1rem);
+            color: var(--text-color-light); 
+            margin: 0 0.5rem;
+        }
+
+        /* ===== ICONS & GLOW EFFECTS ===== */
+        @keyframes glow-pulse-white {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7);
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(251,176,59,0.5), 0 0 20px rgba(251,176,59,0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(251,176,59,0.8), 0 0 30px rgba(251,176,59,0.5);
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0px rgba(251, 176, 59, 0.7); }
+            100% { box-shadow: 0 0 0 10px rgba(251, 176, 59, 0); }
+        }
+
+        .instructions-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 15;
+            animation: glow-pulse-white 2.5s infinite ease-in-out;
+        }
+        
+        .instructions-icon svg {
+            fill: white;
+            width: 20px; height: 20px;
+        }
+
+        .instructions-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            animation-play-state: paused;
+        }
+
+        .hint-icon {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            width: 50px;
+            height: 50px;
+            background: var(--secondary-color);
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            box-shadow: 0 4px 15px rgba(251, 176, 59, 0.4);
+            animation: glow-pulse 2s infinite alternate ease-in-out;
+        }
+
+        .hint-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(251, 176, 59, 0.8);
+            animation-play-state: paused;
+        }
+
+        .hint-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* ===== POPUPS (OVERLAY & GENERAL MODAL)===== */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 3000;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s;
+            opacity: 1;
+            visibility: visible;
+        }
+        .overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .modal {
+            background: #fff; 
+            border-radius: var(--border-radius, 1rem);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        
+        .modal h2 {
+            font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+        .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark, #333); }
+        
+        .modal button {
+            width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+            border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1rem;
+        }
+        .modal button:hover {
+            transform: scale(1.02);
+        }
+
+        /* === INTRO MODAL === */
+        #activity-intro-overlay .modal { border-top: 8px solid var(--primary-color); padding: 2.5rem; }
+        #activity-intro-overlay .modal h2 { color: var(--primary-color);text-align: center; }
+        #activity-intro-overlay .modal p {
+            text-align: left; background: #f8f9fa; padding: 1.5rem;
+            border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
+        }
+        #activity-intro-overlay button { background: var(--primary-color); }
+        
+        /* === INSTRUCTIONS MODAL === */
+        #instructions-overlay .modal { border-top: 8px solid var(--primary-color); padding: 2.5rem; text-align: left; }
+        #instructions-overlay .modal h2 { color: var(--primary-color); }
+        #instructions-overlay button { background: var(--primary-color); }
+        
+        /* === HINT MODAL === */
+        #hint-overlay .modal { border-top: 8px solid var(--secondary-color); padding: 2rem; text-align: center; }
+        #hint-overlay .modal h2 { 
+            color: var(--secondary-color); display: flex; align-items: center; 
+            justify-content: center; gap: 0.75rem; 
+        }
+        #hint-overlay .modal h2 svg { fill: var(--secondary-color); width: 30px; height: 30px; }
+        #hint-overlay .modal p { text-align: center; }
+        #hint-overlay button { background: var(--secondary-color); }
+        
+        /* === FEEDBACK MODAL STYLES === */
+        .feedback-modal {
+            max-width: 480px;
+            padding: 2rem;
+            text-align: center;
+        }
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .feedback-icon { width: 32px; height: 32px; }
+        .feedback-header h2 { font-size: 2rem; font-weight: 700; }
+        .feedback-header.correct h2 { color: var(--correct-color); }
+        .feedback-modal p {
+            font-size: 1.1rem; color: #555; line-height: 1.6; margin-bottom: 1.5rem;
+        }
+        .feedback-btn.correct { background-color: var(--correct-color); }
+
+        /* ===== COMPLETION & TAKEAWAYS OVERLAYS (NEW STYLES) ===== */
+        #completion-overlay {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover; background-position: center;
+            padding: 2rem;
+            color: #fff;
+        }
+        #completion-overlay h2 {
+            font-size: clamp(2rem, 7vmin, 4rem);
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            text-align: center;
+            font-weight: 500;
+        }
+       #completion-overlay img {
+            /* width: clamp(300px, 50%, 400px); */
+            height: auto;
+            border: 3px solid var(--secondary-color);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin: 2rem 0 0 0;
+            max-width: 100%;
+            width: 35vw;
+        }
+        .end-buttons-bar {
+            margin-top: auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: clamp(0.75rem, 2vmin, 1.25rem);
+            padding: clamp(0.75rem, 2vmin, 1.25rem);
+        }
+        .completion-btn {
+            font-family: var(--header-font);
+            background: #FBB03B;
+            color: #fff;
+            font-weight: 900;
+            border: 3px solid #fff;
+            border-radius: 3rem;
+            /* OLD: padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem); */
+            /* OLD: font-size: clamp(0.9rem, 2.5vmin, 1.2rem); */
+            padding: clamp(0.75rem, 2vmin, 1rem) clamp(1.5rem, 4vmin, 2.5rem);
+            font-size: clamp(1rem, 3vmin, 1.4rem);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+        }
+        .completion-btn:hover { transform: scale(1.06); }
+        #previous-button { grid-column: 1; justify-self: start; }
+        #play-again-button { grid-column: 2; justify-self: center; }
+        #key-takeaways-button { grid-column: 3; justify-self: end; }
+
+        #key-takeaways-overlay {
+            background: url('images/gamebg.jpg') center/cover;
+            flex-direction: column;
+        }
+        #key-takeaways-overlay h2 { 
+            font-family: var(--header-font); color: white; font-size: 2.5rem;
+            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.3); margin-bottom: 1.5rem;
+        }
+        .takeaways-container {
+            background-color: white; color: var(--text-color-dark);
+            border-radius: 1rem; padding: 1.5rem 2rem; max-width: 45rem;
+            width: 90%; border-top: 0.3rem solid var(--secondary-color);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+            max-height: 60vh; overflow-y: auto;
+        }
+        .takeaways-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 1.2rem; font-weight: 700; }
+        .takeaways-list { list-style-type: none; padding: 0; text-align: left; }
+        .takeaways-list li { position: relative; padding-left: 2rem; margin-bottom: 0.8rem; font-size: 1rem; line-height: 1.5; }
+        .takeaways-list li::before { content: "✓"; color: var(--correct-color); position: absolute; left: 0; top: 0; font-size: 1.2rem; font-weight: bold; }
+        .primary-action-btn {
+            background: var(--secondary-color); color: #fff; font-weight: 900; font-size: 1.25rem;
+            border: 0.1875rem solid #fff; border-radius: 3rem; padding: 0.75rem 2.5rem;
+            cursor: pointer; text-shadow: 0 0.125rem 0 #b88b2a; transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2); text-decoration: none; margin-top: 1.5rem;
+        }
+        .primary-action-btn:hover { transform: scale(1.06); }
+
+        /* ===== WORD SEARCH GAME CONTENT ===== */
+        .game-content {
+            flex: 1; 
+            padding: 2rem; 
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E8F4FD 0%, #F0F8E8 100%);
+            margin-top: 60px; /* Space for the top bar */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .word-search-layout {
+            display: grid; 
+            grid-template-columns: auto 280px; 
+            gap: 2rem;
+            width: 100%;
+            max-width: 1100px; 
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .word-grid-container {
+            background: linear-gradient(135deg, #4A90E2, #50E3C2);
+            border-radius: var(--border-radius);
+            padding: 1.5rem; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 3px solid white;
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .grid-cell {
+            aspect-ratio: 1 / 1;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+
+        .grid-cell:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
+        }
+
+        .grid-cell.selected { background: var(--secondary-color); color: white; }
+        .grid-cell.found { background: var(--correct-color); color: white; }
+
+        .word-list-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 3px solid #4A90E2;
+            align-self: start;
+        }
+
+        .word-list-container h3 {
+            font-family: var(--header-font); 
+            color: var(--primary-color);
+            margin-bottom: 1rem; 
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .word-list { list-style: none; padding: 0; margin: 0; }
+        .word-item {
+            color: var(--text-color-dark);
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .word-item.found {
+            background: var(--correct-color);
+            color: white;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        /* ====== RESPONSIVE DESIGN ====== */
+        @media (min-width: 1201px) { /* Larger Desktop Screens */
+            .word-search-layout {
+                max-width: 1400px;
+                grid-template-columns: auto 320px;
+                gap: 2.5rem;
+            }
+             .word-grid-container {
+                padding: 2rem;
+            }
+            .grid-cell {
+                font-size: 1.2rem;
+            }
+            .word-item {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 1200px){
+           #game-wrapper {
+                width: 100vw; height: 100vh;
+                min-width: 100vw; min-height: 100vh;
+                border-radius: 0; max-width: none;
+                aspect-ratio: unset;
+            }
+            #completion-overlay img {
+                width: 65vw;
+            }
+        }
+        @media (max-width: 991px) { /* Tablets */
+            .word-search-layout {
+          
+                gap: 1.5rem;
+            }
+            .word-list-container {
+                height: 85vh;
+                overflow-y: auto;
+            }
+            .grid-cell { font-size: 0.9rem; }
+            .word-item { font-size: 1rem; }
+            #start-screen h1 { font-size: 2.5rem; }
+             .start-button {
+                margin-top: 2rem;
+                padding: 1.2rem 1.5rem;
+                border-radius: 2rem;
+                border: 3px solid #fff;
+                background: var(--secondary-color);
+                color: #fff;
+                font-weight: bold;
+                cursor: pointer;
+                font-family: var(--header-font);
+                font-size: 1rem;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            #completion-overlay img {
+                width: 55vw;
+            }
+
+        }
+
+        @media (max-width: 767px) { /* Large Phones */
+            .game-content { margin-top: 50px; padding: 1rem; }
+            .word-search-layout {
+              
+                gap: 1rem;
+            }
+            .word-list-container {
+                order: -1; /* Move word list to the top */
+                align-self: stretch;
+            }
+            .word-grid-container { padding: 1rem; }
+            .grid-cell { font-size: 0.8rem; }
+            .end-buttons-bar { grid-template-columns: 1fr; gap: 0.75rem; position: static; padding: 1rem; }
+            .completion-btn { justify-self: center; }
+            .start-button {
+                margin-top: 2rem;
+                padding: 1.2rem 1.5rem;
+                border-radius: 2rem;
+                border: 3px solid #fff;
+                background: var(--secondary-color);
+                color: #fff;
+                font-weight: bold;
+                cursor: pointer;
+                font-family: var(--header-font);
+                font-size: 1rem;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            #start-screen h1 { font-size: 2.5rem; }
+        }
+
+        @media (max-width: 599px) { /* Small Phones */
+            #start-screen h1 { font-size: 2.5rem; }
+            .start-button { font-size: 1.2rem; padding: 1rem 2rem; }
+            .game-top-section { flex-wrap: wrap; justify-content: center; }
+            #game-title { width: 100%; text-align: center; margin-bottom: 0.5rem; }
+            .header-controls { margin: 0 auto; }
+            .game-content { margin-top: 85px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>Atomic Vocabulary Search</h1>
+            <button class="start-button" onclick="showActivityIntro(); sendEvent(ActivityEvent.START_ACTIVITY, { activityName: 'Atomic Vocabulary Search' })">Start Activity</button>
+        </div>
+
+        <!-- Main Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <div class="game-top-section">
+                <h1 id="game-title">Atomic Vocabulary Search</h1>
+                <div class="header-controls">
+                    <div id="progress-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                    <span id="progress-text">0 / 6</span>
+                    <div class="instructions-icon" onclick="showInstructions()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hint-icon" onclick="showHint()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/>
+                </svg>
+            </div>
+            
+            <div class="game-content">
+                <div class="word-search-layout">
+                    <div class="word-grid-container">
+                        <div class="word-grid" id="word-grid"></div>
+                    </div>
+                    <div class="word-list-container">
+                        <h3>Words to Find</h3>
+                        <ul class="word-list" id="word-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completion Screen -->
+        <div id="completion-overlay" class="screen overlay hidden">
+             <!-- Content generated by JS -->
+        </div>
+
+        <!-- Key Takeaways Overlay -->
+        <div id="key-takeaways-overlay" class="screen overlay hidden">
+             <!-- Content generated by JS -->
+        </div>
+
+        <!-- Modals and Popups -->
+        <div id="activity-intro-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2>Activity Introduction</h2>
+                <p>Get ready to boost your atomic vocabulary! In this challenge, you will search for six important science terms hidden in the word grid. These words are clues that help us understand how elements behave and how they are classified. Look carefully, some may be hiding diagonally or backwards!</p>
+                <button onclick="closeModal('activity-intro-overlay')">Continue</button>
+            </div>
+        </div>
+
+        <div id="instructions-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2>Instructions</h2>
+                <p>Look at the word bank to see the six target science terms. Search the 12x12 letter grid carefully — words can be horizontal, vertical, diagonal, forwards, or backwards. Click and drag to highlight each word you find. Read the pop-up definition after finding a word.</p>
+                <button onclick="closeModal('instructions-overlay')">Close</button>
+            </div>
+        </div>
+        
+        <div id="hint-overlay" class="overlay hidden">
+            <div class="modal">
+                <h2><svg viewBox="0 0 24 24"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/></svg>Hint</h2>
+                <p id="hint-text"></p>
+                <button onclick="closeModal('hint-overlay')">Thanks!</button>
+            </div>
+        </div>
+        
+        <div id="feedback-correct-overlay" class="overlay hidden">
+            <div class="modal feedback-modal">
+                <div class="feedback-header correct">
+                    <svg class="feedback-icon" viewBox="0 0 24 24" fill="#5cb85c"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <h2>Great Find!</h2>
+                </div>
+                <p id="correct-feedback-text"></p>
+                <button class="feedback-btn correct" onclick="closeModal('feedback-correct-overlay')">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const wordsToFind = [
+        { word: 'METAL', feedback: "Elements that are shiny, good conductors of heat and electricity, and often malleable." },
+        { word: 'NONMETAL', feedback: "Elements that are poor conductors and often brittle in solid form." },
+        { word: 'METALLOID', feedback: "Elements that have both metallic and non-metallic properties." },
+        { word: 'ELECTRON', feedback: "A tiny negatively charged particle found in energy levels around the nucleus." },
+        { word: 'VALENCE', feedback: "The number of electrons in the outermost shell of an atom." },
+        { word: 'SHINY', feedback: "A physical property of metals that reflects light, making them glossy or lustrous." }
+    ];
+
+    const GRID_SIZE = 12;
+
+    let gameGrid = [];
+    let wordLocations = {}; // To store the starting location of each word
+    let foundWords = [];
+    let isSelecting = false;
+    let selectedCells = [];
+    let startCell = null;
+    
+    let introAudio, dingAudio, outroAudio;
+    
+    function initAudio() {
+        const createMockAudio = () => ({ play: () => {}, pause: () => {}, currentTime: 0 });
+        try {
+            introAudio = new Audio('audio/intro.mp3');
+            dingAudio = new Audio('audio/ding.mp3');
+            outroAudio = new Audio('audio/outro.mp3');
+        } catch (e) {
+            console.warn("Audio files not found. Using silent mock audio.");
+            introAudio = createMockAudio();
+            dingAudio = createMockAudio();
+            outroAudio = createMockAudio();
+        }
+    }
+
+    function playSound(audioElement) {
+        if (audioElement && typeof audioElement.play === 'function') {
+            audioElement.currentTime = 0;
+            audioElement.play().catch(e => console.error("Audio play failed:", e));
+        }
+    }
+
+    function stopOutroAudio() {
+        if (outroAudio && typeof outroAudio.pause === 'function') {
+            outroAudio.pause();
+            outroAudio.currentTime = 0;
+        }
+    }
+
+    function generateGrid() {
+        let allWordsPlaced = false;
+        let attempts = 0;
+        
+        while (!allWordsPlaced && attempts < 100) {
+            gameGrid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
+            wordLocations = {}; // Reset locations each attempt
+            allWordsPlaced = tryPlacingAllWords();
+            attempts++;
+        }
+        
+        if (!allWordsPlaced) {
+            console.error("Failed to place all words after several attempts.");
+        }
+        fillEmptyCells();
+    }
+
+    function fillEmptyCells() {
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                if (gameGrid[i][j] === null) {
+                    gameGrid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                }
+            }
+        }
+    }
+
+    function tryPlacingAllWords() {
+        const shuffledWords = [...wordsToFind].sort(() => Math.random() - 0.5);
+        for (const wordObj of shuffledWords) {
+            const isReversed = Math.random() < 0.5;
+            const wordToPlace = isReversed ? wordObj.word.split('').reverse().join('') : wordObj.word;
+            if (!placeWordInGrid(wordToPlace, wordObj)) { 
+                return false; 
+            }
+        }
+        return true;
+    }
+
+    function placeWordInGrid(word, originalWordObj) {
+        const directions = [
+            { r: 0, c: 1 }, { r: 1, c: 0 }, { r: 1, c: 1 }, { r: 1, c: -1 },
+            { r: 0, c: -1 }, { r: -1, c: 0 }, { r: -1, c: -1 }, { r: -1, c: 1 }
+        ];
+
+        const positions = [];
+        for (let row = 0; row < GRID_SIZE; row++) {
+            for (let col = 0; col < GRID_SIZE; col++) {
+                for (const direction of directions) {
+                     positions.push({ row, col, direction });
+                }
+            }
+        }
+        
+        positions.sort(() => Math.random() - 0.5);
+        
+        for (const pos of positions) {
+            if (canPlaceWord(word, pos.row, pos.col, pos.direction)) {
+                for (let i = 0; i < word.length; i++) {
+                    gameGrid[pos.row + i * pos.direction.r][pos.col + i * pos.direction.c] = word[i];
+                }
+                wordLocations[originalWordObj.word] = { row: pos.row, col: pos.col };
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function canPlaceWord(word, startRow, startCol, direction) {
+        for (let i = 0; i < word.length; i++) {
+            const row = startRow + i * direction.r;
+            const col = startCol + i * direction.c;
+            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) return false;
+            const cell = gameGrid[row][col];
+            if (cell !== null && cell !== word[i]) return false;
+        }
+        return true;
+    }
+
+    function renderGrid() {
+        const gridElement = document.getElementById('word-grid');
+        gridElement.innerHTML = '';
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.textContent = gameGrid[i][j];
+                cell.dataset.row = i;
+                cell.dataset.col = j;
+                cell.addEventListener('mousedown', startSelection);
+                cell.addEventListener('mouseenter', continueSelection);
+                gridElement.appendChild(cell);
+            }
+        }
+        gridElement.addEventListener('mouseup', endSelection);
+        gridElement.addEventListener('mouseleave', endSelection);
+        gridElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+        gridElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+        gridElement.addEventListener('touchend', handleTouchEnd);
+    }
+
+    function renderWordList() {
+        const wordListElement = document.getElementById('word-list');
+        wordListElement.innerHTML = '';
+        wordsToFind.forEach(wordObj => {
+            const listItem = document.createElement('li');
+            listItem.className = 'word-item';
+            listItem.textContent = wordObj.word;
+            listItem.dataset.word = wordObj.word;
+            if (foundWords.includes(wordObj.word)) {
+                listItem.classList.add('found');
+            }
+            wordListElement.appendChild(listItem);
+        });
+    }
+
+    function startSelection(e) {
+        isSelecting = true;
+        selectedCells = [];
+        startCell = { row: parseInt(e.target.dataset.row), col: parseInt(e.target.dataset.col) };
+        selectCell(e.target);
+    }
+
+    function continueSelection(e) {
+        if (!isSelecting) return;
+        document.querySelectorAll('.grid-cell.selected').forEach(cell => cell.classList.remove('selected'));
+        selectedCells = [];
+        const currentCellPos = { row: parseInt(e.target.dataset.row), col: parseInt(e.target.dataset.col) };
+        getCellsInLine(startCell, currentCellPos).forEach(cellPos => {
+            const cell = document.querySelector(`.grid-cell[data-row='${cellPos.row}'][data-col='${cellPos.col}']`);
+            if (cell) selectCell(cell);
+        });
+    }
+
+    function endSelection() {
+        if (!isSelecting) return;
+        isSelecting = false;
+        
+        const selectedWord = selectedCells.map(cell => cell.textContent).join('');
+        const reversedWord = selectedWord.split('').reverse().join('');
+        
+        const foundWordObj = wordsToFind.find(w => (w.word === selectedWord || w.word === reversedWord) && !foundWords.includes(w.word));
+        
+        if (foundWordObj) {
+            foundWords.push(foundWordObj.word);
+            selectedCells.forEach(cell => {
+                cell.classList.remove('selected');
+                cell.classList.add('found');
+            });
+            playSound(dingAudio);
+            showFeedbackPopup('correct', foundWordObj.feedback);
+            updateProgress();
+            renderWordList();
+        } else {
+            selectedCells.forEach(cell => cell.classList.remove('selected'));
+        }
+        
+        selectedCells = [];
+        startCell = null;
+    }
+
+    function getCellFromTouch(e) {
+        const touch = e.touches[0];
+        return document.elementFromPoint(touch.clientX, touch.clientY);
+    }
+
+    function handleTouchStart(e) {
+        e.preventDefault();
+        const targetCell = getCellFromTouch(e);
+        if (targetCell?.classList.contains('grid-cell')) {
+            startSelection({ target: targetCell });
+        }
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault();
+        if (!isSelecting) return;
+        const targetCell = getCellFromTouch(e);
+        if (targetCell?.classList.contains('grid-cell')) {
+            const lastCell = selectedCells[selectedCells.length - 1];
+            if (targetCell !== lastCell) {
+                 continueSelection({ target: targetCell });
+            }
+        }
+    }
+
+    function handleTouchEnd() { endSelection(); }
+
+    function selectCell(cell) {
+        cell.classList.add('selected');
+        selectedCells.push(cell);
+    }
+
+    function getCellsInLine(start, end) {
+        const cells = [];
+        const rowDiff = end.row - start.row;
+        const colDiff = end.col - start.col;
+        
+        if (rowDiff !== 0 && colDiff !== 0 && Math.abs(rowDiff) !== Math.abs(colDiff)) {
+            return [{row: start.row, col: start.col}];
+        }
+        
+        const steps = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
+        const rowStep = steps === 0 ? 0 : rowDiff / steps;
+        const colStep = steps === 0 ? 0 : colDiff / steps;
+        
+        for (let i = 0; i <= steps; i++) {
+            cells.push({
+                row: start.row + Math.round(i * rowStep),
+                col: start.col + Math.round(i * colStep)
+            });
+        }
+        return cells;
+    }
+
+    function showHint() {
+        const remainingWords = wordsToFind.filter(w => !foundWords.includes(w.word));
+        if (remainingWords.length > 0) {
+            const randomWord = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            const location = wordLocations[randomWord.word];
+            
+            if(location) {
+                document.getElementById('hint-text').textContent = `The word "${randomWord.word}" starts at Row ${location.row + 1}, Column ${location.col + 1}.`;
+            } else {
+                 document.getElementById('hint-text').textContent = `Try looking for the first letter of the word "${randomWord.word}".`;
+            }
+            document.getElementById('hint-overlay').classList.remove('hidden');
+        }
+    }
+
+    function startGame() {
+        foundWords = [];
+        generateGrid();
+        renderGrid();
+        renderWordList();
+        updateProgress();
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('completion-overlay').classList.add('hidden');
+        document.getElementById('key-takeaways-overlay').classList.add('hidden');
+    }
+    
+    function showActivityIntro() {
+        startGame();
+        document.getElementById('activity-intro-overlay').classList.remove('hidden');
+        playSound(introAudio);
+    }
+
+    function showInstructions() {
+        document.getElementById('instructions-overlay').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+        if (id === 'activity-intro-overlay') {
+            if (introAudio && typeof introAudio.pause === 'function') introAudio.pause();
+        } else if (id === 'feedback-correct-overlay') {
+            // Check if all words have been found, then end the game.
+            const totalWords = wordsToFind.length;
+            if (foundWords.length === totalWords && totalWords > 0) {
+                    endGame();
+            }
+        }
+    }
+    
+    function endGame() {
+        document.getElementById('game-screen').classList.add('hidden');
+        const completionScreen = document.getElementById('completion-overlay');
+        completionScreen.innerHTML = `
+            <h2>Activity Wrap Up!</h2>
+            <img src="images/complete.jpg" alt="Activity Complete" onerror="this.onerror=null;this.src='https://placehold.co/400x200/FBB03B/FFFFFF?text=Well+Done!';">
+            <div class="end-buttons-bar">
+                <button id="previous-button" class="completion-btn">Previous Activity</button>
+                <button id="play-again-button" class="completion-btn">Restart Activity</button>
+                <button id="key-takeaways-button" class="completion-btn">Key Takeaways</button>
+            </div>
+        `;
+        completionScreen.querySelector('#previous-button').onclick = () => { stopOutroAudio(); sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Atomic Vocabulary Search' }); window.location.href='../ACTIVITY4/index.html'; };
+        completionScreen.querySelector('#play-again-button').onclick = restartGame;
+        completionScreen.querySelector('#key-takeaways-button').onclick = showKeyTakeaways;
+
+        completionScreen.classList.remove('hidden');
+        playSound(outroAudio);
+    }
+    
+    function restartGame() {
+        stopOutroAudio();
+        startGame();
+    }
+
+    function showKeyTakeaways() {
+        stopOutroAudio();
+        document.getElementById('completion-overlay').classList.add('hidden');
+        const takeawaysOverlay = document.getElementById('key-takeaways-overlay');
+        takeawaysOverlay.innerHTML = `
+            <h2>Lesson Complete</h2>
+            <div class="takeaways-container">
+                <div class="takeaways-title">Key Takeaways</div>
+                <ul class="takeaways-list">
+                    <li>Classification helps understand chemical behaviour.</li>
+                    <li>It allows prediction of reactions and uses of elements.</li>
+                    <li>Learners should model elements (e.g., Oxygen atom with beads).</li>
+                    <li>Practice classifying real-world elements.</li>
+                    <li>Reflect on how classification affects technology, industry, and health.</li>
+                </ul>
+            </div>
+            <button class="primary-action-btn">Exit Lesson</button>
+        `;
+        takeawaysOverlay.querySelector('.primary-action-btn').onclick = () => sendEvent(LessonEvent.END_LESSON, { lessonName: 'Comparing the Properties of Metals and Non-Metals: Lesson 5' });
+        takeawaysOverlay.classList.remove('hidden');
+        sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Atomic Vocabulary Search' });
+    }
+
+   function updateProgress() {
+        const totalWords = wordsToFind.length;
+        const progress = (foundWords.length / totalWords) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+        document.getElementById('progress-text').textContent = `${foundWords.length}/${totalWords}`;
+        
+        // The automatic call to endGame was removed from here.
+    }
+    function showFeedbackPopup(type, message) {
+        document.getElementById('correct-feedback-text').textContent = message;
+        document.getElementById('feedback-correct-overlay').classList.remove('hidden');
+    }
+    
+    window.onload = function() {
+        initAudio();
+        document.body.addEventListener('selectstart', e => e.preventDefault());
+    };
+</script>
+<script src="../eventSender.js"></script>
+
+</body>
+</html>
+

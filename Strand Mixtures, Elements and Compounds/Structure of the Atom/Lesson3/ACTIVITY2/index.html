@@ -70,6 +70,7 @@
         #start-screen h1 {
             color: var(--text-color-light); font-size: 3.2rem;
             font-family: var(--header-font);
+            font-weight: 500;
         }
         .start-button { 
             background: #FBB03B; color: #fff; font-weight: 900;
@@ -100,7 +101,7 @@
             flex-shrink: 0;
         }
         #game-title {
-            font-weight: 800;
+            font-weight: 600;
             margin: 0; font-family: var(--header-font);
         }
         .top-right-controls { display: flex; align-items: center; gap: 1rem; }
@@ -197,7 +198,7 @@
         .completion-title-banner { 
             font-size: clamp(2rem, 6vmin, 3.5rem);
             text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
-            font-family: var(--header-font); font-weight: 700; padding: 0 1rem;
+            font-family: var(--header-font); font-weight: 600; padding: 0 1rem;
         }
         
         .completion-image-container {
@@ -249,15 +250,47 @@
             width: 100%; margin-bottom: 0; flex-shrink: 0;
             text-shadow: none;
         }
+        
         .question-content {
-            flex: 1; padding: 0 2rem; overflow: auto; display: flex;
-            justify-content: center; align-items: center;
+            flex: 1;
+            padding: 1rem 2rem;
+            overflow: auto;
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            justify-content: center;
+            align-items: center;
         }
+
+        .image-section {
+            flex: 0.8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #question-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            object-fit: cover;
+            aspect-ratio: 1 / 1;
+        }
+
         .question-container {
-            display: flex; flex-direction: column; gap: 2rem; align-items: center; width: 100%;
-            max-width: 80rem; padding: 1rem 2rem;
-            opacity: 1; transition: opacity 0.3s ease-in-out;
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            width: 100%;
+            padding: 0;
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
         }
+
         .question-container.fade-out { opacity: 0; }
         
         .hint-display {
@@ -326,6 +359,7 @@
         /* ===== RESPONSIVE DESIGN ===== */
         @media(min-width: 1200px){
             .option-button { font-size: 1.3rem; }
+            #question-image { max-width: 100%;  }
         }
         @media (max-width: 1199px) {
             html { font-size: 2.2vmin; }
@@ -357,15 +391,28 @@
                 margin-top: 0.5rem;
             }
         }
+        @media(min-width: 768px) and (max-width: 991px){
+            .completion-image-container
+                {
+                
+                    margin-bottom: 5rem;
+                }
+        }
         @media (max-width: 768px) {
             html { font-size: 3.3vmin; }
-            .completion-title-banner { font-size: 1.8rem; }
+            .completion-title-banner { font-size: 2.2rem; }
             #completion-image { max-width: 66%; }
             .completion-buttons { gap: 0.75rem; position: static; padding: 1rem; flex-direction: column; align-items: center; margin-top: auto;}
             .completion-btn { justify-self: center !important; min-width: 120px; }
             .question-title { font-size: 1.8rem; }
-            .question-content { padding: 1rem; }
-            .options-container { grid-template-columns: 1fr; }
+            .question-content { 
+                padding: 1rem; 
+                overflow-y: auto;
+            }
+            .image-section {
+                width: 80%;
+                max-width: 50%;
+            }
         }
     </style>
 </head>
@@ -395,6 +442,9 @@
             <h2 class="question-title" id="question-title"></h2>
             
             <div class="question-content">
+                <div class="image-section">
+                    <img id="question-image" src="" alt="Visual hint for the element">
+                </div>
                 <div class="question-container" id="question-container">
                     <div class="question-details">
                         <div id="hint-display" class="hint-display"></div>
@@ -418,8 +468,8 @@
 
         <div id="activity-intro-overlay" class="overlay hidden">
             <div class="modal">
-                <h2>Welcome to "Name That Element!"</h2>
-                <p>Each atom has its own unique fingerprint—its electron arrangement. In this guessing game, your job is to identify the correct element based on how its electrons are arranged across energy levels. Think like a detective. The total number of electrons equals the atomic number!</p>
+                <h2>Activity Introduction</h2>
+                <p>Each atom has its own unique fingerprint, its electron arrangement. In this guessing game, your job is to identify the correct element based on how its electrons are arranged across energy levels. Think like a detective. The total number of electrons equals the atomic number!</p>
                 <button onclick="closeModal('activity-intro-overlay')">Continue</button>
             </div>
         </div>
@@ -464,6 +514,7 @@
             {
                 title: "Question 1",
                 hint: "2.8.2",
+                image: "images/scenario1.jpg",
                 options: [
                     { text: "Calcium", feedback: "Calcium has 20 electrons. 2.8.2 adds up to 12." },
                     { text: "Sodium", feedback: "Sodium has 11 electrons. This arrangement has 12." },
@@ -475,6 +526,7 @@
             {
                 title: "Question 2",
                 hint: "2.5",
+                image: "images/scenario2.jpg",
                 options: [
                     { text: "Oxygen", feedback: "Oxygen has 8 electrons. 2.5 adds up to 7." },
                     { text: "Nitrogen", feedback: "Correct. 2 + 5 = 7 electrons. Nitrogen has atomic number 7." },
@@ -486,6 +538,7 @@
             {
                 title: "Question 3",
                 hint: "2.8.8.1",
+                image: "images/scenario3.jpg",
                 options: [
                     { text: "Calcium", feedback: "Calcium has 20 electrons. This configuration adds up to 19." },
                     { text: "Argon", feedback: "Argon has 18 electrons. This configuration has 19." },
@@ -497,6 +550,7 @@
             {
                 title: "Question 4",
                 hint: "2.8.6",
+                image: "images/scenario4.jpg",
                 options: [
                     { text: "Chlorine", feedback: "Chlorine has 17 electrons. 2.8.6 = 16." },
                     { text: "Sulphur", feedback: "Correct. Sulphur has 16 electrons. 2 + 8 + 6 = 16." },
@@ -508,6 +562,7 @@
             {
                 title: "Question 5",
                 hint: "2.8",
+                image: "images/scenario5.jpg",
                 options: [
                     { text: "Oxygen", feedback: "Oxygen has 8 electrons. This configuration adds up to 10." },
                     { text: "Fluorine", feedback: "Fluorine has 9 electrons." },
@@ -555,6 +610,7 @@
             [currentShuffledOptions[i], currentShuffledOptions[j]] = [currentShuffledOptions[j], currentShuffledOptions[i]];
         }
 
+        document.getElementById('question-image').src = question.image;
         document.getElementById('question-title').textContent = question.title;
         document.getElementById('hint-display').textContent = question.hint;
         
@@ -650,7 +706,7 @@
             initGame(); 
         }
         if (id === 'feedback-correct-overlay') { 
-            goToNextQuestion();
+           goToNextQuestion();
         }
     }
     

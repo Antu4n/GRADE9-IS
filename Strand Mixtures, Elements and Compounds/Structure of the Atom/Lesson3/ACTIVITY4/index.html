@@ -253,7 +253,9 @@
             position: absolute; top: 5%; text-align: center; width: 100%;
             text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.3);
         }
-        #takeaways-overlay .modal { max-width: 800px; padding: 2rem; display: flex; flex-direction: column; align-items: center; }
+        #takeaways-overlay .modal { max-width: 800px; padding: 2rem; display: flex; flex-direction: column; align-items: center; height: 45vh;
+            overflow-y: auto;
+        }
         .takeaways-header { color:var(--primary-color); display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
         .takeaways-header h3 { font-family: var(--header-font); font-size: 1.8rem; color: var(--primary-color); }
         #takeaways-list { list-style-type: none; padding: 0; width: 100%; }
@@ -322,11 +324,20 @@
         /* ===== RESPONSIVE DESIGN ===== */
         @media (max-width: 1199px) { #game-wrapper { width: 100vw; height: 100vh; border-radius: 0; aspect-ratio: unset; } html { font-size: 2.5vmin; } }
         @media (max-width: 991px) {
-            html{ font-size: 2.8vmin; }
+            html{ font-size: 3vmin; }
             .scenario-container {  height: auto; max-height: 80%; overflow-y: auto; padding: 1.5rem; }
             .scenario-details, .question-section { flex-basis: auto; }
             .question-section { margin-top: 1rem; }
             .completion-buttons { flex-direction: column; align-items: center; }
+            #takeaways-overlay .modal{
+                height: 60vh
+            }
+            .completion-title-banner{
+                top:1%;
+            }
+            .completion-image {
+                width: 57%;
+            }
         }
         @media (max-width: 768px) {
             html { font-size: 3.3vmin; }
@@ -700,6 +711,7 @@
         // Update this link if necessary
         window.location.href = "../ACTIVITY3/index.html"; 
         stopSound(outroAudio);
+        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Who Reacts Faster?'});
     }
     
     function populateStaticContent() {

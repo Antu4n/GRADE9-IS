@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Shell Fill Game - Fix the Mistake</title>
+<title>Atom Builder - Complete the Diagram</title>
 <style>
     /* Font Imports and Keyframes */
     @font-face {
@@ -117,7 +117,7 @@
     }
     
     #game-title {
-        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 800;
+        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 600;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1 1 300px; min-width: 0;
     }
 
@@ -227,11 +227,11 @@
       font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem;
       color: var(--primary-color);
     }
-    .modal-content p, .modal p { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark); }
+    .modal-content p, .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); }
      .modal ul {
         list-style-type: none; text-align: left; margin-top: 1rem; padding: 0;
     }
-    .modal li { margin-bottom: 0.8rem; padding-left: 1.5rem; position: relative; }
+    .modal li { margin-bottom: 0.8rem; padding-left: 1.5rem; position: relative; font-size: 1.1rem;}
     .modal li::before {
         content: '➡️'; position: absolute; left: 0;
     }
@@ -248,7 +248,7 @@
     #activity-intro-overlay .modal-content p {
         text-align: left; background: #f8f9fa; padding: 1.5rem;
         border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
-        line-height: 1.5; font-size: 1.5rem; color: var(--text-color-dark);
+        line-height: 1.5; font-size: 1.2rem; color: var(--text-color-dark);
     }
     #instructions-overlay .modal-content ul, #hint-overlay .modal-content ul {
         text-align: left; padding: 0; font-size: 1.1rem; line-height: 1.5;
@@ -310,31 +310,50 @@
             border-radius: 0 !important; max-width: none !important;
             aspect-ratio: unset !important; box-shadow: none;
         }
-        #completion-image { max-width: 60%; }
+        /* Make canvas container take more space on smaller screens */
+        .game-content {
+            flex-direction: column;
+        }
+        #canvas-container {
+             flex-grow: 1; /* Allows the canvas to take available vertical space */
+             height: auto;
+        }
+        #completion-image { max-width: 50%; }
         .completion-buttons {align-items: center; bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
         #activity-intro-overlay .modal-content, #instructions-overlay .modal-content, #hint-overlay .modal-content { height: 90vh; overflow-y: auto; }
 
     }
     
     @media (max-width: 768px) {
-        body { padding: 0; }
+            body { padding: 0; }
+            .completion-btn {
+                font-size: 0.9rem;
+                padding: 0.5rem 1.2rem;
+                border-radius: 2rem;
+            }
+            .completion-buttons {
+                gap: 0.5rem;
+                padding: 0 0.5rem;
+            }
     }
 </style>
 </head>
 <body>
 <div id="game-wrapper">
    <div id="game-container">
+        <!-- Start Screen -->
         <div id="start-screen" class="screen">
-            <h1>Error Buster</h1>
+            <h1>Atom Builder</h1>
             <button class="start-button">Start Activity</button>
         </div>
 
+        <!-- Game Screen -->
         <div id="game-screen" class="screen hidden">
             <div class="game-top-section">
-               <h1 id="game-title">Fix the Mistake!</h1>
+               <h1 id="game-title">Complete the Diagram</h1>
                <div class="progress-area">
                    <div id="progress-container"><div id="progress-bar"></div></div>
-                   <div id="progress-text">0 / 5</div>
+                   <div id="progress-text">0 / 4</div>
                </div>
                <div class="instructions-icon" id="instructions-icon">
                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
@@ -342,22 +361,23 @@
             </div>
             <div class="game-content">
                 <main id="canvas-container">
-                    <canvas id="activityCanvas" role="img" aria-label="Interactive atom configuration puzzle. Drag electrons to fix the arrangement."></canvas>
+                    <canvas id="activityCanvas" role="img" aria-label="Interactive atom diagram. Drag electrons from the source to complete the atom's shell configuration."></canvas>
                 </main>
                  <div class="hint-icon" id="hint-icon">
                     <svg viewBox="0 0 24 24"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"></path></svg>
                 </div>
             </div>
             <div id="controls">
-                <button id="resetBtn" class="ctrl-btn">Reset Electrons</button>
-                <button id="checkBtn" class="ctrl-btn">Submit Fix</button>
+                <button id="resetBtn" class="ctrl-btn">Try Again</button>
+                <button id="checkBtn" class="ctrl-btn">Check My Atom</button>
             </div>
         </div>
 
+        <!-- Modals and Overlays -->
         <div id="activity-intro-overlay" class="modal-overlay hidden">
             <div class="modal-content">
                 <h2 style= 'color: var(--primary-color);'>Activity Introduction</h2>
-                <p>Atoms must follow strict rules when filling up with electrons. But someone made a mistake in the arrangements! Your job is to spot the error and fix it by dragging the electrons to the correct shells. Are you ready to be the error buster?</p>
+                <p>Get ready to build atoms! Your mission is to drag electrons into the correct shells based on the atomic configuration provided. Follow the shell filling rules: the first shell holds 2, the second holds 8, and the third also holds up to 8. Let's complete these atoms together!</p>
                 <button class="modal-btn" id="intro-continue-btn">Continue</button>
             </div>
         </div>
@@ -366,12 +386,10 @@
            <div class="modal-content">
                <h2 style = 'color: var(--primary-color);margin-bottom: 1.5rem; font-size: 2.2rem;'>Learner Instructions</h2>
                <ul>
-                   <li>Look at the atom’s current configuration.</li>
-                   <li>Count the total electrons shown.</li>
-                   <li>Check the element’s atomic number.</li>
-                   <li>Drag and drop electrons to the correct shells based on filling rules (2–8–8).</li>
-                   <li>You can drag unneeded electrons to the bottom area to remove them.</li>
-                   <li>Submit your fix to receive feedback.</li>
+                   <li>Read the electron arrangement shown on the screen.</li>
+                   <li>Drag electrons from the source at the bottom.</li>
+                   <li>Drop the correct number of electrons onto each shell.</li>
+                   <li>Click <strong>Check My Atom</strong> to receive feedback.</li>
                </ul>
                <button class="modal-btn" id="close-instructions-btn">Got it!</button>
            </div>
@@ -381,14 +399,12 @@
            <div class="modal-content">
                <h2>Here's a Hint...</h2>
                <ul class="hint-list">
-                    <li><b>Shell Filling Rules:</b></li>
-                    <li>1st shell → Max 2 electrons</li>
-                    <li>2nd shell → Max 8 electrons</li>
-                    <li>3rd shell → Max 8 electrons</li>
-                    <li style="list-style-type: none; margin-top: 1em;"><b>Hints:</b></li>
-                    <li>Count all shown electrons and compare with the correct atomic number.</li>
-                    <li>Fix overflowed or missing shells.</li>
-                    <li>Remember: Atomic Number = Total Electrons for a neutral atom.</li>
+                    <li><b>Electron Shell Rules:</b></li>
+                    <li>Shell 1 → maximum 2 electrons</li>
+                    <li>Shell 2 → maximum 8 electrons</li>
+                    <li>Shell 3 → maximum 8 electrons</li>
+                    <li style="list-style-type: none; margin-top: 1em;"><b>Remember:</b></li>
+                    <li>Fill shells from the inside out.</li>
                </ul>
                <button class="modal-btn" id="close-hint-btn">Got it</button>
            </div>
@@ -407,6 +423,7 @@
                 <img id="completion-image" src="images/complete.jpg" alt="Activity Complete" onerror="this.style.display='none'">
             </div>
             <div class="completion-buttons">
+                <button class="completion-btn btn-previous">Previous Activity</button>
                 <button class="completion-btn btn-restart">Restart Activity</button>
                 <button class="completion-btn btn-next">Next Activity</button>
             </div>
@@ -423,83 +440,61 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Event Handling ---
-    const sendEvent = (eventName, eventData) => {
-        if (window.parent) {
-            const event = new CustomEvent('lessonEvent', { detail: { name: eventName, data: eventData } });
-            window.parent.document.dispatchEvent(event);
-        }
-    };
-    const ActivityEvent = { START_ACTIVITY: 'START_ACTIVITY', END_ACTIVITY: 'END_ACTIVITY' };
-
-    // --- Game Data ---
-    const ACTIVITY3_DATA = [
+    // --- Game Data for Activity 3 ---
+    const ACTIVITY_DATA = [
         {
-            element: 'Helium',
-            symbol: 'He',
-            atomicNumber: 2,
-            incorrectArrangement: '2.1',
-            correctArrangement: '2',
-            correctFeedback: 'Correct: Helium has 2 electrons, all in the first shell. Corrected well.',
+            element: 'Oxygen',
+            symbol: 'O',
+            correctArrangement: '2.6',
+            hint: 'Oxygen has 8 electrons. First shell fills first.',
+            correctFeedback: 'Great work! You placed each electron where it belongs.',
             incorrectFeedbacks: {
-                '2.1': 'Helium has only 2 electrons. First shell is full; no electrons should go to the second.'
+                shell1_overflow: 'The first shell only holds 2 electrons. Move extras to the next level.',
+                total_mismatch: 'Recount your total electrons. You may have left some behind.',
+                shell3_used: 'Shells must be filled from the inside out. The third shell isn\'t needed for Oxygen.',
+                default: 'That\'s not quite right. Remember the shell filling rules (2, 8, 8) and check the total number of electrons.'
             }
         },
         {
-            element: 'Fluorine',
-            symbol: 'F',
-            atomicNumber: 9,
-            // To handle multiple incorrect cases, we can randomly pick one or have a fixed one. Let's use the first one.
-            incorrectArrangement: '2.6',
-            correctArrangement: '2.7',
-            correctFeedback: "Correct: Fluorine’s atomic number is 9 → 2 in 1st shell, 7 in 2nd.",
+            element: 'Nitrogen',
+            symbol: 'N',
+            correctArrangement: '2.5',
+            hint: 'Nitrogen has 7 electrons. Start with 2 in the first.',
+            correctFeedback: 'Correct! Your placement matches nitrogen’s electron structure.',
             incorrectFeedbacks: {
-                '2.6': 'Fluorine has 9 electrons. Only 8 shown here. One is missing from the second shell.',
-                '3.6': 'The second shell should be filled before moving to the third.',
-                'default': "That's not quite right. Fluorine has 9 electrons in total."
-            }
-        },
-        {
-            element: 'Sodium',
-            symbol: 'Na',
-            atomicNumber: 11,
-            incorrectArrangement: '2.9',
-            correctArrangement: '2.8.1',
-            correctFeedback: 'Correct: Sodium has 11 electrons. You have arranged them correctly.',
-            incorrectFeedbacks: {
-                '2.9': 'The second shell cannot hold more than 8. Excess electron must go to the third shell.',
-                '3.8': 'First shell is incomplete; always fill shells in sequence.',
-                 'default': "That's not the right configuration for Sodium."
+                shell1_incomplete: 'Always fill the first shell before the second.',
+                total_mismatch: 'Check the atomic number and count again. Nitrogen has 7 electrons.',
+                shell3_used: 'The third shell is not needed for nitrogen.',
+                default: 'That configuration is incorrect for Nitrogen. Try again!'
             }
         },
         {
             element: 'Neon',
             symbol: 'Ne',
-            atomicNumber: 10,
-            incorrectArrangement: '2.7.1',
             correctArrangement: '2.8',
-            correctFeedback: 'Correct: Neon’s configuration is stable and full at 10 electrons. Good fix.',
+            hint: 'Neon is a stable gas. Fill both shells completely.',
+            correctFeedback: 'Perfect! Neon’s configuration is 2.8, making it stable.',
             incorrectFeedbacks: {
-                '2.6.2': 'Third shell should not be used before the second is full. Neon has only 10 electrons.',
-                '2.7.1': 'Second shell must be completed to 8 before placing any electrons in the third shell.',
-                 'default': "Neon has 10 electrons. Check your shell counts."
+                shell2_incomplete: 'A full second shell for neon must have 8 electrons.',
+                shell3_used: 'Neon does not require a third shell.',
+                shell1_incomplete: 'Always fill from the first shell outwards.',
+                default: 'Not quite. Neon is stable with a full second shell.'
             }
         },
         {
-            element: 'Magnesium',
-            symbol: 'Mg',
-            atomicNumber: 12,
-            incorrectArrangement: '2.10',
-            correctArrangement: '2.8.2',
-            correctFeedback: 'Correct: Magnesium has 12 electrons. 2 + 8 + 2 = 12. Fixed correctly.',
+            element: 'Fluorine',
+            symbol: 'F',
+            correctArrangement: '2.7',
+            hint: 'Fluorine needs just one to fill the outer shell!',
+            correctFeedback: 'Correct! Fluorine has 2 in the first shell and 7 in the second.',
             incorrectFeedbacks: {
-                '2.10': 'Second shell max is 8. Move 2 electrons to the third shell.',
-                '3.7.2': 'First shell must always contain 2 electrons before filling the others.',
-                 'default': "That's not correct for Magnesium. Remember the 2-8-8 rule."
+                shell2_overflow: 'That would make it neon, not fluorine. Fluorine has 7 electrons in its outer shell.',
+                total_mismatch: 'Check the total — fluorine has 9 electrons.',
+                shell3_used: 'Fluorine only needs two shells.',
+                default: 'Incorrect arrangement for Fluorine. Check your electron count in each shell.'
             }
         }
     ];
-
 
     // --- DOM Elements ---
     const startScreen = document.getElementById('start-screen'), gameScreen = document.getElementById('game-screen');
@@ -538,51 +533,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Activity Setup
     function loadElement(index) {
-        if (index >= ACTIVITY3_DATA.length) {
+        if (index >= ACTIVITY_DATA.length) {
             showCompletionScreen();
             return;
         }
         isPaused = false;
-        const problem = ACTIVITY3_DATA[index];
-        gameTitle.textContent = `Fix the ${problem.element} Atom`;
+        const problem = ACTIVITY_DATA[index];
+        gameTitle.textContent = `Build the ${problem.element} Atom`;
         
         state = { items: [], zones: [] };
         const electronR = H * 0.06; 
         
-        // Define zones including the 'bay' area at the bottom
+        // Define zones: 3 orbits and 1 source bay
         state.zones = [
-            { id: 'orbit1', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.20, accepts: ['electron'], items: [], capacity: 2 },
-            { id: 'orbit2', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.32, accepts: ['electron'], items: [], capacity: 8 },
-            { id: 'orbit3', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.44, accepts: ['electron'], items: [], capacity: 8 },
-            { id: 'bay', kind: 'bay', x: W / 2, y: H * 0.96, w: W*0.8, h: H*0.12, accepts: ['electron'], items: [], capacity: 20 }
+            { id: 'orbit1', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.20, max: 2, items: [] },
+            { id: 'orbit2', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.32, max: 8, items: [] },
+            { id: 'orbit3', kind: 'orbit', x: W / 2, y: H * 0.45, r: H * 0.44, max: 8, items: [] },
+            { id: 'source', kind: 'bay', x: W * 0.5, y: H * 0.95, w: W * 0.45, h: H * 0.1, label: "Drag Electrons From Here", items: [] }
         ];
 
-        // Create electrons based on the incorrect arrangement
-        const arrangement = problem.incorrectArrangement.split('.').map(Number);
-        let electronCount = 0;
-        arrangement.forEach((num, shellIndex) => {
-            for(let i = 0; i < num; i++) {
-                const zone = state.zones[shellIndex];
-                const angle = (2 * Math.PI / num) * i;
-                const electron = {
-                    id: `e${electronCount++}`, kind: 'electron', img: images.electron, r: electronR,
-                    homeX: 0, homeY: 0, // Home is determined by arrangement now
-                    placedIn: zone, shake: 0,
-                    x: zone.x + zone.r * Math.cos(angle),
-                    y: zone.y + zone.r * Math.sin(angle)
-                };
-                state.items.push(electron);
-                zone.items.push(electron);
-            }
-        });
+        // Add a single master electron to the source bay to be cloned
+        const sourceBay = state.zones.find(z => z.id === 'source');
+        const masterElectron = {
+            id: 'master_electron', kind: 'electron', img: images.electron, r: electronR,
+            placedIn: sourceBay,
+            x: sourceBay.x,
+            y: sourceBay.y
+        };
+        state.items.push(masterElectron);
+        sourceBay.items.push(masterElectron);
 
-        checkBtn.disabled = false; // Always enabled in this activity
+        checkBtn.disabled = false;
         updateProgress();
     }
     
     // UI, Feedback & State Checks
     function updateProgress() {
-        const totalElements = ACTIVITY3_DATA.length;
+        const totalElements = ACTIVITY_DATA.length;
         progressBar.style.width = `${(currentElementIndex / totalElements) * 100}%`;
         progressText.textContent = `${currentElementIndex} / ${totalElements}`;
     }
@@ -603,57 +590,65 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'correct') { playSound(dingSound); } else { playSound(buzzSound); }
     }
    
-   function checkConfiguration() {
-        const problem = ACTIVITY3_DATA[currentElementIndex];
-        // Only count electrons in orbits for the configuration string
-        let userConfigArr = state.zones.filter(z => z.kind === 'orbit').map(z => z.items.length);
-        while(userConfigArr.length > 0 && userConfigArr[userConfigArr.length-1] === 0) {
-            userConfigArr.pop();
-        }
-        let userConfigStr = userConfigArr.join('.') || '0';
+    function checkConfiguration() {
+        const problem = ACTIVITY_DATA[currentElementIndex];
+        const orbits = state.zones.filter(z => z.kind === 'orbit');
+        let userConfigArr = orbits.map(z => z.items.length);
 
-        if(userConfigStr === problem.correctArrangement) {
+        // Get detailed state for feedback logic
+        const shell1Count = userConfigArr[0];
+        const shell2Count = userConfigArr[1];
+        const shell3Count = userConfigArr[2];
+        const totalElectrons = shell1Count + shell2Count + shell3Count;
+        const correctTotal = problem.correctArrangement.split('.').reduce((sum, n) => sum + Number(n), 0);
+
+        // Trim trailing zeros for comparison
+        let tempUserConfigArr = [...userConfigArr];
+        while(tempUserConfigArr.length > 0 && tempUserConfigArr[tempUserConfigArr.length - 1] === 0) {
+            tempUserConfigArr.pop();
+        }
+        let userConfigStr = tempUserConfigArr.join('.') || '0';
+        
+        // --- Check for Correct Answer ---
+        if (userConfigStr === problem.correctArrangement) {
             showFeedbackModal('correct', 'Configuration Correct!', problem.correctFeedback);
-            
-            const isLastElement = currentElementIndex === ACTIVITY3_DATA.length - 1;
-            feedbackContinueBtn.textContent = isLastElement ? "Finish Activity" : "Next Element";
+            const isLastElement = currentElementIndex === ACTIVITY_DATA.length - 1;
+            feedbackContinueBtn.textContent = isLastElement ? "Continue" : "Next Element";
             feedbackContinueBtn.onclick = () => {
                 feedbackModalOverlay.classList.add('hidden');
-                isPaused = true; 
+                isPaused = true;
                 setTimeout(() => {
+                    currentElementIndex++;
                     if (isLastElement) {
                         showCompletionScreen();
                     } else {
-                        currentElementIndex++;
                         loadElement(currentElementIndex);
                     }
-                }, 500);
+                }, 1000);
             };
-        } else {
-            // Find specific feedback if available, otherwise use default
-            const feedbackMessage = problem.incorrectFeedbacks[userConfigStr] || problem.incorrectFeedbacks['default'] || "That's not the correct configuration. Remember to fill the shells in order from the inside out.";
-            showFeedbackModal('incorrect', 'Not Quite Right', feedbackMessage);
-            feedbackContinueBtn.textContent = "Try Again";
-            feedbackContinueBtn.onclick = () => {
-                feedbackModalOverlay.classList.add('hidden');
-                isPaused = false; // Let them try again immediately
-            };
+            return;
         }
+
+        // --- Logic for Incorrect Feedback ---
+        let feedbackMessage = problem.incorrectFeedbacks.default; // Default message
+        if (shell1Count > 2) feedbackMessage = problem.incorrectFeedbacks.shell1_overflow || feedbackMessage;
+        else if (shell1Count < 2 && (shell2Count > 0 || shell3Count > 0)) feedbackMessage = problem.incorrectFeedbacks.shell1_incomplete || feedbackMessage;
+        else if (shell2Count > 8) feedbackMessage = problem.incorrectFeedbacks.shell2_overflow || feedbackMessage;
+        else if (shell3Count > 0 && correctTotal < 11) feedbackMessage = problem.incorrectFeedbacks.shell3_used || feedbackMessage;
+        else if (totalElectrons !== correctTotal) feedbackMessage = problem.incorrectFeedbacks.total_mismatch || feedbackMessage;
+        
+        showFeedbackModal('incorrect', 'Not Quite Right', feedbackMessage);
+        feedbackContinueBtn.textContent = "Try Again";
+        feedbackContinueBtn.onclick = () => {
+            feedbackModalOverlay.classList.add('hidden');
+            isPaused = false;
+        };
     }
 
     function showCompletionScreen(){
         isPaused = true;
-        sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Error Buster' });
         completionOverlay.classList.remove('hidden');
         playSound(outroSound);
-        completionOverlay.querySelector('.completion-title-banner').textContent = "Atomic Accuracy Master!";
-    }
-
-    // Interaction & Animations
-    function shakeAndReturn(item) {
-        // In this version, we don't return to a 'home', we just snap back to the last valid position.
-        // For simplicity, let's reset the whole board on a bad drop.
-        loadElement(currentElementIndex);
     }
     
     // Drawing
@@ -662,8 +657,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.clearRect(0, 0, W, H);
         if (!state.items) return;
         drawStaticElements();
-        const itemsToDraw = [...state.items.filter(i => i !== draggedItem), draggedItem].filter(Boolean);
         
+        const itemsToDraw = [...state.items.filter(i => i !== draggedItem), draggedItem].filter(Boolean);
         itemsToDraw.forEach(item => {
             const radius = (item === draggedItem) ? item.r * 1.2 : item.r;
             if (item.img && item.img.complete && item.img.naturalHeight !== 0) {
@@ -671,37 +666,70 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    /**
+     * Helper function to draw wrapped text on the canvas.
+     * @param {CanvasRenderingContext2D} context - The canvas rendering context.
+     * @param {string} text - The text to wrap.
+     * @param {number} x - The x-coordinate for the right edge of the text.
+     * @param {number} y - The y-coordinate for the top line of text.
+     * @param {number} maxWidth - The maximum width for each line.
+     * @param {number} lineHeight - The height of each line.
+     */
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+
+        for (let n = 0; n < words.length; n++) {
+            let testLine = line + words[n] + ' ';
+            let metrics = context.measureText(testLine);
+            let testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        context.fillText(line, x, y);
+    }
 
     function drawStaticElements() {
         if (!state || !state.zones) return;
         ctx.save();
+        const problem = ACTIVITY_DATA[currentElementIndex];
+        const isSmallScreen = W < 768;
+        const fontScale = isSmallScreen ? 1.5 : 1.0;
+
+        // Draw Orbits (Shells)
         ctx.lineWidth = W * 0.003;
         ctx.strokeStyle = '#d0d0d0';
-        ctx.setLineDash([W*0.01, W*0.01]);
+        ctx.setLineDash([W * 0.01, W * 0.01]);
         state.zones.filter(z => z.kind === 'orbit').forEach(z => {
              ctx.beginPath();
              ctx.arc(z.x, z.y, z.r, 0, 2 * Math.PI);
              ctx.stroke();
         });
 
-        // Draw electron bay
-        const bayZone = state.zones.find(z => z.kind === 'bay');
-        if (bayZone) {
+        // Draw Electron Source Bay
+        const sourceBay = state.zones.find(z => z.id === 'source');
+        if (sourceBay) {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.strokeStyle = '#aaaaaa';
             ctx.lineWidth = 1;
+            ctx.setLineDash([]);
             ctx.beginPath();
-            ctx.roundRect(bayZone.x - bayZone.w / 2, bayZone.y - bayZone.h/2, bayZone.w, bayZone.h, 10);
+            ctx.roundRect(sourceBay.x - sourceBay.w / 2, sourceBay.y - sourceBay.h / 2, sourceBay.w, sourceBay.h, 10);
             ctx.fill();
             ctx.stroke();
-            ctx.fillStyle = '#888';
-            ctx.font = `italic ${H*0.04}px ${getComputedStyle(document.body).fontFamily}`;
+            ctx.fillStyle = '#555';
+            ctx.font = `italic bold ${H * 0.035 * fontScale}px ${getComputedStyle(document.body).fontFamily}`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText("Electron Drop Zone", bayZone.x, bayZone.y);
-
+            ctx.fillText(sourceBay.label, sourceBay.x, sourceBay.y);
         }
 
+        // Draw Nucleus
         const nucleusRadius = H * 0.12;
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(142, 68, 173, 0.8)';
@@ -711,18 +739,39 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.arc(W / 2, H * 0.45, nucleusRadius, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
-
-        const problem = ACTIVITY3_DATA[currentElementIndex];
-        if(problem){
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const fontSizeSymbol = problem.symbol.length > 1 ? nucleusRadius * 0.7 : nucleusRadius * 0.9;
-            ctx.font = `bold ${fontSizeSymbol}px ${getComputedStyle(document.body).fontFamily}`;
-            ctx.fillText(problem.symbol, W / 2, H * 0.45 - H*0.01);
+        
+        // Draw Nucleus Text (Symbol and Configuration)
+        if (problem) {
+            // --- Top Right Text ---
+            ctx.textAlign = 'right'; // Align all top-right text to the right
             
-             }
+            // Draw Target Text
+            const targetFontSize = H * 0.04 * fontScale;
+            ctx.fillStyle = '#333';
+            ctx.font = `bold ${targetFontSize}px ${getComputedStyle(document.body).fontFamily}`;
+            const targetY = H * 0.05;
+            ctx.fillText(`Target: ${problem.correctArrangement}`, W - (W * 0.02), targetY);
 
+            // Draw Hint Text using the wrapText function
+            if (problem.hint) {
+                const hintFontSize = H * 0.03 * fontScale;
+                ctx.fillStyle = '#666';
+                ctx.font = `italic ${hintFontSize}px ${getComputedStyle(document.body).fontFamily}`;
+                const hintY = targetY + targetFontSize * 1.2; // Position hint below the target text
+                const maxWidth = W * 0.35; // Max width for wrapping, e.g., 35% of canvas width
+                const lineHeight = hintFontSize * 1.2;
+                wrapText(ctx, problem.hint, W - (W * 0.02), hintY, maxWidth, lineHeight);
+            }
+            
+            // --- Center Text ---
+            // Draw Symbol in Nucleus
+            ctx.textAlign = 'center'; // Reset alignment for center
+            ctx.fillStyle = 'white';
+            const fontSizeSymbol = nucleusRadius * 0.8;
+            ctx.font = `bold ${fontSizeSymbol}px ${getComputedStyle(document.body).fontFamily}`;
+            ctx.textBaseline = 'middle';
+            ctx.fillText(problem.symbol, W / 2, H * 0.45 - (nucleusRadius * 0.1));
+        }
         ctx.restore();
     }
     
@@ -738,17 +787,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isPaused) return;
         e.preventDefault();
         const p = getLocalPoint(e);
+        
+        // Check both master and placed electrons
         for (let i = state.items.length - 1; i >= 0; i--) {
             const item = state.items[i];
             if (Math.hypot(p.x - item.x, p.y - item.y) < item.r) {
-                if (item.placedIn) {
-                    const zone = item.placedIn;
-                    zone.items = zone.items.filter(i => i.id !== item.id);
-                }
-                draggedItem = item;
                 pointerOffset = { x: p.x - item.x, y: p.y - item.y };
                 canvas.style.cursor = 'grabbing';
-                break;
+
+                if (item.id === 'master_electron') {
+                    // Clone the master electron
+                    draggedItem = { ...item, id: `drag_${Date.now()}` };
+                    state.items.push(draggedItem); // Add copy to state for drawing
+                } else {
+                    // Pick up an already placed electron
+                    if (item.placedIn) {
+                        item.placedIn.items = item.placedIn.items.filter(i => i.id !== item.id);
+                    }
+                    draggedItem = item;
+                }
+                return;
             }
         }
     }
@@ -766,42 +824,36 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.style.cursor = 'grab';
         let snapped = false;
 
-        for (const zone of state.zones) {
-            if (zone.kind === 'orbit') {
-                const dist = Math.abs(Math.hypot(draggedItem.x - zone.x, draggedItem.y - zone.y) - zone.r);
-                if (dist < W * 0.03 && zone.items.length < zone.capacity) {
+        for (const zone of state.zones.filter(z => z.kind === 'orbit')) {
+            const dist = Math.abs(Math.hypot(draggedItem.x - zone.x, draggedItem.y - zone.y) - zone.r);
+            if (dist < W * 0.03) { // Snap tolerance
+                if (zone.items.length < zone.max) {
                     draggedItem.placedIn = zone; 
                     zone.items.push(draggedItem);
-                    const angle = Math.atan2(draggedItem.y-zone.y, draggedItem.x-zone.x);
-                    draggedItem.x = zone.x + zone.r * Math.cos(angle);
-                    draggedItem.y = zone.y + zone.r * Math.sin(angle);
                     snapped = true;
-                    break;
                 }
-            } else if (zone.kind === 'bay') {
-                if (draggedItem.x > zone.x - zone.w/2 && draggedItem.x < zone.x + zone.w/2 &&
-                    draggedItem.y > zone.y - zone.h/2 && draggedItem.y < zone.y + zone.h/2) {
-                     draggedItem.placedIn = zone; 
-                     zone.items.push(draggedItem);
-                     // Randomly place inside bay for visual variety
-                     draggedItem.x = zone.x - zone.w/2.2 + Math.random() * (zone.w * 0.9);
-                     draggedItem.y = zone.y - zone.h/2.2 + Math.random() * (zone.h * 0.9);
-                     snapped = true;
-                     break;
-                }
+                break;
             }
         }
         
+        // Re-arrange electrons in all shells after a drop
+        state.zones.filter(z => z.kind === 'orbit').forEach(zone => {
+            zone.items.forEach((item, i) => {
+                const angle = (2 * Math.PI / zone.items.length) * i;
+                item.x = zone.x + zone.r * Math.cos(angle);
+                item.y = zone.y + zone.r * Math.sin(angle);
+            });
+        });
+
         if (!snapped) {
-             // If not snapped, put it back where it came from by reloading the problem state
-             loadElement(currentElementIndex);
+            // If not snapped to an orbit, remove the electron
+            state.items = state.items.filter(i => i.id !== draggedItem.id);
         }
+
         draggedItem = null;
     }
     
-    let lastTime = 0;
-    function loop(t) {
-        if(!lastTime) lastTime=t;
+    function loop() {
         draw(); 
         requestAnimationFrame(loop);
     }
@@ -813,7 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
         canvas.width = Math.floor(w*dpr); canvas.height = Math.floor(h*dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0); W = w; H = h;
-        if (!isPaused && currentElementIndex < ACTIVITY3_DATA.length) {
+        if (!isPaused && currentElementIndex < ACTIVITY_DATA.length) {
              loadElement(currentElementIndex);
         }
     }
@@ -824,7 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activityIntroOverlay.classList.remove('hidden'); isPaused = true;
             resize(); 
             playSound(introSound);
-            sendEvent(ActivityEvent.START_ACTIVITY, { activityName: 'Error Buster' });
+            sendEvent('START_ACTIVITY', { activityName: 'Atom Builder' });
         });
         introContinueBtn.addEventListener('click', () => {
             activityIntroOverlay.classList.add('hidden');
@@ -832,24 +884,30 @@ document.addEventListener('DOMContentLoaded', () => {
             loadElement(currentElementIndex);
         });
         instructionsIcon.addEventListener('click', () => { instructionsOverlay.classList.remove('hidden'); isPaused = true; });
-        closeInstructionsBtn.addEventListener('click', () => { instructionsOverlay.classList.add('hidden'); if(currentElementIndex < ACTIVITY3_DATA.length) isPaused = false; });
+        closeInstructionsBtn.addEventListener('click', () => { instructionsOverlay.classList.add('hidden'); if(currentElementIndex < ACTIVITY_DATA.length) isPaused = false; });
         
         hintIcon.addEventListener('click', () => { hintOverlay.classList.remove('hidden'); isPaused = true; });
-        closeHintBtn.addEventListener('click', () => { hintOverlay.classList.add('hidden'); if(currentElementIndex < ACTIVITY3_DATA.length) isPaused = false; });
+        closeHintBtn.addEventListener('click', () => { hintOverlay.classList.add('hidden'); if(currentElementIndex < ACTIVITY_DATA.length) isPaused = false; });
 
         resetBtn.addEventListener('click', () => loadElement(currentElementIndex));
         checkBtn.addEventListener('click', checkConfiguration);
 
-        completionOverlay.querySelector('.btn-restart').addEventListener('click', () => {
-            stopSound(outroSound); completionOverlay.classList.add('hidden'); 
-            currentElementIndex = 0;
-            initializeGame();
+          completionOverlay.querySelector('.btn-restart').addEventListener('click', () => {
+            stopSound(outroSound);
+            completionOverlay.classList.add('hidden'); 
+            gameScreen.classList.remove('hidden');   
+            startScreen.classList.add('hidden');     
+            currentElementIndex = 0;                  
+            loadElement(currentElementIndex);       
         });
       
         completionOverlay.querySelector('.btn-next').addEventListener('click', () => {
-            // This would navigate to the next activity if it existed
-            // For now, it just ends.
-            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Error Buster' });
+            sendEvent('END_ACTIVITY', { activityName: 'Atom Builder' });
+            window.location.href = '../ACTIVITY4/index.html';
+        });
+        completionOverlay.querySelector('.btn-previous').addEventListener('click', () => {
+            sendEvent('END_ACTIVITY', { activityName: 'Atom Builder' });
+            window.location.href = '../ACTIVITY2/index.html';
         });
         
         canvas.addEventListener('mousedown', onPointerDown); window.addEventListener('mouseup', onPointerUp);
@@ -858,15 +916,6 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('resize', resize);
         loadImages(() => { requestAnimationFrame(loop); });
-    }
-    
-    function initializeGame() {
-        startScreen.classList.remove('hidden');
-        gameScreen.classList.add('hidden');
-        completionOverlay.classList.add('hidden');
-        isPaused = true;
-        currentElementIndex = 0;
-        updateProgress();
     }
 
     init();

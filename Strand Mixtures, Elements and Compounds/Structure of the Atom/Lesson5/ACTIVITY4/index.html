@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outer Shell Detective</title>
+    <style>
+        /* Font Imports */
+        @font-face {
+            font-family: 'Fredoka';
+            /* Assuming assets folder is one level up from where the HTML is. Adjust if needed. */
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        /* Root Variables */
+        :root {
+            --primary-color: #5D04B2;
+            --secondary-color: #fbb03b;
+            --progress-color: #ffff00;
+            --correct-color: #4caf50;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --card-background-light: #ffffff;
+            --header-font: 'Fredoka', sans-serif;
+            --body-font: var(--header-font);
+        }
+
+        /* Proportional Scaling System Setup */
+        html {
+            /* Establishes a master scaling unit relative to the viewport's smallest dimension. */
+            font-size: 1.8vmin;
+        }
+
+        /* Global Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevent body scrollbars */
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f4f8;
+            font-family: var(--body-font);
+        }
+
+        #game-wrapper {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            max-width: 1200px;
+            margin: auto;
+            position: relative;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--primary-color);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        
+    /* ===== START SCREEN ===== */
+    #start-screen {
+      color: var(--text-color-light);
+      text-align: center;
+      padding: 2rem;
+      background-image: url('images/gamebg.jpg'); /* Updated background */
+      background-size: cover;
+      background-position: center;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    #start-screen h1 {
+      color: var(--text-color-light);
+      font-size: 3.2rem;
+      font-family: var(--header-font);
+      text-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.4);
+      font-weight: 600;
+    }
+    
+    .start-button {
+      background: var(--secondary-color);
+      color: #fff;
+      font-weight: 900;
+      font-size: 1.1rem;
+      border: 3px solid #fff;
+      border-radius: 3rem;
+      padding: 0.75rem 2.25rem;
+      margin-top: 1rem;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .start-button:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+    }
+    
+        /* Game Screen Styles */
+        #game-screen {
+             justify-content: flex-start;
+             padding: 0;
+             display: flex;
+             flex-direction: column;
+        }
+        
+        /* Header / Top Bar */
+        .game-top-section { 
+          width: 100%;
+          background-color: #5D04B2;
+          padding: 0.75rem 1.25rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          color: #fff;
+          z-index: 10;
+          box-shadow: 0 0.1rem 0.5rem rgba(0,0,0,0.2);
+          flex-shrink: 0;
+        }
+        
+        #game-title {
+          font-size: 1.8rem;
+          font-weight: 800;
+          margin: 0;
+        }
+        
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* Progress Bar */
+         #progress-container {
+            width: 12.5rem;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 1rem;
+            height: 1.25rem;
+            border: 2px solid #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #FFFF00;
+            border-radius: 0.8rem;
+            transition: width 0.5s ease;
+        }
+
+        #progress-text {
+            color: var(--text-color-light);
+            font-weight: 700;
+            font-size: 1rem;
+            text-shadow: 0.0625rem 0.0625rem 0.125rem rgba(0,0,0,0.6);
+            white-space: nowrap;
+        }
+            
+        @keyframes glow-pulse-white {
+            0%, 100% { box-shadow: 0 0 1rem rgba(255, 255, 255, 0.7), 0 0 2rem rgba(255, 255, 255, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 2rem rgba(255, 255, 255, 1), 0 0 3rem rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+        }
+
+        .instructions-icon {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 0.15rem solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 15;
+            flex-shrink: 0;
+            animation: glow-pulse-white 2s infinite ease-in-out;
+        }
+        .instructions-icon svg { width: 60%; height: 60%; fill: white; }
+        .instructions-icon:hover { 
+            transform: scale(1.1);
+            animation-play-state: paused;
+        }
+        
+        .lab-game-area {
+            width: 100%;
+            flex-grow: 1;
+            position: relative;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #fafafa;
+            transition: background-image 0.5s ease-in-out;
+        }
+        
+        .hotspot {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 2;
+            border-radius: 50%;
+            transform: translate(-50%, -50%); /* Center the hotspot */
+
+            /* --- Donut/Ring Effect --- */
+            background-color: transparent; /* Make the inside area see-through */
+            border: 2.5rem solid rgba(255, 255, 0, 0.4); /* Create a thick, semi-transparent ring */
+        }
+
+        @keyframes zone-pulse {
+            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0rem rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 1.5rem rgba(255, 255, 255, 0); }
+            100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0rem rgba(255, 255, 255, 0); }
+        }
+        
+        .hotspot.active { animation: zone-pulse 1.5s infinite; }
+        
+        /* MODALS */
+        .overlay {
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.4);
+          backdrop-filter: blur(0.5rem);
+          z-index: 100;
+          display: flex; justify-content: center; align-items: center;
+          animation: fadeIn 0.3s ease;
+        }
+        .overlay.hidden { display: none; }
+        
+        .modal {
+          background: var(--card-background-light, #fff);
+          padding: 2.5rem;
+          border-radius: 1rem;
+          text-align: center;
+          width: 90%; 
+          max-width: 50rem;
+          animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          position: relative;
+        }
+        
+        .modal .modal-title {
+          font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem;
+          color: var(--primary-color);
+        }
+        .modal p { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark, #333); }
+
+        #activity-description-overlay .modal { border-top: 0.5rem solid var(--primary-color); }
+        #activity-description-overlay .modal .modal-title { color: var(--primary-color); }
+        #activity-description-overlay .modal p {
+          text-align: left; background: #f8f9fa; padding: 1.5rem;
+          border-radius: 0.75rem; border-left: 0.4rem solid var(--primary-color);
+        }
+        
+        #game-instructions-overlay .modal { border-top: 0.5rem solid var(--primary-color); }
+        #game-instructions-overlay .modal .modal-title { color: var(--primary-color); }
+        #game-instructions-overlay .modal p {
+            text-align: left;
+            background-color: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 1.2rem; line-height: 1.6;
+        }
+        
+        .modal-close-btn {
+          width: 100%; padding: 1.2rem; font-size: 1.5rem; font-weight: 700;
+          border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+          background-color: var(--primary-color);
+          transition: transform 0.2s, box-shadow 0.2s;
+          margin-top: 1.5rem;
+        }
+        
+        .modal-close-btn:hover { transform: scale(1.02); }
+
+        /* Scenario Info Modal */
+        .scenario-modal {
+            display: flex; 
+            background: var(--card-background-light);
+            width: 90%; 
+            max-width: 50rem;
+            border-radius: 1rem;
+            overflow: hidden; 
+            animation: slideIn 0.6s ease; 
+        }
+      
+        .scenario-content { 
+            width: 100%;
+            padding: 2.5rem; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            overflow-y: auto; 
+        }
+        
+        .info-item {
+            opacity: 0;
+            text-align: left;
+        }
+        .info-item.fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .info-item p {
+            color: var(--text-color-dark);
+            font-size: 1.8rem;
+            line-height: 1.8;
+        }
+        #scenario-title {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            font-family: var(--header-font);
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            text-align: left;
+        }
+        #scenario-title.fade-in-up {
+             animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        #scenario-close-btn {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(3rem) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(2rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ===== COMPLETION OVERLAY (NEW) ===== */
+        #completion-overlay {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover; background-position: center; color: #fff;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 1rem; padding: 1rem;
+        }
+        .completion-title-banner {
+            font-size: clamp(2rem, 7vmin, 4rem);
+            text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+            text-align: center; font-family: var(--header-font);
+            font-weight: 600;
+        }
+        #completion-overlay .modal {
+            background: transparent; box-shadow: none; width: auto; max-width: none;
+            display: flex; justify-content: center; align-items: center; padding: 0; overflow: visible;
+        }
+        #completion-image {
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            border: 3px solid var(--secondary-color);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-top: 0.5rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .completion-buttons {
+            position: static;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0 2rem 2rem 2rem;
+            box-sizing: border-box;
+            align-items: flex-end;
+            margin-top: 0;
+        }
+        .completion-btn {
+            background: #FBB03B;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 0.1875rem solid #fff;
+            border-radius: 3rem;
+            padding: 0.75rem 2.25rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+        }
+        .completion-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        }
+        /* MEDIA QUERIES */
+        @media (max-aspect-ratio: 16/9) {
+            #game-wrapper {
+                max-height: 100%;
+                max-width: calc(100vh * 16 / 9);
+            }
+        }
+        @media (max-width: 1200px) {
+            html {
+                font-size: 2.2vmin;
+            }
+        }
+        
+        @media (max-width: 1000px) {
+            html{
+                font-size: 3vmin;
+            }
+            #game-wrapper {
+                width: 100vw; height: 100vh; min-width: 100vw; min-height: 100vh;
+                border-radius: 0; max-width: none; aspect-ratio: unset;
+            }
+            .info-item p {
+                color: var(--text-color-dark);
+                font-size: 1.8rem;
+                line-height: 1.5;
+            }
+            #completion-image{
+                width: 55vw;
+            }
+        }
+        
+        @media (max-width: 768px) {
+             html {
+                font-size: 3vmin;
+            }
+            .completion-header { font-size: 3rem; }
+            .completion-message { font-size: 1.2rem; padding: 0 1.5rem; }
+            .completion-buttons-footer {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .scenario-content {
+                padding: 1.5rem;
+            }
+            #scenario-title { font-size: 1.8rem; }
+            .info-item p { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-wrapper">
+        <div id="game-container">
+            <div id="start-screen" class="screen">
+                <h1>Outer Shell Detective</h1>
+                <button class="start-button" onclick="startGame(); sendEvent(ActivityEvent.START_ACTIVITY, { activityName: 'Outer Shell Detective' });">Start Activity</button>
+            </div>
+
+            <div id="game-screen" class="screen hidden">
+                <div class="game-top-section">
+                    <h1 id="game-title">Examine: ...</h1>
+                    <div class="progress-wrapper">
+                         <div id="progress-container">
+                            <div id="progress-bar"></div>
+                        </div>
+                        <div id="progress-text">0 / 7</div>
+                        <div class="instructions-icon" onclick="showGameInstructions()">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-game-area" id="lab-game-area">
+                    </div>
+            </div>
+
+            <div id="activity-description-overlay" class="overlay hidden">
+                <div class="modal">
+                    <h2 class="modal-title">Activity Introduction</h2>
+                    <p>Every element hides its identity in its outer shell. In this challenge, put on your detective cap and examine different atomic diagrams. Click the outermost shell to uncover what type of element it is. The number of valence electrons will help you decide, metal, non-metal, noble gas, or metalloid!</p>
+                    <button class="modal-close-btn" onclick="closeActivityDescription();">Continue</button>
+                </div>
+            </div>
+            
+            <div id="game-instructions-overlay" class="overlay hidden">
+                <div class="modal">
+                    <h2 class="modal-title">Learner Instructions</h2>
+                    <p>Look at the given atomic diagram. Click the outermost shell to reveal the classification explanation. Read the explanation to learn how valence electrons determine the element’s type.</p>
+                    <button class="modal-close-btn" onclick="closeGameInstructions()">Got It!</button>
+                </div>
+            </div>
+            
+            <div id="scenario-overlay" class="overlay hidden">
+                 <div class="scenario-modal">
+                    <div class="scenario-content">
+                        <h2 id="scenario-title"></h2>
+                        <div id="scenario-info"></div>
+                        <button id="scenario-close-btn" class="modal-close-btn" onclick="closeScenario()">Continue</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="completion-overlay" class="screen hidden">
+                <h2 class="completion-title-banner">Activity Wrap Up!</h2>
+                <div class="modal">
+                    <img id="completion-image" src="images/complete.jpg" alt="Activity summary showing completed classification." onerror="this.src='https://placehold.co/600x400/5D04B2/ffffff?text=Well+Done!'; this.onerror=null;">
+                </div>
+                <div class="completion-buttons">
+                    <button class="completion-btn" id ="previous-activity-btn" onclick="previousActivity()">Previous Activity</button>
+                    <button class="completion-btn" id="restart-activity-btn">Restart Activity</button>
+                    <button class="completion-btn" id="next-activity-btn">Next Activity</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="ding-sound" src="audio/ding.mp3" preload="auto"></audio>
+    <audio id="intro-audio" src="audio/intro.mp3" preload="auto"></audio>
+    <audio id="outro-audio" src="audio/outro.mp3" preload="auto"></audio>
+    
+
+
+    <script>
+        // --- DATA ---
+        const activityData = [
+            {
+                id: 'na',
+                name: 'Sodium (2.8.1)',
+                image: 'images/sodium.jpg',
+                explanation: '1 electron in the outer shell. This means sodium is a <strong>metal</strong>. Metals usually have 1 to 3 valence electrons, making them good at losing electrons in reactions.',
+                hotspotCoords: { top: '50%', left: '50%', width: '45%', height: '95%' }
+            },
+            {
+                id: 'cl',
+                name: 'Chlorine (2.8.7)',
+                image: 'images/chlorine.jpg',
+                explanation: '7 valence electrons almost a full shell! This makes chlorine a <strong>non-metal</strong>. Non-metals typically have 5 to 7 outer electrons and gain electrons easily.',
+                hotspotCoords: { top: '50%', left: '50%', width: '45%', height: '95%' }
+            },
+            {
+                id: 'si',
+                name: 'Silicon (2.8.4)',
+                image: 'images/silicon.jpg',
+                explanation: '4 electrons in the outer shell. That is right in the middle! This makes silicon a <strong>metalloid</strong>, showing both metal and non-metal properties.',
+                hotspotCoords: { top: '50%', left: '50%', width: '45%', height: '95%' }
+            },
+            {
+                id: 'he',
+                name: 'Helium (2)',
+                image: 'images/helium.jpg',
+                explanation: '2 electrons, which completely fills the first shell. Helium is a <strong>noble gas</strong>, very stable and non-reactive.',
+                hotspotCoords: { top: '50%', left: '50%', width: '45%', height: '95%' }
+            },
+            {
+                id: 'mg',
+                name: 'Magnesium (2.8.2)',
+                image: 'images/magnesium.jpg',
+                explanation: '2 electrons in the outer shell. That classifies magnesium as a <strong>metal</strong>. It easily loses electrons to form positive ions.',
+                hotspotCoords: { top: '50%', left: '50%', width: '45%', height: '95%' }
+            },
+            {
+                id: 'ne',
+                name: 'Neon (2.8)',
+                image: 'images/neon.jpg',
+                explanation: 'A full outer shell with 8 electrons. Neon is a <strong>noble gas</strong>—it does not react easily due to its stability.',
+                hotspotCoords: { top: '50%', left: '50%', width: '45%', height: '85%' }
+            },
+            {
+                id: 'c',
+                name: 'Carbon (2.4)',
+                image: 'images/carbon.jpg',
+                explanation: '4 valence electrons. Carbon is a <strong>non-metal</strong>, but with its 4 outer electrons, it can form many types of bonds.',
+                hotspotCoords: { top: '50%', left: '50%', width: '45%', height: '85%' }
+            }
+        ];
+        const TOTAL_ACTIVITIES = activityData.length;
+
+        // --- STATE ---
+        let currentElementIndex = 0;
+        let currentNarration = null;
+
+        // --- DOM ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const completionOverlay = document.getElementById('completion-overlay');
+        const labGameArea = document.getElementById('lab-game-area');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const overlays = {
+            activityDescription: document.getElementById('activity-description-overlay'),
+            gameInstructions: document.getElementById('game-instructions-overlay'),
+            scenario: document.getElementById('scenario-overlay'),
+        };
+        const sounds = {
+            ding: document.getElementById('ding-sound'),
+            intro: document.getElementById('intro-audio'),
+            outro: document.getElementById('outro-audio'),
+        };
+        
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+             progressText.textContent = `0 / ${TOTAL_ACTIVITIES}`;
+             labGameArea.addEventListener('click', handleHotspotClick);
+        });
+
+        function loadElement(index) {
+            if (index >= activityData.length) return;
+
+            const element = activityData[index];
+            document.getElementById('game-title').textContent = `Examine: ${element.name}`;
+            labGameArea.style.backgroundImage = `url('${element.image}')`;
+            
+            // Clear old hotspot and create new one
+            labGameArea.innerHTML = '';
+            const hotspot = document.createElement('div');
+            hotspot.className = 'hotspot active';
+            hotspot.id = element.id;
+            Object.assign(hotspot.style, element.hotspotCoords);
+            
+            labGameArea.appendChild(hotspot);
+            updateProgress();
+        }
+
+        // --- GAME FLOW ---
+        function startGame() {
+            currentElementIndex = 0;
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            loadElement(currentElementIndex);
+            setTimeout(() => {
+                overlays.activityDescription.classList.remove('hidden');
+                playSound(sounds.intro);
+            }, 500);
+        }
+
+        function closeActivityDescription() {
+            overlays.activityDescription.classList.add('hidden');
+            stopSound(sounds.intro);
+        }
+        
+        function handleHotspotClick(event) {
+            const clickedHotspot = event.target.closest('.hotspot');
+            if (!clickedHotspot) return;
+            
+            const currentElement = activityData[currentElementIndex];
+            showScenarioInfo(currentElement);
+        }
+
+        function showScenarioInfo(activity) {
+            const scenarioTitle = document.getElementById('scenario-title');
+            const infoContainer = document.getElementById('scenario-info');
+            const closeButton = document.getElementById('scenario-close-btn');
+
+            scenarioTitle.textContent = activity.name;
+            
+            infoContainer.innerHTML = '';
+            scenarioTitle.classList.remove('fade-in-up');
+            scenarioTitle.style.opacity = '0';
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'info-item';
+            itemDiv.innerHTML = `<p>${activity.explanation}</p>`;
+            infoContainer.appendChild(itemDiv);
+            
+            const allItems = [
+                { el: scenarioTitle, delay: 0 },
+                { el: itemDiv, delay: 300 }
+            ];
+
+            closeButton.style.visibility = 'hidden';
+            closeButton.style.opacity = '0';
+            
+            overlays.scenario.classList.remove('hidden');
+            
+            allItems.forEach(item => {
+                item.el.classList.remove('fade-in-up');
+                setTimeout(() => {
+                    item.el.classList.add('fade-in-up');
+                }, item.delay);
+            });
+
+            const totalAnimationTime = allItems.length * 300 + 400;
+            setTimeout(() => {
+                closeButton.style.visibility = 'visible';
+                closeButton.style.opacity = '1';
+            }, totalAnimationTime);
+        }
+
+        function closeScenario() {
+            overlays.scenario.classList.add('hidden');
+            playSound(sounds.ding);
+            
+            currentElementIndex++;
+            updateProgress();
+
+            if (currentElementIndex < TOTAL_ACTIVITIES) {
+                 setTimeout(() => loadElement(currentElementIndex), 1500); // Wait for modal to close
+            } else {
+                 setTimeout(() => {
+                     gameScreen.classList.add('hidden');
+                     completionOverlay.classList.remove('hidden');
+                     playSound(sounds.outro); 
+                 }, 800);
+            }
+        }
+        
+        function restartGame() {
+            stopSound(sounds.outro);
+            completionOverlay.classList.add('hidden');
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            currentElementIndex = 0;
+            updateProgress();
+            loadElement(currentElementIndex);
+        }
+        document.getElementById('restart-activity-btn').onclick = restartGame;
+        function previousActivity() {
+            stopSound(sounds.outro);
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Outer Shell Detective' });
+            window.location.href = "../ACTIVITY3/index.html"; // Adjust the path as needed
+        }
+        document.getElementById('next-activity-btn').onclick = function() {
+            stopSound(sounds.outro);
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Outer Shell Detective' });
+            window.location.href = "../ACTIVITY5/index.html"; // Adjust the path as needed
+        };
+        
+        // --- UI & FEEDBACK ---
+        function updateProgress() {
+            const progress = (currentElementIndex / TOTAL_ACTIVITIES) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${currentElementIndex} / ${TOTAL_ACTIVITIES}`;
+        }
+
+        // --- MODAL CONTROLS ---
+        function showGameInstructions() { overlays.gameInstructions.classList.remove('hidden'); }
+        function closeGameInstructions() { overlays.gameInstructions.classList.add('hidden'); }
+        
+        // --- UTILITIES ---
+        function playSound(audioEl) {
+            if (audioEl) {
+                audioEl.currentTime = 0;
+                audioEl.play().catch(e => console.error('Audio play failed:', e));
+            }
+        }
+
+        function stopSound(audioEl) {
+            if(audioEl) {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+            }
+        }
+    </script>
+     <script src ="../eventSender.js"></script>
+</body>
+</html>
