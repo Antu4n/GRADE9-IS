@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside an Alloy</title>
+    <style>
+        /* Font Imports */
+        @font-face {
+            font-family: 'Fredoka';
+            /* Assuming assets folder is one level up from where the HTML is. Adjust if needed. */
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        /* Root Variables */
+        :root {
+            --primary-color: #5D04B2;
+            --secondary-color: #fbb03b;
+            --progress-color: #ffff00;
+            --correct-color: #4caf50;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --card-background-light: #ffffff;
+            --header-font: 'Fredoka', sans-serif;
+            --body-font: var(--header-font);
+        }
+
+        /* Proportional Scaling System Setup */
+        html {
+            /* Establishes a master scaling unit relative to the viewport's smallest dimension. */
+            font-size: 1.8vmin;
+        }
+
+        /* Global Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevent body scrollbars */
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f4f8;
+            font-family: var(--body-font);
+        }
+
+        #game-wrapper {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            max-width: 1200px;
+            margin: auto;
+            position: relative;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--primary-color);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        
+    /* ===== START SCREEN ===== */
+    #start-screen {
+      color: var(--text-color-light);
+      text-align: center;
+      padding: 2rem;
+      background-image: url('images/gamebg.jpg'); /* Updated background */
+      background-size: cover;
+      background-position: center;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    #start-screen h1 {
+      color: var(--text-color-light);
+      font-size: 3.2rem;
+      font-family: var(--header-font);
+      text-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.4);
+    }
+    
+    .start-button {
+      background: var(--secondary-color);
+      color: #fff;
+      font-weight: 900;
+      font-size: 1.1rem;
+      border: 3px solid #fff;
+      border-radius: 3rem;
+      padding: 0.75rem 2.25rem;
+      margin-top: 1rem;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .start-button:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+    }
+    
+        /* Game Screen Styles */
+        #game-screen {
+             justify-content: flex-start;
+             padding: 0;
+             display: flex;
+             flex-direction: column;
+        }
+        
+        /* Header / Top Bar */
+        .game-top-section { 
+          width: 100%;
+          background-color: #5D04B2;
+          padding: 0.75rem 1.25rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          color: #fff;
+          z-index: 10;
+          box-shadow: 0 0.1rem 0.5rem rgba(0,0,0,0.2);
+          flex-shrink: 0;
+        }
+        
+        #game-title {
+          font-size: 1.8rem;
+          font-weight: 800;
+          margin: 0;
+        }
+        
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* Progress Bar */
+         #progress-container {
+            width: 12.5rem;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 1rem;
+            height: 1.25rem;
+            border: 2px solid #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #FFFF00;
+            border-radius: 0.8rem;
+            transition: width 0.5s ease;
+        }
+
+        #progress-text {
+            color: var(--text-color-light);
+            font-weight: 700;
+            font-size: 1rem;
+            text-shadow: 0.0625rem 0.0625rem 0.125rem rgba(0,0,0,0.6);
+            white-space: nowrap;
+        }
+            
+        @keyframes glow-pulse-white {
+            0%, 100% { box-shadow: 0 0 1rem rgba(255, 255, 255, 0.7), 0 0 2rem rgba(255, 255, 255, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 2rem rgba(255, 255, 255, 1), 0 0 3rem rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+        }
+
+        .instructions-icon {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 0.15rem solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 15;
+            flex-shrink: 0;
+            animation: glow-pulse-white 2s infinite ease-in-out;
+        }
+        .instructions-icon svg { width: 60%; height: 60%; fill: white; }
+        .instructions-icon:hover { 
+            transform: scale(1.1);
+            animation-play-state: paused;
+        }
+        
+        .lab-game-area {
+            width: 100%;
+            flex-grow: 1;
+            position: relative;
+            background-image: url('images/hotspot-img.jpg'); /* Updated background image */
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #fafafa;
+        }
+        
+        .hotspot {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 2;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 0, 0.2);
+            border: 0.2rem solid white;
+            transform: translate(-50%, -50%); /* Center the hotspot */
+        }
+
+        .hotspot-tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            width: 20rem;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            text-align: left;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            box-shadow: 0 0.2rem 1rem rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+
+        .hotspot-tooltip p {
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .hotspot-tooltip.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Tooltip positioning */
+        .tooltip-right {
+            top: 50%;
+            left: 120%;
+            transform: translateY(-50%);
+        }
+
+        .tooltip-left {
+            top: 50%;
+            right: 120%;
+            transform: translateY(-50%);
+        }
+        
+        .tooltip-bottom {
+            top: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Tooltip arrows */
+        .hotspot-tooltip::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 0.8rem solid transparent;
+        }
+
+        .tooltip-right::after {
+            top: 50%;
+            right: 100%;
+            margin-top: -0.8rem;
+            border-right-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .tooltip-left::after {
+            top: 50%;
+            left: 100%;
+            margin-top: -0.8rem;
+            border-left-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .tooltip-bottom::after {
+            bottom: 100%;
+            left: 50%;
+            margin-left: -0.8rem;
+            border-bottom-color: rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes zone-pulse {
+            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0rem rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 1.5rem rgba(255, 255, 255, 0); }
+            100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0rem rgba(255, 255, 255, 0); }
+        }
+        
+        .hotspot.active { animation: zone-pulse 1.5s infinite; }
+        .hotspot.completed::before {
+            content: '✓';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            color: white;
+            font-weight: 700;
+            text-shadow: 0 0.1rem 0.3rem rgba(0,0,0,0.5);
+        }
+        .hotspot.completed { 
+            pointer-events: none; 
+            background-color: rgba(76, 175, 80, 0.3);
+            border-color: rgba(255, 255, 255, 0.5); 
+            animation: none;
+        }
+        
+        /* MODALS */
+        .overlay {
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.4);
+          backdrop-filter: blur(0.5rem);
+          z-index: 100;
+          display: flex; justify-content: center; align-items: center;
+          animation: fadeIn 0.3s ease;
+        }
+        .overlay.hidden { display: none; }
+        
+        .modal {
+          background: var(--card-background-light, #fff);
+          padding: 2.5rem;
+          border-radius: 1rem;
+          text-align: center;
+          width: 90%; 
+          max-width: 50rem;
+          animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          position: relative;
+        }
+        
+        .modal .modal-title {
+          font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem;
+          color: var(--primary-color);
+        }
+        .modal p { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark, #333); }
+
+        #activity-description-overlay .modal { border-top: 0.5rem solid var(--primary-color); }
+        #activity-description-overlay .modal .modal-title { color: var(--primary-color); }
+        #activity-description-overlay .modal p {
+          text-align: left; background: #f8f9fa; padding: 1.5rem;
+          border-radius: 0.75rem; border-left: 0.4rem solid var(--primary-color);
+        }
+        
+        #game-instructions-overlay .modal { border-top: 0.5rem solid var(--primary-color); }
+        #game-instructions-overlay .modal .modal-title { color: var(--primary-color); }
+        #game-instructions-overlay .modal p {
+            text-align: left;
+            background-color: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 1.2rem; line-height: 1.6;
+        }
+        
+        .modal-close-btn {
+          width: 100%; padding: 1.2rem; font-size: 1.5rem; font-weight: 700;
+          border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+          background-color: var(--primary-color);
+          transition: transform 0.2s, box-shadow 0.2s;
+          margin-top: 1.5rem;
+        }
+        
+        .modal-close-btn:hover { transform: scale(1.02); }
+
+        /* Scenario Info Modal - Simplified for this activity */
+        .scenario-modal {
+            display: flex; 
+            background: var(--card-background-light);
+            width: 90%; 
+            max-width: 50rem; /* Adjusted width */
+            border-radius: 1rem;
+            overflow: hidden; 
+            animation: slideIn 0.6s ease; 
+        }
+      
+        .scenario-content { 
+            width: 100%; /* Full width */
+            padding: 2.5rem; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            overflow-y: auto; 
+        }
+        
+        .info-item {
+            opacity: 0;
+            text-align: left;
+        }
+        .info-item.fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .info-item p {
+            color: var(--text-color-dark);
+            font-size: 1.8rem;
+            line-height: 1.8;
+        }
+        #scenario-title {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            font-family: var(--header-font);
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            text-align: left;
+        }
+        #scenario-title.fade-in-up {
+             animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        #scenario-close-btn {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(3rem) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(2rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Completion Screen Styles */
+        #completion-overlay { 
+            background-image: url('images/gamebg.jpg'); /* Updated background */
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            z-index: 200;
+            justify-content: flex-start; /* Align content to the top */
+            padding-top: 3%;
+        }
+        .completion-header { 
+          font-size: 4rem;
+          margin-bottom: 1rem;
+          text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
+          text-align: center;
+        }
+        .completion-message {
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 0 3rem;
+            max-width: 60rem;
+            line-height: 1.5;
+            text-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.4);
+        }
+        .completion-modal-content {
+            background: transparent;
+            box-shadow: none;
+            width: 80%;
+            height: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            overflow: visible;
+            margin-top: 0;
+            border: none;
+            margin-bottom: 1rem;
+        }
+        .completion-image {
+            display: block;
+            margin: 0.5rem auto;
+            max-width: 50vw;
+            width: 70%;
+            height: auto;
+            object-fit: contain;
+            animation: fadeIn 0.5s ease-out;
+            border: 2px solid var(--secondary-color);
+            border-radius: 1rem;
+        }
+        .completion-buttons-footer { 
+          position: absolute;
+          bottom: 1.5rem;
+          left: 0; right: 0;
+          width: 100%;
+          display: flex;
+          justify-content: space-between; /* Center buttons */
+          align-items: center;
+          gap: 2rem;
+          padding: 0 1.25rem;
+        }
+        .completion-btn { 
+          font-family: var(--header-font);
+          background: #FBB03B;
+          color: #fff;
+          font-weight: 900;
+          font-size: 1.5rem;
+          border: 0.3rem solid #fff;
+          border-radius: 3rem;
+          padding: 0.75rem 2.5rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 0.4rem 0.8rem rgba(0,0,0,0.2);
+          text-shadow: 0 0.2rem 0 #b88b2a;
+          text-decoration: none;
+          min-width: 14rem;
+          text-align: center;
+        }
+        .completion-btn:hover { transform: scale(1.06); box-shadow: 0 0.6rem 2.4rem rgba(0,0,0,0.18); }
+        
+        
+        /* MEDIA QUERIES */
+        @media (max-aspect-ratio: 16/9) {
+            #game-wrapper {
+                max-height: 100%;
+                max-width: calc(100vh * 16 / 9);
+            }
+        }
+        @media (max-width: 1200px) {
+            html {
+                font-size: 2.2vmin;
+            }
+        }
+        
+        @media (max-width: 1000px) {
+            html{
+                font-size: 3vmin;
+            }
+            #game-wrapper {
+                width: 100vw; height: 100vh; min-width: 100vw; min-height: 100vh;
+                border-radius: 0; max-width: none; aspect-ratio: unset;
+            }
+            .info-item p {
+                color: var(--text-color-dark);
+                font-size: 1.8rem;
+                line-height: 1.5;
+            }
+            .completion-image {
+                width: 60%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+             html {
+                font-size: 3vmin;
+            }
+            .completion-header { font-size: 3rem; }
+            .completion-message { font-size: 1.2rem; padding: 0 1.5rem; }
+            .completion-buttons-footer {
+                gap: 1rem;
+                bottom: 1rem;
+            }
+            .scenario-content {
+                padding: 1.5rem;
+            }
+            #scenario-title { font-size: 1.8rem; }
+            .info-item p { font-size: 1.5rem; }
+            .completion-image {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-wrapper">
+        <div id="game-container">
+            <div id="start-screen" class="screen">
+                <h1>Inside an Alloy</h1>
+                <button class="start-button" onclick="startGame(); sendEvent(ActivityEvent.START_ACTIVITY, { activityName: 'Inside an Alloy' });">Start Activity</button>
+            </div>
+
+            <div id="game-screen" class="screen hidden">
+                <div class="game-top-section">
+                    <h1 id="game-title">Inside an Alloy</h1>
+                    <div class="progress-wrapper">
+                         <div id="progress-container">
+                            <div id="progress-bar"></div>
+                        </div>
+                        <div id="progress-text">0 / 4</div>
+                        <div class="instructions-icon" onclick="showGameInstructions()">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-game-area" id="lab-game-area">
+                    </div>
+            </div>
+
+            <div id="activity-description-overlay" class="overlay hidden">
+                <div class="modal">
+                    <h2 class="modal-title">Activity Introduction</h2>
+                    <p>Alloys are not just metal mixtures—they are science-built materials! In this activity, you will explore how atoms are arranged inside pure metals compared to alloys. Click each hotspot to uncover the hidden science behind why alloys are often stronger and more useful than pure metals.</p>
+                    <button class="modal-close-btn" onclick="closeActivityDescription();">Continue</button>
+                </div>
+            </div>
+            
+            <div id="game-instructions-overlay" class="overlay hidden">
+                <div class="modal">
+                    <h2 class="modal-title">Learner Instructions</h2>
+                    <p>Study the diagrams of a pure metal and an alloy. Click on each hotspot to learn about that part of the structure. Read and listen to the explanation carefully. Click all hotspots to complete the activity.</p>
+                    <button class="modal-close-btn" onclick="closeGameInstructions()">Got It!</button>
+                </div>
+            </div>
+            
+            <div id="scenario-overlay" class="overlay hidden">
+                 <div class="scenario-modal">
+                    <div class="scenario-content">
+                        <h2 id="scenario-title"></h2>
+                        <div id="scenario-info"></div>
+                        <button id="scenario-close-btn" class="modal-close-btn" onclick="closeScenario()">Continue</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="completion-overlay" class="screen hidden">
+                <h2 class="completion-header">Activity Wrap Up!</h2>
+                 <p class="completion-message">Excellent work! You have just uncovered the atomic-level difference between soft, bendable metals and their stronger, more durable alloy versions. By adding different atoms, we can change how metals behave—stronger, harder, and more useful. That is the real magic of alloys!</p>
+                 <div class="completion-modal-content">
+                    <img src="images/complete.jpg" alt="Illustration of a stylized atom" class="completion-image" onerror="this.src='https://placehold.co/400x300/e67e22/ffffff?text=Complete!'; this.onerror=null;">
+                </div>
+                <div class="completion-buttons-footer">
+                    <button class="completion-btn" onclick="previousActivity()">Previous Activity</button>
+                    <button class="completion-btn" onclick="restartGame()">Restart Activity</button>
+                    <a href="#" class="completion-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Inside an Alloy' });">Next Activity</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="ding-sound" src="audio/ding.mp3" preload="auto"></audio>
+    <audio id="intro-audio" src="audio/alloy-intro.mp3" preload="auto"></audio>
+    <audio id="outro-audio" src="audio/alloy-outro.mp3" preload="auto"></audio>
+    
+    <audio id="uniform-atoms-audio" src="audio/uniform-atoms.mp3" preload="auto"></audio>
+    <audio id="irregular-sizes-audio" src="audio/irregular-sizes.mp3" preload="auto"></audio>
+    <audio id="grain-boundaries-audio" src="audio/grain-boundaries.mp3" preload="auto"></audio>
+    <audio id="impurity-atoms-audio" src="audio/impurity-atoms.mp3" preload="auto"></audio>
+
+
+    <script>
+        // --- DATA ---
+        const activityData = [
+            {
+                id: 'uniform-atoms',
+                title: 'Uniform Atoms in Pure Metal',
+                explanation: 'In pure metals, atoms are arranged in a neat, repeating pattern with all atoms the same size. This regular structure allows the layers to slide over each other easily when force is applied, which is why many pure metals are softer and more malleable.',
+                tooltipText: 'Neat, repeating layers make pure metals soft and easy to shape.',
+                coords: { top: '50%', left: '35%', width: '15%', height: '25%' },
+                tooltipPosition: 'left', // As requested
+                audioId: 'uniform-atoms-audio'
+            },
+            {
+                id: 'irregular-sizes',
+                title: 'Irregular Atom Sizes in Alloy',
+                explanation: 'When atoms of different sizes are present, the regular pattern is disrupted. These uneven sizes make it harder for the layers to slide past one another, increasing the alloy’s strength and making it more resistant to bending or denting.',
+                tooltipText: 'Mixed atom sizes disrupt layers, making alloys stronger and harder.',
+                coords: { top: '25%', left: '65%', width: '15%', height: '25%' },
+                tooltipPosition: 'right', // As requested
+                audioId: 'irregular-sizes-audio'
+            },
+            {
+                id: 'grain-boundaries',
+                title: 'Grain Boundaries in Alloy',
+                explanation: 'Alloys are made up of many small crystals, each with a slightly different arrangement of atoms. The points where these crystals meet are called grain boundaries. These boundaries block the movement of atoms, making the material more resistant to cracks and deformation.',
+                tooltipText: 'Crystal meeting points (boundaries) block atom movement, resisting cracks.',
+                coords: { top: '65%', left: '85%', width: '15%', height: '25%' }, // Repositioned to prevent overflow
+                tooltipPosition: 'bottom', // As requested
+                audioId: 'grain-boundaries-audio'
+            },
+            {
+                id: 'impurity-atoms',
+                title: 'Impurity Atoms Added to Alloy',
+                explanation: 'Impurity atoms are added to change the properties of a metal. Because they differ in size and type from the main atoms, they distort the structure, which can increase strength, improve corrosion resistance, or help the alloy withstand heat.',
+                tooltipText: 'Added \'impurity\' atoms distort the structure to boost strength or resist corrosion.',
+                coords: { top: '50%', left: '70%', width: '10%', height: '18%' },
+                tooltipPosition: 'right', // As requested
+                audioId: 'impurity-atoms-audio'
+            }
+        ];
+        const TOTAL_ACTIVITIES = activityData.length;
+
+        // --- STATE ---
+        let completedActivities = new Set();
+        let activeActivity = null;
+        let currentNarration = null;
+
+        // --- DOM ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const completionOverlay = document.getElementById('completion-overlay');
+        const labGameArea = document.getElementById('lab-game-area');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const overlays = {
+            activityDescription: document.getElementById('activity-description-overlay'),
+            gameInstructions: document.getElementById('game-instructions-overlay'),
+            scenario: document.getElementById('scenario-overlay'),
+        };
+        const sounds = {
+            ding: document.getElementById('ding-sound'),
+            intro: document.getElementById('intro-audio'),
+            outro: document.getElementById('outro-audio'),
+        };
+        
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', initializeGame);
+
+        function initializeGame() {
+            labGameArea.innerHTML = ''; 
+            activityData.forEach((item, index) => {
+                const hotspot = document.createElement('div');
+                hotspot.className = 'hotspot active';
+                hotspot.id = item.id;
+                hotspot.dataset.index = index;
+                Object.assign(hotspot.style, item.coords);
+
+                // Create and append tooltip with summarized text
+                const tooltip = document.createElement('div');
+                tooltip.className = `hotspot-tooltip tooltip-${item.tooltipPosition}`;
+                tooltip.innerHTML = `<p>${item.tooltipText}</p>`;
+                hotspot.appendChild(tooltip);
+                
+                labGameArea.appendChild(hotspot);
+            });
+            updateHotspotStates();
+            updateProgress();
+            labGameArea.addEventListener('click', handleHotspotClick);
+        }
+
+        // --- GAME FLOW ---
+        function startGame() {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            setTimeout(() => {
+                overlays.activityDescription.classList.remove('hidden');
+                playSound(sounds.intro);
+            }, 500);
+        }
+
+        function closeActivityDescription() {
+            overlays.activityDescription.classList.add('hidden');
+            stopSound(sounds.intro);
+        }
+        
+        function handleHotspotClick(event) {
+            const clickedHotspot = event.target.closest('.hotspot');
+            if (!clickedHotspot || clickedHotspot.classList.contains('completed')) return;
+            
+            activeActivity = activityData[parseInt(clickedHotspot.dataset.index)];
+            showScenarioInfo(activeActivity);
+        }
+
+        function showScenarioInfo(activity) {
+            const scenarioTitle = document.getElementById('scenario-title');
+            const infoContainer = document.getElementById('scenario-info');
+            const closeButton = document.getElementById('scenario-close-btn');
+
+            scenarioTitle.textContent = activity.title;
+            
+            infoContainer.innerHTML = '';
+            scenarioTitle.classList.remove('fade-in-up');
+            scenarioTitle.style.opacity = '0';
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'info-item';
+            itemDiv.innerHTML = `<p>${activity.explanation}</p>`;
+            infoContainer.appendChild(itemDiv);
+            
+            // Play narration for the hotspot
+            const narrationAudio = document.getElementById(activity.audioId);
+            if(narrationAudio) {
+                currentNarration = narrationAudio;
+                playSound(currentNarration);
+            }
+
+            const allItems = [
+                { el: scenarioTitle, delay: 0 },
+                { el: itemDiv, delay: 300 }
+            ];
+
+            closeButton.style.visibility = 'hidden';
+            closeButton.style.opacity = '0';
+            
+            overlays.scenario.classList.remove('hidden');
+            
+            allItems.forEach(item => {
+                item.el.classList.remove('fade-in-up');
+                setTimeout(() => {
+                    item.el.classList.add('fade-in-up');
+                }, item.delay);
+            });
+
+            const totalAnimationTime = allItems.length * 300 + 400;
+            setTimeout(() => {
+                closeButton.style.visibility = 'visible';
+                closeButton.style.opacity = '1';
+            }, totalAnimationTime);
+        }
+
+        function closeScenario() {
+            overlays.scenario.classList.add('hidden');
+            
+            // Stop any playing narration
+            if(currentNarration) {
+                stopSound(currentNarration);
+                currentNarration = null;
+            }
+
+            if (activeActivity && !completedActivities.has(activeActivity.id)) {
+                playSound(sounds.ding);
+                completedActivities.add(activeActivity.id);
+                // Send event for finding a hotspot
+                updateProgress();
+                updateHotspotStates();
+            }
+             
+            activeActivity = null;
+
+            if (completedActivities.size === TOTAL_ACTIVITIES) {
+                 setTimeout(() => {
+                     gameScreen.classList.add('hidden');
+                     completionOverlay.classList.remove('hidden');
+                     playSound(sounds.outro); 
+                 }, 800);
+            }
+        }
+        
+        function restartGame() {
+            stopSound(sounds.outro);
+            completedActivities.clear();
+            activeActivity = null;
+            completionOverlay.classList.add('hidden');
+            gameScreen.classList.remove('hidden'); // Go directly to game screen
+            // Re-initialize the hotspots states and progress
+            updateHotspotStates();
+            updateProgress();
+        }
+
+        function previousActivity() {
+            stopSound(sounds.outro);
+            // Logic to navigate to the previous activity
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Inside an Alloy' });
+            window.location.href = "../ACTIVITY1/index.html"; // Adjust the path as needed
+        }
+        
+        // --- UI & FEEDBACK ---
+        function updateProgress() {
+            const progress = (completedActivities.size / TOTAL_ACTIVITIES) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${completedActivities.size} / ${TOTAL_ACTIVITIES}`;
+        }
+        
+        function updateHotspotStates() {
+            document.querySelectorAll('.hotspot').forEach((hotspot) => {
+                const activityId = hotspot.id;
+                const tooltip = hotspot.querySelector('.hotspot-tooltip');
+                hotspot.classList.remove('completed', 'active'); 
+                if(tooltip) tooltip.classList.remove('visible');
+
+                if (completedActivities.has(activityId)) {
+                    hotspot.classList.add('completed');
+                    if(tooltip) {
+                        tooltip.classList.add('visible');
+                    }
+                } else {
+                    hotspot.classList.add('active');
+                }
+            });
+        }
+
+        // --- MODAL CONTROLS ---
+        function showGameInstructions() { overlays.gameInstructions.classList.remove('hidden'); }
+        function closeGameInstructions() { overlays.gameInstructions.classList.add('hidden'); }
+        
+        // --- UTILITIES ---
+        function playSound(audioEl) {
+            if (audioEl) {
+                audioEl.currentTime = 0;
+                audioEl.play().catch(e => console.error('Audio play failed:', e));
+            }
+        }
+
+        function stopSound(audioEl) {
+            if(audioEl) {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+            }
+        }
+    </script>
+     <script src ="../eventSender.js"></script>
+</body>
+</html>

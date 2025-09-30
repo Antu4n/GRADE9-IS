@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity: Alloy Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        html {
+            font-size: 1.5vmin; 
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        :root {
+            --font-xs: 1.1rem;
+            --font-sm: 1.4rem;
+            --font-md: 1.6rem;
+            --font-lg: 2.4rem;
+            --font-xl: 4.8rem;
+            --pad-sm: 1rem;
+            --pad-md: 1.6rem;
+            --pad-lg: 2.4rem;
+            --primary-color: #5D04B2;
+            --secondary-color: #FBB03B;
+            --progress-color: #FFFF00;
+            --correct-color: #5cb85c;
+            --incorrect-color: #d9534f;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --card-background-light: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+            --header-font: 'Fredoka', 'Poppins', sans-serif;
+            --body-font: 'Fredoka', 'Nunito', sans-serif;
+            --border-radius: 1.4rem;
+            --builder-bg: #e0e0e0;
+            --object-bg: #ffffff;
+        }
+
+        @font-face {
+            font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            font-family: var(--body-font);
+            font-size: var(--font-md);
+        }
+
+        #game-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 1.5rem 4rem var(--shadow-dark);
+            overflow: hidden;
+            position: relative;
+            background: #fff;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--pad-lg);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        /* --- HEADER --- */
+        .game-header {
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: var(--pad-sm) var(--pad-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            position: absolute;
+            top: 0; left: 0; z-index: 10;
+            box-shadow: 0 0.2rem 1rem rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .game-header.visible { opacity: 1; }
+        .game-header h1 { font-size: var(--font-lg); font-weight: 800; margin: 0; }
+
+        /* --- PROGRESS BAR STYLING --- */
+        .header-progress {
+            display: flex;
+            align-items: center;
+            gap: var(--pad-md);
+        }
+        #header-progress-container {
+            width: 20rem;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 1.6rem;
+            height: 2rem;
+            border: 0.2rem solid white;
+            position: relative;
+            overflow: hidden;
+        }
+        #header-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--progress-color);
+            border-radius: 1.3rem;
+            transition: width 0.5s ease;
+        }
+        #header-progress-text {
+            font-weight: 700;
+            font-size: var(--font-sm);
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        #start-screen h1 {
+            font-size: var(--font-xl);
+            color: var(--text-color-light);
+            margin-bottom: 1.9rem;
+            text-align: center;
+            font-weight: 900;
+            text-shadow: 0 0.4rem 1rem rgba(0,0,0,0.3);
+        }
+        .start-button {
+            font-family: var(--header-font);
+            background: var(--secondary-color); color: var(--text-color-light);
+            font-weight: 700;
+            font-size: var(--font-md);
+            border: 0.35rem solid #fff;
+            border-radius: 4.8rem;
+            padding: var(--pad-sm) var(--pad-lg);
+            margin-top: 1.6rem;
+            cursor: pointer;
+            text-shadow: 0 0.2rem 0 #b88b2a;
+            transition: all 0.2s;
+        }
+        .start-button:hover { transform: scale(1.06); }
+
+        /* ===== COMPLETION OVERLAY ===== */
+        #completion-overlay {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover; background-position: center; color: #fff;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 1rem; padding: 1rem;
+        }
+        .completion-title-banner {
+            font-size: clamp(2rem, 7vmin, 4rem);
+            text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+            text-align: center; font-family: var(--header-font);
+            font-weight: 500;
+        }
+        #completion-image {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border: 3px solid var(--secondary-color);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-top: 1rem;
+        }
+        .completion-buttons {
+            position: static;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 0 2rem 2rem 2rem;
+            box-sizing: border-box;
+            align-items: flex-end;
+            margin-top: 1rem;
+        }
+        .completion-btn {
+            background: var(--secondary-color);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.5rem;
+            border: 3px solid #fff;
+            border-radius: 3rem;
+            padding: 0.75rem 2.25rem;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+        }
+        .completion-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        }
+        
+        /* --- GAME SCREEN & LAYOUT --- */
+        #game-screen {
+            justify-content: flex-start;
+            padding: 0;
+            overflow: hidden;
+            background-color: #e9eef2;
+        }
+        .game-content {
+            width: 100%;
+            height: 100%;
+            padding: 6.8rem var(--pad-md) var(--pad-md) var(--pad-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--pad-md);
+        }
+
+        #instructions-banner {
+            width: 100%;
+            text-align: center;
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--primary-color);
+            padding: var(--pad-sm) 0;
+            flex-shrink: 0;
+        }
+
+        #main-activity-area {
+            width: 100%;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--pad-lg);
+            min-height: 0;
+        }
+
+        #builder-area, #objects-area {
+            display: flex;
+            flex-direction: column;
+            gap: var(--pad-sm);
+            min-height: 0;
+        }
+
+        .area-title {
+            font-size: var(--font-md);
+            font-weight: 600;
+            color: var(--text-color-dark);
+            text-align: center;
+            padding-bottom: var(--pad-sm);
+        }
+
+        #builder-drop-zone {
+            flex-grow: 1;
+            background: var(--builder-bg);
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 5px 15px -5px rgba(0,0,0,0.15);
+            padding: var(--pad-sm);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--pad-sm);
+            justify-content: center;
+            align-content: flex-start;
+            min-height: 15rem;
+        }
+
+        #object-cards-container {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+            gap: var(--pad-sm);
+        }
+        
+        .object-card {
+            background-color: var(--object-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            padding: 0;
+        }
+        .object-header {
+            width: 100%;
+            padding: var(--pad-sm);
+            font-weight: 800;
+            font-size: var(--font-md);
+            color: var(--text-color-dark);
+            background-color: #f0f0f0;
+            min-height: 4.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .object-body {
+            padding: var(--pad-sm);
+            font-size: 3.5rem;
+            font-weight: 700;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .object-card.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .object-card.drag-over {
+             border-color: var(--secondary-color);
+             transform: scale(1.05);
+        }
+        .object-card.correct-match {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-color: var(--correct-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        .object-card.correct-match .object-header {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+
+        #elements-container {
+            width: 100%;
+            height: 20%;
+            background: #dcdde1;
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 5px 15px -5px rgba(0,0,0,0.15);
+            padding: var(--pad-md);
+            display: flex;
+            gap: var(--pad-md);
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+        
+        .element-item, .alloy-item {
+            background-color: #fff;
+            padding: var(--pad-sm);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px var(--shadow-light);
+            cursor: grab;
+            transition: all 0.2s ease;
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--text-color-dark);
+            border: 3px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 8rem;
+            height: 8rem;
+            text-align: center;
+            line-height: 1.2;
+            flex-shrink: 0;
+        }
+        .element-item .element-name, .alloy-item .alloy-name {
+            font-size: var(--font-sm);
+            margin-top: 0.5rem;
+        }
+        .element-item:active, .alloy-item:active { cursor: grabbing; }
+        .element-item.dragging, .alloy-item.dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+        }
+        
+        .alloy-item {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: white;
+        }
+        .alloy-item.in-builder {
+            position: absolute;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .drop-zone.drag-over {
+            transform: scale(1.02);
+            border: 3px dashed var(--primary-color);
+            background: #e9d8ff;
+        }
+       
+        @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- BUTTONS & MODALS --- */
+        #help-button, .hint-icon { animation: glow-pulse-white 2.5s infinite ease-in-out; }
+        #help-button {
+            width: 4rem; height: 4rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 0.2rem solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; padding: 0; color: white; }
+        #help-button svg { width: 50%; height: 50%; fill: white; }
+        #help-button:hover { transform: scale(1.1); animation: none; }
+
+        #hint-button {
+            position: absolute;
+            bottom: 2rem; right: 2rem;
+            z-index: 20;
+            width: 5rem; height: 5rem;
+            background: var(--secondary-color);
+            border: 0.3rem solid white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0.4rem 1.5rem rgba(251, 176, 59, 0.4);
+            animation: glow-pulse 2.5s infinite ease-in-out;
+        }
+        #hint-button:hover { animation: none; transform: scale(1.1); box-shadow: 0 0.6rem 2.5rem rgba(251, 176, 59, 0.8); }
+        #hint-button svg { width: 2.4rem; height: 2.4rem; fill: white; }
+        #hint-button.hidden { display: none; }
+
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(0.5rem); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s ease; }
+        .modal-overlay.hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #narration-modal, #help-modal, #hint-modal, #feedback-modal { background: var(--card-background-light); padding: var(--pad-lg); border-radius: var(--border-radius); text-align: center; width: 90%; max-width: 60rem; border-top: 0.8rem solid var(--primary-color); animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #narration-title, #help-title, #hint-title, .feedback-title { color: var(--primary-color); font-size: var(--font-lg); margin-bottom: 2.4rem; display: flex; align-items: center; justify-content: center; gap: 1rem;}
+        #narration-text, #help-modal-text, #hint-modal-text, #feedback-modal-text { font-size: var(--font-md); line-height: 1.6; color: var(--text-color-dark); margin-bottom: 3.2rem; }
+        #help-modal-text, #hint-modal-text { text-align: left; }
+        #narration-text { text-align: left; background: #f8f9fa; padding: 1.5rem; border-radius: 0.75rem; border-left: 4px solid var(--primary-color); line-height: 1.5; color: var(--text-color-dark); }
+        #continue-narration-btn, #help-modal-btn, #hint-modal-btn, #feedback-modal-btn { width: 100%; padding: 1.6rem; font-size: 1.8rem; font-weight: 700; border: none; border-radius: 1.2rem; cursor: pointer; color: #ffffff; transition: transform 0.2s, box-shadow 0.2s; }
+        #continue-narration-btn:hover, #help-modal-btn:hover, #hint-modal-btn:hover, #feedback-modal-btn:hover { transform: scale(1.03); }
+        #continue-narration-btn, #help-modal-btn { background: var(--primary-color); }
+        #hint-modal-btn { background: var(--secondary-color); }
+        @keyframes slideIn { from { transform: translateY(3rem) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        #hint-modal { border-top-color: var(--secondary-color); }
+        #hint-title { color: var(--secondary-color); }
+        #feedback-modal.correct-feedback { border-color: var(--correct-color); }
+        #feedback-modal.incorrect-feedback { border-color: var(--incorrect-color); }
+        #feedback-modal.correct-feedback .feedback-title { color: var(--correct-color); }
+        #feedback-modal.incorrect-feedback .feedback-title { color: var(--incorrect-color); }
+        .feedback-title svg { width: var(--font-lg); height: var(--font-lg); }
+        #feedback-modal.correct-feedback #feedback-modal-btn { background: var(--correct-color); }
+        #feedback-modal.incorrect-feedback #feedback-modal-btn { background: var(--incorrect-color); }
+        
+        .shake { animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5); transform: scale(1.1); }
+        }
+        @keyframes glow-pulse-white {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+        }
+
+        /* --- Media Query for smaller screens --- */
+        @media (min-width: 1200px) {
+           .game-content {
+                padding: 1rem var(--pad-md) var(--pad-md) var(--pad-md);
+                gap: 1rem;
+            }
+        }
+        @media (max-width: 991px) {
+            .game-content {
+                padding-top: 6rem;
+                gap: var(--pad-sm);
+            }
+            #main-activity-area {
+                min-height: 0;
+            }
+            #object-cards-container {
+                max-height: 28vh; 
+                overflow-y: auto;
+                align-content: flex-start;
+            }
+            #builder-drop-zone {
+                 min-height: 12rem;
+            }
+        }
+        
+        @media (max-width: 768px), (max-height: 500px) {
+            body { padding: 0; }
+            #game-wrapper { aspect-ratio: unset; width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; }
+            html { font-size: 2.5vmin; } 
+            .game-content { 
+                padding: 6.5rem var(--pad-sm) var(--pad-sm) var(--pad-sm); 
+            }
+            #elements-container { 
+                height: auto; 
+                flex-basis: 25%; 
+                flex-wrap: wrap; 
+                padding: 0.5rem;
+                align-content: flex-start;
+            }
+            .element-item, .alloy-item { 
+                width: 7rem; 
+                height: 7rem; 
+                font-size: var(--font-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-wrapper">
+        <div id="game-container">
+            <div class="game-header">
+                <h1>Alloy Builder</h1>
+                <div class="header-progress">
+                    <div id="header-progress-container">
+                        <div id="header-progress-bar"></div>
+                    </div>
+                    <div id="header-progress-text">0 / 5</div>
+                    <button id="help-button" class="help-icon" title="Help">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="start-screen" class="screen">
+                <h1>Alloy Builder</h1>
+                <button class="start-button">Start Activity</button>
+            </div>
+
+            <div id="game-screen" class="screen hidden">
+                <div class="game-content">
+                    <div id="instructions-banner"></div>
+                    <div id="main-activity-area">
+                        <div id="builder-area">
+                            <div class="area-title">Alloy Builder Box</div>
+                            <div id="builder-drop-zone" class="drop-zone"></div>
+                        </div>
+                        <div id="objects-area">
+                            <div class="area-title">Match to an Object</div>
+                            <div id="object-cards-container"></div>
+                        </div>
+                    </div>
+                    <div id="elements-container"></div>
+                </div>
+                <button id="hint-button" class="hint-icon hidden" title="Get a Hint">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/></svg>
+                </button>
+            </div>
+
+            <div id="completion-overlay" class="screen hidden">
+                <h2 class="completion-title-banner" id="completion-title"></h2>
+                 <img id="completion-image" src="images/complete.jpg" alt="Activity summary showing completed classification." onerror="this.src='https://placehold.co/600x400/5D04B2/ffffff?text=Well+Done!'; this.onerror=null;">
+                <div class="completion-buttons">
+                    <button class="completion-btn" id="restart-activity-btn">Restart Activity</button>
+                    <button class="completion-btn" id="next-activity-btn">Next Activity</button>
+                </div>
+            </div>
+
+            <div id="feedback-modal-overlay" class="modal-overlay hidden">
+                <div id="feedback-modal">
+                    <div class="feedback-title" id="feedback-title"></div>
+                    <div id="feedback-modal-text"></div>
+                    <button id="feedback-modal-btn">Continue</button>
+                </div>
+            </div>
+
+            <div id="narration-modal-overlay" class="modal-overlay hidden">
+                <div id="narration-modal">
+                    <h2 id="narration-title">Activity Introduction</h2>
+                    <div id="narration-text"></div>
+                    <button id="continue-narration-btn">Continue</button>
+                </div>
+            </div>
+
+            <div id="help-modal-overlay" class="modal-overlay hidden">
+                <div id="help-modal">
+                    <h2 id="help-title">Learner Instructions</h2>
+                    <div id="help-modal-text"></div>
+                    <button id="help-modal-btn">Got It!</button>
+                </div>
+            </div>
+
+            <div id="hint-modal-overlay" class="modal-overlay hidden">
+                <div id="hint-modal">
+                    <h2 id="hint-title">Here's a Hint...</h2>
+                    <div id="hint-modal-text"></div>
+                    <button id="hint-modal-btn">Got It!</button>
+                </div>
+            </div>
+            
+            <audio id="intro-audio" src="audio/intro.mp3" preload="auto"></audio>
+            <audio id="outro-audio" src="audio/outro.mp3" preload="auto"></audio>
+            <audio id="correct-audio" src="audio/ding.mp3" preload="auto"></audio>
+            <audio id="incorrect-audio" src="audio/buzz.mp3" preload="auto"></audio>
+            <audio id="click-audio" src="audio/click.mp3" preload="auto"></audio> </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- CONSTANTS & DOM ELEMENTS ---
+    const getEl = (id) => document.getElementById(id);
+    const screens = {
+        start: getEl('start-screen'),
+        game: getEl('game-screen'),
+        completion: getEl('completion-overlay'),
+    };
+    const modals = {
+        narration: getEl('narration-modal-overlay'),
+        help: getEl('help-modal-overlay'),
+        hint: getEl('hint-modal-overlay'),
+        feedback: getEl('feedback-modal-overlay'),
+    };
+    const containers = {
+        elements: getEl('elements-container'),
+        builder: getEl('builder-drop-zone'),
+        objects: getEl('object-cards-container'),
+    };
+    const audio = {
+        intro: getEl('intro-audio'),
+        outro: getEl('outro-audio'),
+        correct: getEl('correct-audio'),
+        incorrect: getEl('incorrect-audio'),
+        click: getEl('click-audio'),
+    };
+
+    const gameHeader = document.querySelector('.game-header');
+    const startBtn = document.querySelector('.start-button');
+    const helpButton = getEl('help-button');
+    const hintButton = getEl('hint-button');
+    const progressBar = getEl('header-progress-bar');
+    const progressText = getEl('header-progress-text');
+    const instructionsBanner = getEl('instructions-banner');
+
+    // --- GAME DATA ---
+    const activityData = {
+        name: "Alloy Builder",
+        intro: "Metals become stronger or more useful when mixed with other metals or non-metals to form alloys. In this simulation, your challenge is to build the right alloy by dragging the correct components into the builder box. Then, match that alloy to the object it helps make. Let us test your material science skills!",
+        instructions: "<ul><li>Drag the correct element(s) into the Alloy Builder Box to make the alloy.</li><li>Check the alloy name that appears.</li><li>Drag the alloy to the object that is made from it.</li><li>Read the feedback carefully before going to the next round.</li></ul>",
+        hint: "<b>Alloy</b>: A mixture of two or more elements, usually metals, to improve properties.<br><b>Steel</b>: Iron + Carbon → Strong and durable.<br><b>Bronze</b>: Copper + Tin → Decorative and corrosion-resistant.<br><b>Brass</b>: Copper + Zinc → Good for instruments and fittings.<br><b>Stainless Steel</b>: Iron + Chromium (+ Carbon) → Rust-resistant and shiny.<br><b>Duralumin</b>: Aluminium + Copper → Light and strong for aircraft.",
+        conclusionTitle: "Superb Alloy Engineering!",
+        conclusionText: "You have explored how metals combine to form useful materials like Steel, Bronze, Brass, Stainless Steel, and Duralumin. Each alloy is chosen for its special strength, shine, or resistance to rust. You are now ready to design with metals like a real scientist!"
+    };
+
+    const elements = [
+        { id: 'Fe', text: 'Fe', name: 'Iron' }, { id: 'C', text: 'C', name: 'Carbon' },
+        { id: 'Cu', text: 'Cu', name: 'Copper' }, { id: 'Zn', text: 'Zn', name: 'Zinc' },
+        { id: 'Sn', text: 'Sn', name: 'Tin' }, { id: 'Cr', text: 'Cr', name: 'Chromium' },
+        { id: 'Al', text: 'Al', name: 'Aluminium' }
+    ];
+
+    const objects = [
+        { id: 'padlock', text: '🔐', name: 'Padlock' }, { id: 'medal', text: '🏅', name: 'Medal' },
+        { id: 'trumpet', text: '🎺', name: 'Trumpet' }, { id: 'sink', text: '🚰', name: 'Kitchen Sink' },
+        { id: 'airplane', text: '✈️', name: 'Airplane Body' }
+    ];
+
+    const rounds = [
+        { alloyName: 'Steel', components: ['C', 'Fe'], targetObject: 'padlock', feedback: { buildCorrect: "Correct! You made Steel – strong and durable.", buildIncorrect: { 'Cr,Fe': "This is Stainless Steel, not plain Steel. Try removing Chromium.", 'Cu,Zn': "That makes Brass, not Steel. Try again!"}, matchCorrect: "Yes! Steel is used for strong items like padlocks.", matchIncorrect: { trumpet: "Think again. Steel is too heavy and dull for trumpets." } } },
+        { alloyName: 'Bronze', components: ['Cu', 'Sn'], targetObject: 'medal', feedback: { buildCorrect: "Great! You built Bronze – used since ancient times.", buildIncorrect: { 'Cu,Zn': "That forms Brass, not Bronze. Try replacing Zinc with Tin.", 'C,Fe': "That gives you Steel, not Bronze." }, matchCorrect: "Perfect! Bronze is often used for trophies and medals.", matchIncorrect: { sink: "Not quite. Bronze is decorative, not for plumbing." } } },
+        { alloyName: 'Brass', components: ['Cu', 'Zn'], targetObject: 'trumpet', feedback: { buildCorrect: "Well done! Brass is shiny and great for musical instruments.", buildIncorrect: { 'Cu,Sn': "That would make Bronze. Switch to Zinc.", 'Cr,Fe': "That gives Stainless Steel – not suitable for trumpets." }, matchCorrect: "Correct! Brass is used in trumpets because it is acoustic and easy to shape.", matchIncorrect: { medal: "Oops! Medals are usually bronze, not brass." } } },
+        { alloyName: 'Stainless Steel', components: ['Cr', 'Fe'], targetObject: 'sink', feedback: { buildCorrect: "Excellent! Stainless Steel resists rust and shines.", buildIncorrect: { 'C,Fe': "That gives plain Steel. Add Chromium for the stainless property.", 'Cu,Sn': "Incorrect. That forms Bronze, not Stainless Steel." }, matchCorrect: "Yes! Stainless Steel is perfect for clean, shiny kitchen sinks.", matchIncorrect: { medal: "Not quite. Medals are not made from stainless steel." } } },
+        { alloyName: 'Duralumin', components: ['Al', 'Cu'], targetObject: 'airplane', feedback: { buildCorrect: "Correct! Duralumin is light and strong – great for aircraft.", buildIncorrect: { 'Al,Zn': "Not quite. Zinc does not form Duralumin. Try Copper.", 'C,Fe': "Steel is too heavy for aircraft. Think light metals!" }, matchCorrect: "Awesome! Duralumin makes lightweight aircraft bodies.", matchIncorrect: { trumpet: "Try again. Duralumin is not used in musical instruments." } } }
+    ];
+
+    // --- GAME STATE ---
+    let score = 0;
+    const totalRounds = rounds.length;
+    let currentRoundIndex = 0;
+    let gameState = 'building'; // 'building' or 'matching'
+    let componentsInBuilder = [];
+    let draggedItem = null;
+
+    // --- INITIALIZATION ---
+    function initializeGame() {
+        score = 0;
+        currentRoundIndex = 0;
+        gameState = 'building';
+        updateProgressBar();
+        
+        getEl('narration-text').innerHTML = activityData.intro;
+        getEl('help-modal-text').innerHTML = activityData.instructions;
+        getEl('hint-modal-text').innerHTML = activityData.hint;
+        getEl('completion-title').textContent = activityData.conclusionTitle;
+        
+        setupRound();
+    }
+
+    function setupRound() {
+        gameState = 'building';
+        componentsInBuilder = [];
+        containers.builder.innerHTML = '';
+        containers.elements.innerHTML = '';
+        containers.objects.innerHTML = '';
+
+        elements.forEach(el => containers.elements.appendChild(createElement(el)));
+        objects.forEach(obj => containers.objects.appendChild(createObjectCard(obj)));
+        
+        updateInstructions();
+        addDraggableListeners();
+        addDropZoneListeners();
+    }
+    
+    // --- UI CREATION ---
+    function createElement(elData) {
+        const item = document.createElement('div');
+        item.className = 'element-item';
+        item.draggable = true;
+        item.dataset.id = elData.id;
+        item.dataset.type = 'element';
+        item.innerHTML = `${elData.text}<span class="element-name">${elData.name}</span>`;
+        return item;
+    }
+    
+    function createObjectCard(objData) {
+        const card = document.createElement('div');
+        card.className = 'object-card';
+        card.dataset.id = objData.id;
+        card.dataset.type = 'object';
+        card.innerHTML = `
+            <div class="object-header">${objData.name}</div>
+            <div class="object-body">${objData.text}</div>
+        `;
+        return card;
+    }
+
+    function createAlloyItem(round) {
+        const item = document.createElement('div');
+        item.className = 'alloy-item';
+        item.draggable = true;
+        item.dataset.id = round.alloyName;
+        item.dataset.type = 'alloy';
+        item.innerHTML = `${round.alloyName}`;
+        containers.builder.appendChild(item);
+        item.classList.add('in-builder');
+        addDraggableListeners();
+    }
+
+    // --- DRAG & DROP LOGIC ---
+    function addDraggableListeners() {
+        const draggables = document.querySelectorAll('.element-item, .alloy-item');
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', e => {
+                draggedItem = draggable;
+                setTimeout(() => draggable.classList.add('dragging'), 0);
+            });
+            draggable.addEventListener('dragend', () => {
+                if (draggedItem) draggedItem.classList.remove('dragging');
+                draggedItem = null;
+            });
+        });
+    }
+
+    function addDropZoneListeners() {
+        const dropZones = document.querySelectorAll('.drop-zone, .object-card');
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                if (draggedItem) handleDrop(zone);
+            });
+        });
+    }
+
+    function handleDrop(dropZone) {
+        const draggedType = draggedItem.dataset.type;
+        const dropZoneType = dropZone.dataset.type;
+
+        if (draggedType === 'element' && dropZone.id === 'builder-drop-zone' && gameState === 'building') {
+            handleElementDrop();
+        } else if (draggedType === 'alloy' && dropZoneType === 'object' && gameState === 'matching') {
+            handleAlloyDrop(dropZone);
+        }
+    }
+    
+    function handleElementDrop() {
+        playAudio(audio.click);
+        containers.builder.appendChild(draggedItem);
+        draggedItem.draggable = false;
+        componentsInBuilder.push(draggedItem.dataset.id);
+
+        const requiredComponents = rounds[currentRoundIndex].components.length;
+        if (componentsInBuilder.length === requiredComponents) {
+            checkBuild();
+        }
+    }
+
+    function checkBuild() {
+        const currentRound = rounds[currentRoundIndex];
+        const correctComponents = [...currentRound.components].sort().join(',');
+        const builtComponents = [...componentsInBuilder].sort().join(',');
+
+        if (correctComponents === builtComponents) {
+            showFeedback(true, currentRound.feedback.buildCorrect, () => {
+                gameState = 'matching';
+                containers.builder.innerHTML = '';
+                createAlloyItem(currentRound);
+                updateInstructions();
+            });
+        } else {
+            const incorrectFeedback = currentRound.feedback.buildIncorrect[builtComponents] || "That's not the right combination. Try again!";
+            showFeedback(false, incorrectFeedback, () => {
+                componentsInBuilder = [];
+                containers.builder.innerHTML = '';
+                containers.elements.innerHTML = '';
+                elements.forEach(el => containers.elements.appendChild(createElement(el)));
+                addDraggableListeners();
+            });
+        }
+    }
+
+    function handleAlloyDrop(objectCard) {
+        const currentRound = rounds[currentRoundIndex];
+        const correctObject = currentRound.targetObject;
+        const droppedObject = objectCard.dataset.id;
+
+        if (correctObject === droppedObject) {
+            score++;
+            updateProgressBar();
+            objectCard.classList.add('correct-match');
+            objectCard.querySelector('.object-header').textContent = currentRound.alloyName;
+            draggedItem.remove();
+            
+            document.querySelectorAll('.object-card:not(.correct-match)').forEach(c => c.classList.add('disabled'));
+
+            showFeedback(true, currentRound.feedback.matchCorrect, () => {
+                if (score === totalRounds) {
+                    endGame();
+                } else {
+                    currentRoundIndex++;
+                    setTimeout(() => {
+                        setupRound();
+                    }, 1000); 
+                }
+            });
+        } else {
+            const incorrectFeedback = currentRound.feedback.matchIncorrect[droppedObject] || "That's not the right object for this alloy.";
+            showFeedback(false, incorrectFeedback);
+        }
+    }
+
+    // --- GAME FLOW & UI UPDATES ---
+    function switchScreen(hide, show) {
+        hide.classList.add('hidden');
+        if (show === screens.game) {
+            gameHeader.classList.add('visible');
+            hintButton.classList.remove('hidden');
+        } else if (hide === screens.game) {
+            gameHeader.classList.remove('visible');
+            hintButton.classList.add('hidden');
+        }
+        setTimeout(() => show.classList.remove('hidden'), 50);
+    }
+
+    function updateProgressBar() {
+        progressBar.style.width = `${(score / totalRounds) * 100}%`;
+        progressText.textContent = `${score} / ${totalRounds}`;
+    }
+
+    function updateInstructions() {
+        if (gameState === 'building') {
+            instructionsBanner.textContent = `Build: ${rounds[currentRoundIndex].alloyName}`;
+        } else {
+            instructionsBanner.textContent = `Match the ${rounds[currentRoundIndex].alloyName} to the correct object!`;
+        }
+    }
+
+    function showFeedback(isCorrect, message, callback) {
+        const modal = getEl('feedback-modal');
+        const feedbackTitle = getEl('feedback-title');
+        const feedbackText = getEl('feedback-modal-text');
+        const feedbackBtn = getEl('feedback-modal-btn');
+
+        const icons = {
+            correct: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+            incorrect: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`
+        };
+        
+        feedbackTitle.innerHTML = `${isCorrect ? icons.correct : icons.incorrect} ${isCorrect ? "Correct!" : "Try Again..."}`;
+        feedbackText.textContent = message;
+        
+        playAudio(isCorrect ? audio.correct : audio.incorrect);
+        
+        modal.className = isCorrect ? 'correct-feedback' : 'incorrect-feedback';
+        if (!isCorrect) modal.classList.add('shake');
+        
+        modals.feedback.classList.remove('hidden');
+
+        feedbackBtn.onclick = () => {
+            modals.feedback.classList.add('hidden');
+            if (callback) callback();
+        };
+    }
+
+    function endGame() {
+        playAudio(audio.outro);
+        switchScreen(screens.game, screens.completion);
+    }
+    
+    function restartGame() {
+        stopAllAudio();
+        initializeGame();
+        switchScreen(screens.completion, screens.game);
+    }
+    
+    function playAudio(audioEl) {
+        if (audioEl) {
+            audioEl.currentTime = 0;
+            audioEl.play().catch(e => console.log("Audio play failed.", e));
+        }
+    }
+
+    function stopAllAudio() {
+        Object.values(audio).forEach(a => {
+            if (a && !a.paused) {
+                a.pause();
+                a.currentTime = 0;
+            }
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    startBtn.addEventListener('click', () => {
+        switchScreen(screens.start, screens.game);
+        initializeGame();
+        playAudio(audio.intro);
+        modals.narration.classList.remove('hidden');
+        if (typeof sendEvent !== 'undefined' && typeof ActivityEvent !== 'undefined') {
+            sendEvent(ActivityEvent.START_ACTIVITY, { activityName: activityData.name });
+        }
+    });
+
+    getEl('restart-activity-btn').addEventListener('click', restartGame);
+    getEl('next-activity-btn').addEventListener('click', () => {
+        if (typeof sendEvent !== 'undefined' && typeof ActivityEvent !== 'undefined') {
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: activityData.name });
+        }
+        console.log("Next Activity Clicked");
+    });
+    
+    getEl('continue-narration-btn').addEventListener('click', () => {
+        modals.narration.classList.add('hidden');
+        stopAllAudio();
+    });
+
+    helpButton.addEventListener('click', () => modals.help.classList.remove('hidden'));
+    getEl('help-modal-btn').addEventListener('click', () => modals.help.classList.add('hidden'));
+
+    hintButton.addEventListener('click', () => modals.hint.classList.remove('hidden'));
+    getEl('hint-modal-btn').addEventListener('click', () => modals.hint.classList.add('hidden'));
+
+});
+</script>
+
+</body>
+</html>

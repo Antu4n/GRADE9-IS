@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity 3: Virtual Lab – Conductivity Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <style>
+
+        ::-webkit-scrollbar{
+            display: none;
+        }
+        html {
+            font-size: 1.2vmin;
+        }
+
+        :root {
+            --font-xs: 1.1rem;
+            --font-sm: 1.4rem;
+            --font-md: 1.6rem;
+            --font-lg: 2.4rem;
+            --font-xl: 4.8rem;
+
+            --pad-sm: 1rem;
+            --pad-md: 1.6rem;
+            --pad-lg: 2.4rem;
+
+            --primary-color: #5D04B2;
+            --secondary-color: #fbb03b;
+            --progress-color: #FFFF00;
+            --correct-color: #2E7D32;
+            --incorrect-color: #C62828;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --card-background-light: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+            --border-radius: 1.4rem;
+            --wire-color: #b0bec5;
+            --bulb-off-color: #e0e0e0;
+            --bulb-on-color: #ffeb3b;
+            --bulb-glass-color: rgba(255, 255, 255, 0.3);
+        }
+
+        @font-face {
+            font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #eceff1;
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: var(--font-md);
+        }
+
+        #game-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            height: auto;
+            box-shadow: 0 1.5rem 4rem var(--shadow-dark);
+            overflow: hidden;
+            position: relative;
+            background: #fff;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--pad-lg);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        /* --- HEADER --- */
+        .game-header {
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: var(--pad-sm) var(--pad-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            position: absolute;
+            top: 0; left: 0; z-index: 10;
+            box-shadow: 0 0.2rem 1rem rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .game-header.visible { opacity: 1; }
+        .game-header h1 { font-size: var(--font-lg); font-weight: 800; margin: 0; }
+
+        /* --- PROGRESS BAR STYLING --- */
+        .header-progress {
+            display: flex;
+            align-items: center;
+            gap: var(--pad-md);
+        }
+        #header-progress-container {
+            width: 20rem;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 1.6rem;
+            height: 2rem;
+            border: 0.2rem solid white;
+            position: relative;
+            overflow: hidden;
+        }
+        #header-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--progress-color);
+            border-radius: 1.3rem;
+            transition: width 0.5s ease;
+        }
+        #header-progress-text {
+            font-weight: 700;
+            font-size: var(--font-sm);
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        #start-screen h1 {
+            font-size: var(--font-xl);
+            color: var(--text-color-light);
+            margin-bottom: 1.9rem;
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 0 0.4rem 1rem rgba(0,0,0,0.3);
+        }
+        .start-button {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            background: var(--secondary-color); color: var(--text-color-light);
+            font-weight: 900;
+            font-size: 2.1rem;
+            border: 0.4rem solid #fff;
+            border-radius: 4.8rem;
+            padding: var(--pad-sm) var(--pad-lg);
+            margin-top: 1.6rem;
+            cursor: pointer;
+            text-shadow: 0 0.2rem 0 #b88b2a;
+            transition: all 0.2s;
+        }
+        .start-button:hover { transform: scale(1.06); }
+
+        /* --- END SCREEN STYLING --- */
+        #end-screen {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: var(--text-color-light);
+        }
+        #end-screen h2 {
+            font-size: var(--font-xl);
+            margin-bottom: 1.6rem;
+            text-shadow: 0.2rem 0.2rem 0.4rem rgba(0, 0, 0, 0.2);
+        }
+        #end-screen img {
+            width: 70rem;
+            height: auto;
+            border: 0.3rem solid var(--secondary-color);
+            border-radius: 1.5rem;
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
+            margin: 1.6rem 0;
+        }
+        .end-buttons-bar {
+            margin-top: auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: var(--pad-md);
+            padding-top: var(--pad-md);
+            padding-left: var(--pad-lg);
+            padding-right: var(--pad-lg);
+        }
+        #play-again-button, #previous-button, #next-button {
+            background: #FBB03B; color: #fff; font-weight: 700; font-size: 1.6rem;
+            border: 0.1875rem solid #fff; border-radius: 3rem; padding: 0.75rem 2.25rem;
+            margin-top: 1rem; cursor: pointer; letter-spacing: 0.02em;
+            transition: all 0.2s; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+   
+        }
+        #play-again-button:hover, #previous-button:hover, #next-button:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0.6rem 2.4rem rgba(0, 0, 0, 0.18);
+        }
+        #previous-button { grid-column: 1; justify-self: start; }
+        #play-again-button { grid-column: 2; justify-self: center; }
+        #next-button { grid-column: 3; justify-self: end; }
+
+        /* --- GAME SCREEN & LAYOUT --- */
+        #game-screen {
+            justify-content: flex-start;
+            padding: 0;
+            overflow: hidden;
+            background-color: #e9eef2;
+        }
+        .game-content {
+            width: 100%;
+            height: 100%;
+            padding-top: 6.8rem;
+            display: flex;
+            flex-direction: row;
+        }
+
+        /* Updated drag-items-container to use 2x4 grid layout */
+        #drag-items-container {
+            flex-basis: 30%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: var(--pad-sm);
+            padding: var(--pad-md);
+            background: linear-gradient(135deg, rgba(240, 244, 248, 0.95) 0%, rgba(230, 237, 243, 0.95) 100%);
+            border-right: 0.3rem solid #B0BEC5;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        #game-board {
+            flex-basis: 70%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: var(--pad-md);
+        }
+
+        /* --- CIRCUIT CANVAS STYLING --- */
+        .circuit-container {
+            width: 95%;
+            height: 95%;
+            position: relative;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef3 100%);
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: var(--pad-md);
+        }
+        
+        #circuit-canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #drop-zone {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35%;
+            height: 9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent;
+            padding: 0; /* Removed padding to allow image to fill zone */
+            z-index: 5;
+            border: 2px dashed transparent;
+            border-radius: var(--border-radius);
+        }
+        #drop-zone.drag-over {
+            background-color: rgba(251, 176, 59, 0.15);
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 20px rgba(251, 176, 59, 0.3);
+        }
+
+        /* FIX: Simplified item-in-zone to allow image to fill the container */
+        .item-in-zone {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        .item-in-zone img {
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+        }
+
+        /* --- Animation for item returning to container --- */
+        @keyframes returnAnimation {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.5) translateX(-150%);
+            }
+        }
+        .item-in-zone.returning {
+            animation: returnAnimation 0.6s ease-in forwards;
+        }
+
+        /* Updated drag-item styling for 2x4 grid */
+        .drag-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.4rem 1rem var(--shadow-light);
+            cursor: grab;
+            transition: all 0.2s ease;
+            user-select: none;
+            width: 100%;
+            height: 100%;
+            min-height: 6rem;
+            padding: var(--pad-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        .drag-item p {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .drag-item img {
+            height: 5.5rem;
+            width: auto;
+            max-width: 90%;
+            object-fit: contain;
+        }
+        .drag-item.tested {
+            border-color: #90a4ae;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .drag-item.dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+            box-shadow: 0 0.8rem 2rem var(--shadow-dark);
+            cursor: grabbing;
+        }
+        .drag-item:not(.tested):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.6rem 1.5rem var(--shadow-light);
+        }
+
+        /* --- BUTTONS & MODALS --- */
+        .help-icon, .hint-icon { animation: glow-pulse-white 2.5s infinite ease-in-out; }
+        #help-button {
+            width: 4rem; height: 4rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 0.2rem solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; padding: 0; color: white; }
+        #help-button svg { width: 50%; height: 50%; fill: white; }
+        #help-button:hover { transform: scale(1.1); animation: none; }
+
+        #hint-button {
+            position: absolute;
+            bottom: 2rem; right: 2rem;
+            z-index: 20;
+            width: 5rem; height: 5rem;
+            background: var(--secondary-color);
+            border: 0.3rem solid white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0.4rem 1.5rem rgba(251, 176, 59, 0.4);
+        }
+        #hint-button:hover { animation: none; transform: scale(1.1); box-shadow: 0 0.6rem 2.5rem rgba(251, 176, 59, 0.8); }
+        #hint-button svg { width: 2.4rem; height: 2.4rem; fill: white; }
+        #hint-button.hidden { display: none; }
+
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(0.5rem); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s ease; }
+        .modal-overlay.hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #narration-modal, #help-modal, #hint-modal { background: var(--card-background-light); padding: var(--pad-lg); border-radius: var(--border-radius); text-align: center; width: 90%; max-width: 60rem; border-top: 0.8rem solid var(--primary-color); animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #narration-modal h2, #help-title, #hint-title { color: var(--primary-color); font-size: var(--font-lg); margin-bottom: 2.4rem; }
+        #narration-text, #help-modal-text, #hint-modal-text { font-size: var(--font-md); line-height: 1.6; color: var(--text-color-dark); margin-bottom: 3.2rem; }
+        #narration-text {
+            text-align: left;
+            background-color: #f8f9fa;
+            border-left: 4px solid #59379b;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-style: normal;
+        }
+        #help-modal-text{
+            text-align: left;
+        }
+
+        #continue-narration-btn, #help-modal-btn, #hint-modal-btn { width: 100%; padding: 1.6rem; font-size: 1.8rem; font-weight: 700; border: none; border-radius: 1.2rem; cursor: pointer; color: #ffffff; transition: transform 0.2s, box-shadow 0.2s; }
+        #continue-narration-btn:hover, #help-modal-btn:hover, #hint-modal-btn:hover { transform: scale(1.03); }
+        #continue-narration-btn, #help-modal-btn { background: var(--primary-color); }
+        #hint-modal-btn { background: var(--secondary-color); }
+        @keyframes slideIn { from { transform: translateY(3rem) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        #hint-modal { border-top-color: var(--secondary-color); }
+        #hint-title { color: var(--secondary-color); }
+
+        #feedback-modal { background-color: var(--card-background-light); padding: 3.2rem; border-radius: var(--border-radius); text-align: center; width: 90%; max-width: 45rem; border-top: 0.8rem solid; animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #feedback-modal.correct-feedback { border-color: var(--correct-color); }
+        #feedback-modal.incorrect-feedback { border-color: var(--incorrect-color); }
+        .feedback-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 1.2rem; }
+        #feedback-modal.correct-feedback .feedback-title { color: var(--correct-color); }
+        #feedback-modal.incorrect-feedback .feedback-title { color: var(--incorrect-color); }
+        #feedback-modal-text { font-size: 2rem; line-height: 1.6; color: #000; margin-bottom: 3.2rem; }
+        #feedback-modal-btn { width: 100%; padding: 1.6rem; font-size: 1.9rem; font-weight: 700; border: none; border-radius: 1.2rem; cursor: pointer; color: var(--text-color-light); transition: transform 0.2s, box-shadow 0.2s; }
+        #feedback-modal.correct-feedback #feedback-modal-btn { background: var(--correct-color); }
+        #feedback-modal.incorrect-feedback #feedback-modal-btn { background: var(--incorrect-color); }
+        #feedback-modal-btn:hover { transform: scale(1.03); }
+        #feedback-title svg { width: var(--font-lg); height: var(--font-lg); }
+
+        @keyframes glow-pulse-white {
+            0%, 100% { box-shadow: 0 0 1rem rgba(255, 255, 255, 0.7), 0 0 2rem rgba(255, 255, 255, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 2rem rgba(255, 255, 255, 1), 0 0 3rem rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+        }
+
+        /* Improved responsive design for consistent layout across all screen widths */
+        @media (max-width: 1024px) {
+            html { font-size: 1.4vmin; }
+            #drag-items-container {
+                flex-basis: 35%;
+                grid-template-columns: repeat(3, 1fr);
+
+            }
+            #game-board {
+                flex-basis: 65%;
+             }
+           
+        }
+
+        @media (max-width: 900px) {
+            html { font-size: 2.4vmin; }
+            #drag-items-container {
+                flex-basis: 50%;
+            }
+            #game-board {
+                flex-basis: 65%;
+            }
+
+        }
+        @media (max-width: 768px) {
+            body { padding: 0; }
+            #game-wrapper { 
+                aspect-ratio: unset; 
+                width: 100vw; 
+                height: 100vh; 
+                border-radius: 0; 
+                box-shadow: none; 
+            }
+            html { font-size: 1.8vmin; }
+            .game-content { 
+                padding-top: 6rem; 
+            }
+            #drag-items-container { 
+                flex-basis: 35%; 
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(4, 1fr);
+                padding: var(--pad-sm);
+                gap: 3rem;
+            }
+            #game-board { 
+                flex-basis: 65%; 
+            }
+            .drag-item {
+                min-height: 9rem;
+                min-width: 7rem;
+            }
+            .drag-item img {
+                height: 4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            html { font-size: 2vmin; }
+            .game-header h1 {
+                font-size: var(--font-md);
+            }
+            #header-progress-container {
+                width: 12rem;
+            }
+        }
+        a{
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-wrapper">
+      <div id="game-container">
+            <div class="game-header">
+                <h1>Virtual Lab – Conductivity Test</h1>
+                <div class="header-progress">
+                    <div id="header-progress-container">
+                        <div id="header-progress-bar"></div>
+                    </div>
+                    <div id="header-progress-text">0 / 8</div>
+                    <button id="help-button" class="help-icon" title="Help">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="start-screen" class="screen">
+                 <h1 class="start-title">Virtual Lab – Conductivity Test</h1>
+                 <button class="start-button" onclick="sendEvent(ActivityEvent.START_ACTIVITY, { activityName: 'Virtual Lab – Conductivity Test' })">Start Activity</button>
+            </div>
+
+            <div id="game-screen" class="screen hidden">
+                <div class="game-content">
+                    <div id="drag-items-container"></div>
+                    <div id="game-board">
+                        <div class="circuit-container">
+                           <canvas id="circuit-canvas"></canvas>
+                            <div id="drop-zone"></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="hint-button" class="hint-icon hidden" title="Get a Hint">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/></svg>
+                </button>
+            </div>
+
+            <div id="end-screen" class="screen hidden">
+                    <h2>Activity Wrap Up!</h2>
+                    <img src="images/complete.jpg" alt="Summary of conductive and non-conductive materials.">
+                    <div class="end-buttons-bar">
+                        <a href="../ACTIVITY2/index.html" id="previous-button" class="end-screen-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Virtual Lab – Conductivity Test' })">Previous Activity</a>
+                        <button id="play-again-button">Restart Activity</button>
+                        <a href="../ACTIVITY4/index.html" id="next-button" class="end-screen-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Virtual Lab – Conductivity Test' })">Next Activity</a>
+                    </div>
+            </div>
+
+            <div id="feedback-modal-overlay" class="modal-overlay hidden">
+                <div id="feedback-modal">
+                    <div class="feedback-title" id="feedback-title"></div>
+                    <div id="feedback-modal-text"></div>
+                    <button id="feedback-modal-btn">Continue</button>
+                </div>
+            </div>
+
+            <div id="narration-modal-overlay" class="modal-overlay hidden">
+                <div id="narration-modal">
+                    <h2>Activity Introduction</h2>
+                    <div id="narration-text">
+                        Welcome to your virtual lab station! Here is a simple circuit with a battery and bulb. Your task is to test different materials and decide whether they conduct electricity. Drag a material into the test zone and observe what happens. Will the bulb light up? Let us investigate!
+                    </div>
+                    <button id="continue-narration-btn">Continue</button>
+                    <audio id="intro-audio" src="audio/intro.mp3" preload="auto"></audio>
+                    <audio id="outro-audio" src="audio/outro.mp3" preload="auto"></audio>
+                </div>
+            </div>
+
+            <div id="help-modal-overlay" class="modal-overlay hidden">
+                <div id="help-modal">
+                    <h2 id="help-title">Learner Instructions</h2>
+                    <div id="help-modal-text">
+                        <p>1. Drag a material into the circuit gap.</p>
+                        <p>2. Observe whether the bulb lights or stays off.</p>
+                        <p>3. Read the explanation to learn why the material is a conductor or insulator.</p>
+                        <p>4. Test all materials to complete the activity.</p>
+                    </div>
+                    <button id="help-modal-btn">Got It!</button>
+                </div>
+            </div>
+
+            <div id="hint-modal-overlay" class="modal-overlay hidden">
+                <div id="hint-modal">
+                    <h2 id="hint-title">Here's a Hint...</h2>
+                    <div id="hint-modal-text"></div>
+                    <button id="hint-modal-btn">Got It!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const gameHeader = document.querySelector('.game-header');
+        const startBtn = document.querySelector('.start-button');
+        const narrationModalOverlay = document.getElementById('narration-modal-overlay');
+        const continueNarrationBtn = document.getElementById('continue-narration-btn');
+        const introAudio = document.getElementById('intro-audio');
+        const outroAudio = document.getElementById('outro-audio');
+        const modalOverlay = document.getElementById('feedback-modal-overlay');
+        const modal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackText = document.getElementById('feedback-modal-text');
+        const nextQuestionBtn = document.getElementById('feedback-modal-btn');
+        const dragItemsContainer = document.getElementById('drag-items-container');
+        const dropZone = document.getElementById('drop-zone');
+        const helpButton = document.getElementById('help-button');
+        const hintButton = document.getElementById('hint-button');
+        const helpModalOverlay = document.getElementById('help-modal-overlay');
+        const hintModalOverlay = document.getElementById('hint-modal-overlay');
+        const helpModalBtn = document.getElementById('help-modal-btn');
+        const hintModalBtn = document.getElementById('hint-modal-btn');
+        const narrationText = document.getElementById('narration-text');
+        const hintModalText = document.getElementById('hint-modal-text');
+
+        const progressBar = document.getElementById('header-progress-bar');
+        const progressText = document.getElementById('header-progress-text');
+
+        const playAgainBtn = document.getElementById('play-again-button');
+        const previousBtn = document.getElementById('previous-button');
+        const nextBtn = document.getElementById('next-button');
+
+        const canvas = document.getElementById('circuit-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- GAME SETTINGS ---
+        const endScreenDelay = 500;
+
+        // --- GAME DATA ---
+        const gameData = [
+            { 
+                id: 'item1', 
+                name: 'Copper Wire', 
+                image: 'images/copper.png', 
+                conducts: true, 
+                feedback: "Copper is a highly efficient conductor because its outer electrons move freely, allowing electricity to flow easily. This is why it is widely used in electrical wiring."
+            },
+            { 
+                id: 'item2', 
+                name: 'Iron Nail', 
+                image: 'images/iron.png', 
+                conducts: true, 
+                feedback: "Iron conducts electricity well, although not as efficiently as copper. It is often used in tools and structural components rather than wiring."
+            },
+            { 
+                id: 'item3', 
+                name: 'Aluminium Foil', 
+                image: 'images/aluminium.png', 
+                conducts: true, 
+                feedback: "Aluminium is a lightweight metal that conducts electricity effectively, which is why it is used in power lines and cables."
+            },
+            { 
+                id: 'item4', 
+                name: 'Plastic Spoon', 
+                image: 'images/plastic.png', 
+                conducts: false, 
+                feedback: "Plastic is made from polymers that do not have free electrons, so it does not allow electric current to pass. This makes it useful for insulation and safety."
+            },
+            { 
+                id: 'item5', 
+                name: 'Rubber Band', 
+                image: 'images/rubber.png', 
+                conducts: false, 
+                feedback: "Rubber prevents the movement of electric charge, making it an excellent insulator for coating wires and handling electrical tools."
+            },
+            { 
+                id: 'item6', 
+                name: 'Wood Stick', 
+                image: 'images/wood.png', 
+                conducts: false, 
+                feedback: "Dry wood does not conduct electricity well because it lacks free-moving charged particles. It is often used for tool handles in electrical work."
+            },
+            { 
+                id: 'item7', 
+                name: 'Glass Rod', 
+                image: 'images/glass.png', 
+                conducts: false, 
+                feedback: "Glass is an insulator because its tightly bound electrons cannot move freely. It is used in bulbs, insulators, and protective coverings."
+            },
+            { 
+                id: 'item8', 
+                name: 'Graphite', 
+                image: 'images/graphite.png', 
+                conducts: true, 
+                feedback: "Graphite, a form of carbon, conducts electricity because its carbon atoms form layers with delocalised electrons that can move freely."
+            }
+        ];
+
+        let testedItems = new Set();
+        let totalQuestions = gameData.length;
+        let isBulbLit = false;
+        let currentConductorState = false; // Track if material in zone is conductor
+
+        const icons = {
+            correct: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+            incorrect: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`
+        };
+
+        //  Enhanced circuit drawing with improved styling and visual effects
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawCircuit();
+        }
+
+        function drawCircuit() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Circuit dimensions
+            const circuitWidth = canvas.width * 0.55;
+            const circuitHeight = canvas.height * 0.65;
+            const leftX = centerX - circuitWidth / 2;
+            const rightX = centerX + circuitWidth / 2;
+            const topY = centerY - circuitHeight / 2;
+            const bottomY = centerY + circuitHeight / 2;
+            
+            // Wire styling with enhanced metallic effect
+            const wireWidth = canvas.width * 0.015;
+            ctx.lineWidth = wireWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Draw wires with enhanced metallic gradient
+            const wireGradient = ctx.createLinearGradient(leftX, 0, rightX, 0);
+            wireGradient.addColorStop(0, '#607d8b');
+            wireGradient.addColorStop(0.3, '#90a4ae');
+            wireGradient.addColorStop(0.5, '#cfd8dc');
+            wireGradient.addColorStop(0.7, '#90a4ae');
+            wireGradient.addColorStop(1, '#607d8b');
+            
+            // Add subtle shadow to wires for depth
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            ctx.strokeStyle = wireGradient;
+            
+            // Left vertical wire
+            ctx.beginPath();
+            ctx.moveTo(leftX, topY + canvas.height * 0.15);
+            ctx.lineTo(leftX, bottomY - canvas.height * 0.05);
+            ctx.stroke();
+            
+            // Right vertical wire
+            ctx.beginPath();
+            ctx.moveTo(rightX, topY + canvas.height * 0.15);
+            ctx.lineTo(rightX, bottomY - canvas.height * 0.05);
+            ctx.stroke();
+            
+            // Top left horizontal wire
+            ctx.beginPath();
+            ctx.moveTo(leftX, topY + canvas.height * 0.15);
+            ctx.lineTo(centerX - canvas.width * 0.08, topY + canvas.height * 0.15);
+            ctx.stroke();
+            
+            // Top right horizontal wire
+            ctx.beginPath();
+            ctx.moveTo(centerX + canvas.width * 0.08, topY + canvas.height * 0.15);
+            ctx.lineTo(rightX, topY + canvas.height * 0.15);
+            ctx.stroke();
+            
+            // Bottom left horizontal wire (to gap)
+            ctx.beginPath();
+            ctx.moveTo(leftX, bottomY - canvas.height * 0.05);
+            ctx.lineTo(centerX - canvas.width * 0.15, bottomY - canvas.height * 0.05);
+            ctx.stroke();
+            
+            // Bottom right horizontal wire (from gap)
+            ctx.beginPath();
+            ctx.moveTo(centerX + canvas.width * 0.15, bottomY - canvas.height * 0.05);
+            ctx.lineTo(rightX, bottomY - canvas.height * 0.05);
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Draw enhanced visual cue for material in zone
+            if (currentConductorState) {
+                // Animated green glow for conductor
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = wireWidth * 2.5;
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = '#4CAF50';
+                
+                // Draw glowing connection line
+                ctx.beginPath();
+                ctx.moveTo(centerX - canvas.width * 0.15, bottomY - canvas.height * 0.05);
+                ctx.lineTo(centerX + canvas.width * 0.15, bottomY - canvas.height * 0.05);
+                ctx.stroke();
+                
+                // Add connection points
+                ctx.fillStyle = '#4CAF50';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(centerX - canvas.width * 0.15, bottomY - canvas.height * 0.05, wireWidth * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(centerX + canvas.width * 0.15, bottomY - canvas.height * 0.05, wireWidth * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+            } else if (dropZone.hasChildNodes()) {
+                // Enhanced visual for insulator
+                ctx.strokeStyle = '#F44336';
+                ctx.lineWidth = wireWidth * 1.8;
+                ctx.setLineDash([15, 8]);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#F44336';
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX - canvas.width * 0.15, bottomY - canvas.height * 0.05);
+                ctx.lineTo(centerX + canvas.width * 0.15, bottomY - canvas.height * 0.05);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+                ctx.shadowBlur = 0;
+            } else {
+                // Draw connection terminals when empty
+                ctx.fillStyle = '#78909c';
+                ctx.beginPath();
+                ctx.arc(centerX - canvas.width * 0.15, bottomY - canvas.height * 0.05, wireWidth, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(centerX + canvas.width * 0.15, bottomY - canvas.height * 0.05, wireWidth, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw bulb
+            drawBulb(centerX, topY + canvas.height * 0.05);
+            
+            // Draw battery
+            drawBattery(centerX, bottomY + canvas.height * 0.05);
+        }
+
+        function drawBulb(x, y) {
+            const bulbRadius = canvas.width * 0.065;
+            const baseHeight = canvas.height * 0.045;
+            const baseWidth = canvas.width * 0.045;
+            
+            // Enhanced bulb glow effect when lit
+            if (isBulbLit) {
+                // Outer glow
+                ctx.shadowBlur = 50;
+                ctx.shadowColor = '#ffeb3b';
+                const glowGradient = ctx.createRadialGradient(x, y, 0, x, y, bulbRadius * 2.5);
+                glowGradient.addColorStop(0, 'rgba(255, 235, 59, 0.9)');
+                glowGradient.addColorStop(0.4, 'rgba(255, 235, 59, 0.5)');
+                glowGradient.addColorStop(0.7, 'rgba(255, 235, 59, 0.2)');
+                glowGradient.addColorStop(1, 'rgba(255, 235, 59, 0)');
+                ctx.fillStyle = glowGradient;
+                ctx.beginPath();
+                ctx.arc(x, y, bulbRadius * 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.shadowBlur = 0;
+            
+            // Bulb glass with enhanced gradient
+            const bulbGradient = ctx.createRadialGradient(
+                x - bulbRadius * 0.4, 
+                y - bulbRadius * 0.4, 
+                0, 
+                x, 
+                y, 
+                bulbRadius
+            );
+            if (isBulbLit) {
+                bulbGradient.addColorStop(0, '#fffde7');
+                bulbGradient.addColorStop(0.3, '#fff9c4');
+                bulbGradient.addColorStop(0.6, '#ffeb3b');
+                bulbGradient.addColorStop(1, '#fbc02d');
+            } else {
+                bulbGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                bulbGradient.addColorStop(0.5, '#f5f5f5');
+                bulbGradient.addColorStop(1, '#bdbdbd');
+            }
+            
+            ctx.fillStyle = bulbGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, bulbRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bulb outline with shadow
+            ctx.strokeStyle = isBulbLit ? '#f9a825' : '#9e9e9e';
+            ctx.lineWidth = canvas.width * 0.005;
+            ctx.stroke();
+            
+            // Enhanced filament
+            ctx.strokeStyle = isBulbLit ? '#ffffff' : '#757575';
+            ctx.lineWidth = canvas.width * 0.003;
+            if (isBulbLit) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ffffff';
+            }
+            ctx.beginPath();
+            ctx.moveTo(x - bulbRadius * 0.3, y - bulbRadius * 0.1);
+            ctx.quadraticCurveTo(x - bulbRadius * 0.1, y + bulbRadius * 0.3, x, y);
+            ctx.quadraticCurveTo(x + bulbRadius * 0.1, y + bulbRadius * 0.3, x + bulbRadius * 0.3, y - bulbRadius * 0.1);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // Bulb base with enhanced gradient
+            const baseGradient = ctx.createLinearGradient(x, y + bulbRadius, x, y + bulbRadius + baseHeight);
+            baseGradient.addColorStop(0, '#d4d4d4');
+            baseGradient.addColorStop(0.5, '#9e9e9e');
+            baseGradient.addColorStop(1, '#757575');
+            ctx.fillStyle = baseGradient;
+            ctx.fillRect(x - baseWidth / 2, y + bulbRadius - 2, baseWidth, baseHeight);
+            
+            // Base threading lines
+            ctx.strokeStyle = '#616161';
+            ctx.lineWidth = canvas.width * 0.002;
+            for (let i = 0; i < 3; i++) {
+                const lineY = y + bulbRadius + (baseHeight / 4) * (i + 0.5);
+                ctx.beginPath();
+                ctx.moveTo(x - baseWidth / 2, lineY);
+                ctx.lineTo(x + baseWidth / 2, lineY);
+                ctx.stroke();
+            }
+            ctx.strokeRect(x - baseWidth / 2, y + bulbRadius - 2, baseWidth, baseHeight);
+        }
+
+        function drawBattery(x, y) {
+            const batteryWidth = canvas.width * 0.14;
+            const batteryHeight = canvas.height * 0.09;
+            
+            // Battery body with enhanced gradient
+            const batteryGradient = ctx.createLinearGradient(x, y - batteryHeight / 2, x, y + batteryHeight / 2);
+            batteryGradient.addColorStop(0, '#81c784');
+            batteryGradient.addColorStop(0.5, '#66bb6a');
+            batteryGradient.addColorStop(1, '#388e3c');
+            ctx.fillStyle = batteryGradient;
+            
+            // Add shadow for depth
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 3;
+            ctx.shadowOffsetY = 3;
+            
+            ctx.fillRect(x - batteryWidth / 2, y - batteryHeight / 2, batteryWidth, batteryHeight);
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Battery outline
+            ctx.strokeStyle = '#2e7d32';
+            ctx.lineWidth = canvas.width * 0.005;
+            ctx.strokeRect(x - batteryWidth / 2, y - batteryHeight / 2, batteryWidth, batteryHeight);
+            
+            // Battery terminals with enhanced styling
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${canvas.width * 0.045}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 3;
+            ctx.fillText('+', x + batteryWidth * 0.3, y);
+            ctx.fillText('−', x - batteryWidth * 0.3, y);
+            ctx.shadowBlur = 0;
+            
+            // Add battery label
+            ctx.fillStyle = '#1b5e20';
+            ctx.font = `bold ${canvas.width * 0.025}px Arial`;
+            ctx.fillText('9V', x, y + batteryHeight * 0.15);
+        }
+
+        function setBulbState(lit) {
+            isBulbLit = lit;
+            drawCircuit();
+        }
+
+        function initializeGame() {
+            testedItems.clear();
+            isBulbLit = false;
+            currentConductorState = false;
+            dropZone.innerHTML = '';
+            const shuffledData = [...gameData].sort(() => Math.random() - 0.5);
+            dragItemsContainer.innerHTML = '';
+
+            shuffledData.forEach(item => {
+                const card = document.createElement('div');
+                card.id = item.id;
+                card.className = 'drag-item';
+                card.draggable = true;
+                card.innerHTML = `<img src="${item.image}" alt="${item.name}"><p>${item.name}</p>`;
+                dragItemsContainer.appendChild(card);
+            });
+
+            addDragListeners();
+            addDropListeners();
+            addTouchListeners(); // FIX: Add touch event listeners
+            updateProgressBar();
+            resizeCanvas();
+
+            narrationText.textContent = "Welcome to your virtual lab station! Here is a simple circuit with a battery and bulb. Your task is to test different materials and decide whether they conduct electricity. Drag a material into the test zone and observe what happens. Will the bulb light up? Let us investigate!";
+            hintModalText.innerHTML = "<p>Conductors allow electricity to pass and will light the bulb. Insulators block electricity and keep the bulb off.</p><p>Most metals are conductors, while most plastics, glass, and rubber are insulators.</p>";
+        }
+
+        function switchScreen(hideScreen, showScreen) {
+            hideScreen.classList.add('hidden');
+            if (showScreen === gameScreen) {
+                gameHeader.classList.add('visible');
+                hintButton.classList.remove('hidden');
+            } else {
+                gameHeader.classList.remove('visible');
+                hintButton.classList.add('hidden');
+            }
+            setTimeout(() => {
+                showScreen.classList.remove('hidden');
+                if (showScreen === gameScreen) {
+                    resizeCanvas();
+                }
+            }, 50);
+        }
+
+        function updateProgressBar() {
+            const score = testedItems.size;
+            const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+            progressBar.style.width = `${percentage}%`;
+            progressText.textContent = `${score} / ${totalQuestions}`;
+        }
+
+        function showFeedback(isCorrect, message) {
+            const titleText = isCorrect ? "It Lights Up!" : "No Light!";
+            feedbackTitle.innerHTML = `${isCorrect ? icons.correct : icons.incorrect} ${titleText}`;
+            feedbackText.textContent = message;
+
+            let audioFile = isCorrect ? 'audio/correct.mp3' : 'audio/wrong.mp3';
+            let feedbackAudio = document.getElementById('feedback-audio');
+            if (!feedbackAudio) {
+                feedbackAudio = document.createElement('audio');
+                feedbackAudio.id = 'feedback-audio';
+                document.body.appendChild(feedbackAudio);
+            }
+            feedbackAudio.src = audioFile;
+            feedbackAudio.play().catch(e => console.log("Audio play failed."));
+
+            modal.className = isCorrect ? 'correct-feedback' : 'incorrect-feedback';
+            modalOverlay.classList.remove('hidden');
+        }
+
+        const handleContinueClick = () => {
+            modalOverlay.classList.add('hidden');
+            
+            // Check for game completion after closing the modal
+            if (testedItems.size === totalQuestions) {
+                outroAudio.src = "audio/outro.mp3";
+                outroAudio.currentTime = 0;
+                outroAudio.play().catch(e => console.log("Audio play failed."));
+                setTimeout(() => {
+                    switchScreen(gameScreen, endScreen);
+                }, endScreenDelay);
+            }
+        };
+
+       
+        function handleDrop(draggedItem) {
+            const itemData = gameData.find(d => d.id === draggedItem.id);
+            if (!itemData) return;
+
+            if (dropZone.hasChildNodes()) {
+                return;
+            }
+
+            const itemImageSrc = draggedItem.querySelector('img').src;
+            dropZone.innerHTML = `<div class="item-in-zone"><img src="${itemImageSrc}" alt="${itemData.name}"></div>`;
+
+            const isConductive = itemData.conducts;
+            const feedbackMessage = itemData.feedback;
+
+            currentConductorState = isConductive;
+            setBulbState(isConductive);
+
+            showFeedback(isConductive, feedbackMessage);
+
+            if (!testedItems.has(itemData.id)) {
+                testedItems.add(itemData.id);
+                draggedItem.classList.add('tested');
+                updateProgressBar();
+            }
+            setTimeout(() => {
+                const itemInZone = dropZone.querySelector('.item-in-zone');
+                if (itemInZone) {
+                    itemInZone.classList.add('returning');
+
+                    itemInZone.addEventListener('animationend', () => {
+                        dropZone.innerHTML = '';
+                        currentConductorState = false;
+                        setBulbState(false);
+                    }, { once: true });
+                } else {
+                    currentConductorState = false;
+                    setBulbState(false);
+                }
+            }, 2500);
+        }
+
+        function addDragListeners() {
+            document.querySelectorAll('.drag-item').forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    if (item.classList.contains('tested')) {
+                        e.preventDefault();
+                        return;
+                    }
+                    e.dataTransfer.setData('text/plain', item.id);
+                    const img = item.querySelector('img');
+                    if (img) {
+                        e.dataTransfer.setDragImage(img, img.clientWidth / 2, img.clientHeight / 2);
+                    }
+                    setTimeout(() => item.classList.add('dragging'), 0);
+                });
+                item.addEventListener('dragend', () => item.classList.remove('dragging'));
+            });
+        }
+
+        function addDropListeners() {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                const id = e.dataTransfer.getData('text/plain');
+                const draggedItem = document.getElementById(id);
+                if (!draggedItem) return;
+                handleDrop(draggedItem);
+            });
+        }
+
+        // FIX: Add touch support for mobile devices
+        function addTouchListeners() {
+            let draggedItem = null;
+            let ghost = null;
+            let offsetX, offsetY;
+
+            document.querySelectorAll('.drag-item').forEach(item => {
+                item.addEventListener('touchstart', (e) => {
+                    if (item.classList.contains('tested') || ghost) {
+                        return;
+                    }
+                    draggedItem = item;
+
+                    const img = item.querySelector('img');
+                    if (!img) return;
+
+                    const touch = e.targetTouches[0];
+                    const imgRect = img.getBoundingClientRect();
+
+                    ghost = img.cloneNode(true);
+                    ghost.style.position = 'absolute';
+                    ghost.style.zIndex = '1001';
+                    ghost.style.pointerEvents = 'none';
+                    ghost.style.width = `${imgRect.width}px`;
+                    ghost.style.height = `${imgRect.height}px`;
+                    ghost.style.opacity = '0.8';
+                    document.body.appendChild(ghost);
+
+                    offsetX = touch.clientX - imgRect.left;
+                    offsetY = touch.clientY - imgRect.top;
+
+                    ghost.style.left = `${touch.clientX - offsetX}px`;
+                    ghost.style.top = `${touch.clientY - offsetY}px`;
+                    
+                    document.addEventListener('touchmove', onTouchMove, { passive: false });
+                    document.addEventListener('touchend', onTouchEnd);
+                }, { passive: true });
+            });
+
+            function onTouchMove(e) {
+                e.preventDefault();
+                if (!ghost) return;
+
+                const touch = e.targetTouches[0];
+                ghost.style.left = `${touch.clientX - offsetX}px`;
+                ghost.style.top = `${touch.clientY - offsetY}px`;
+
+                const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (elementUnder && (elementUnder === dropZone || dropZone.contains(elementUnder))) {
+                    dropZone.classList.add('drag-over');
+                } else {
+                    dropZone.classList.remove('drag-over');
+                }
+            }
+
+            function onTouchEnd(e) {
+                if (!ghost) return;
+
+                const touch = e.changedTouches[0];
+                const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+
+                if (elementUnder && (elementUnder === dropZone || dropZone.contains(elementUnder))) {
+                    handleDrop(draggedItem);
+                }
+
+                dropZone.classList.remove('drag-over');
+                document.body.removeChild(ghost);
+                ghost = null;
+                draggedItem = null;
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            switchScreen(startScreen, gameScreen);
+            initializeGame();
+            narrationModalOverlay.classList.remove('hidden');
+            introAudio.currentTime = 0;
+            introAudio.play().catch(e => console.log("Audio play failed."));
+        });
+
+        function stopOutroAudio() {
+            if (outroAudio && !outroAudio.paused) {
+                outroAudio.pause();
+                outroAudio.currentTime = 0;
+            }
+        }
+
+        playAgainBtn.addEventListener('click', () => {
+            stopOutroAudio();
+            switchScreen(endScreen, gameScreen);
+            initializeGame();
+            narrationModalOverlay.classList.remove('hidden');
+            introAudio.currentTime = 0;
+            introAudio.play().catch(e => console.log("Audio play failed."));
+        });
+
+        previousBtn.addEventListener('click', () => {
+            stopOutroAudio();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            stopOutroAudio();
+        });
+
+        nextQuestionBtn.addEventListener('click', handleContinueClick);
+
+        continueNarrationBtn.addEventListener('click', () => {
+            narrationModalOverlay.classList.add('hidden');
+            if (!introAudio.paused) {
+                introAudio.pause();
+                introAudio.currentTime = 0;
+            }
+        });
+
+        helpButton.addEventListener('click', () => helpModalOverlay.classList.remove('hidden'));
+        helpModalBtn.addEventListener('click', () => helpModalOverlay.classList.add('hidden'));
+
+        hintButton.addEventListener('click', () => {
+            hintModalOverlay.classList.remove('hidden');
+        });
+        hintModalBtn.addEventListener('click', () => hintModalOverlay.classList.add('hidden'));
+
+        window.addEventListener('resize', resizeCanvas);
+    });
+    </script>
+    <script src="../eventSender.js"></script>
+    </body>
+</html>
