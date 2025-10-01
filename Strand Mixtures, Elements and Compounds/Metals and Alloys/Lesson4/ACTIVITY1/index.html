@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rusting Race</title>
+<style>
+    /* Font Imports and Keyframes */
+    @font-face {
+        font-family: 'Fredoka';
+        src: url('https://fonts.gstatic.com/s/fredoka/v14/X7nP4b87Hv9xxmtpoXvQ-g.ttf') format('truetype');
+    }
+    @keyframes glow-pulse {
+        0%, 100% { box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3); transform: scale(1); }
+        50% { box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5); transform: scale(1.05); }
+    }
+    @keyframes glow-pulse-white {
+        0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); transform: scale(1); }
+        50% { box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); } }
+    @keyframes bubble {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+    }
+
+    ::-webkit-scrollbar{ display: none; }
+
+    /* Root Variables */
+    :root {
+        --primary-color: #5D04B2;
+        --secondary-color: #fbb03b;
+        --correct-color: #4caf50;
+        --incorrect-color: #e74c3c;
+        --text-color-dark: #333;
+        --text-color-light: #fff;
+        --card-background-light: #ffffff;
+        --shadow-dark: rgba(0, 0, 0, 0.3);
+        --border-radius: 1rem;
+        --header-font: 'Fredoka', sans-serif;
+    }
+
+    /* Global Reset & Base Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100vh; overflow: hidden; }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f4f8;
+        font-family: var(--header-font), sans-serif;
+        padding: 0.5rem;
+    }
+
+    #game-wrapper {
+        width: 100%;
+        max-width: 1200px;
+        aspect-ratio: 16 / 9;
+        box-shadow: 0 15px 40px var(--shadow-dark);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: var(--card-background-light);
+    }
+
+    #game-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .screen {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        transition: opacity 0.5s ease-in-out;
+        overflow: hidden;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; }
+    
+    #start-screen {
+       background-image: url('https://placehold.co/1200x675/5D04B2/FFFFFF?text=Welcome!');
+       background-size: cover;
+       background-position: center;
+       justify-content: center;
+       align-items: center;
+       padding: 2rem;
+       text-align: center;
+    }
+    #start-screen h1 {
+       font-size: clamp(2.5rem, 5vw, 4.2rem);
+       color: var(--text-color-light);
+       margin-bottom: 1.2rem;
+       text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+       font-weight: 500;
+    }
+    .start-button { 
+        background: #FBB03B; color: #fff; font-weight: 900;
+        font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
+        padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
+        text-shadow: 0 2px 0 #b88b2a; transition: all 0.2s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+
+    #game-screen { background: #f8f9ff; }
+
+    .game-top-section {
+        width: 100%; flex-shrink: 0; display: flex; justify-content: space-between;
+        align-items: center; background-color: var(--primary-color);
+        color: var(--text-color-light); padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2); gap: 1rem; flex-wrap: wrap;
+    }
+    
+    #game-title {
+        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 600;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1 1 300px; min-width: 0;
+    }
+
+    .progress-area { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1rem); flex-shrink: 0; }
+    #progress-container {
+        width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
+        border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
+        border: 2px solid #fff; position: relative; overflow: hidden;
+    }
+    #progress-bar {
+        height: 100%; width: 0%; background: #FFFF00;
+        border-radius: 0.8rem; transition: width 0.5s ease;
+    }
+    #progress-text {
+        color: var(--text-color-light); font-weight: 700;
+        font-size: clamp(0.75rem, 2vmin, 1rem); text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    .instructions-icon {
+        width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: all 0.3s ease; flex-shrink: 0; animation: glow-pulse-white 2s infinite;
+    }
+    .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+    .instructions-icon svg { fill: white; width: 20px; height: 20px; }
+
+    .game-content {
+        flex: 1; display: flex; padding: clamp(0.5rem, 1vw, 1rem);
+        overflow: hidden; position: relative; flex-direction: column;
+    }
+    
+    #experiment-title {
+        text-align: center; font-size: clamp(1.1rem, 3vmin, 1.5rem); color: var(--primary-color);
+        font-weight: 600; margin-bottom: clamp(0.25rem, 1vh, 0.5rem); flex-shrink: 0;
+    }
+
+    #canvas-container {
+        flex: 1; position: relative;
+        min-width: 0; display: flex; align-items: center; justify-content: center;
+    }
+
+    canvas {
+        display: block; background-color: transparent;
+        border-radius: var(--border-radius);
+    }
+    
+    #controls-and-predictions {
+        display: flex; justify-content: space-around; align-items: center;
+        padding: clamp(0.5rem, 1.5vh, 1rem); border-top: 1px solid #dee2e6;
+        background-color: #e9ecef; flex-wrap: wrap; gap: 1rem;
+    }
+    
+    .prediction-section { text-align: center; }
+    .prediction-section h3 {
+        font-size: clamp(1rem, 2.5vmin, 1.2rem); margin-bottom: 0.5rem;
+        color: var(--text-color-dark);
+    }
+    .prediction-buttons { display: flex; gap: 1rem; }
+    .prediction-btn {
+        font-family: var(--header-font); font-size: clamp(0.9rem, 2vw, 1rem);
+        padding: 0.5rem 1rem; border: 2px solid #ccc; border-radius: 2rem;
+        cursor: pointer; background-color: #fff; color: #555;
+        transition: all 0.2s ease;
+    }
+    .prediction-btn:hover { border-color: var(--secondary-color); background-color: #fff9f0; }
+    .prediction-btn.selected {
+        border-color: var(--primary-color); background-color: var(--primary-color);
+        color: #fff; box-shadow: 0 2px 8px rgba(93, 4, 178, 0.4);
+        transform: scale(1.05);
+    }
+    
+    #start-reaction-btn {
+        font-family: var(--header-font); font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: bold;
+        color: white; border: none; border-radius: 50px; padding: clamp(0.6rem, 2.5vh, 0.8rem) clamp(1.2rem, 5vw, 2.2rem);
+        cursor: pointer; transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        background: linear-gradient(145deg, #2ecc71, #27ae60);
+    }
+    #start-reaction-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.1); }
+    #start-reaction-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.2); }
+    #start-reaction-btn:disabled { background: #bdc3c7 !important; color: #7f8c8d !important; cursor: not-allowed; box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 -2px 0 rgba(0,0,0,0.1); }
+
+    /* Hint Icon */
+    .hint-icon {
+        position: absolute; bottom: 1rem; right: 1rem; width: 50px; height: 50px;
+        background: var(--secondary-color); border-radius: 50%; border: 2px solid white;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: all 0.3s ease; z-index: 1001; box-shadow: 0 4px 15px rgba(251, 176, 59, 0.4);
+        animation: glow-pulse 2s infinite;
+    }
+    .hint-icon:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(251, 176, 59, 0.8); }
+    .hint-icon svg { fill: white; width: 24px; height: 24px; }
+
+    /* Modal Styles */
+    .modal-overlay, .overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+        z-index: 3000; display: flex; justify-content: center; align-items: center;
+        animation: fadeIn 0.3s ease;
+    }
+    .modal-overlay.hidden, .overlay.hidden { display: none; }
+    .modal-content, .modal {
+        background: var(--card-background-light); padding: 2.5rem;
+        border-radius: var(--border-radius); text-align: center;
+        width: 90%; max-width: 600px;
+        animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+    }
+    .modal-content h2, .modal h2 {
+      font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 600; margin-bottom: 1.5rem;
+      color: var(--primary-color);
+    }
+    .modal-content p, .modal p { font-size: clamp(1rem, 2.5vw, 1.2rem); line-height: 1.6; color: var(--text-color-dark); }
+     .modal ul {
+        list-style-type: none; text-align: left; margin-top: 1rem; padding: 0;
+    }
+    .modal li { margin-bottom: 0.8rem; padding-left: 1.5rem; position: relative; }
+    .modal li::before { content: '🧪'; position: absolute; left: 0; }
+    .modal li ul li::before { content: '💧'; }
+
+
+    .modal-btn {
+        width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+        border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+        background-color: var(--primary-color); transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 1.5rem;
+    }
+    .modal-btn:hover { transform: scale(1.02); }
+
+    #activity-intro-overlay .modal-content, #instructions-overlay .modal-content { border-top: 8px solid var(--primary-color); }
+    #instructions-overlay .modal-content { max-height: 80vh; overflow-y: auto; }
+    
+    #activity-intro-overlay .modal-content p {
+        text-align: left; background: #f8f9fa; padding: 1.5rem;
+        border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
+        line-height: 1.5; font-size: clamp(1.1rem, 2.5vw, 1.3rem); color: var(--text-color-dark);
+    }
+    #instructions-overlay .modal-content ul, #hint-overlay .modal-content ul {
+        text-align: left; padding: 0; font-size: 1.1rem; line-height: 1.5;
+    }
+    #instructions-overlay .modal-content li, #hint-overlay .modal-content li {
+        margin-bottom: 0.8rem; font-size: 1.1em; line-height: 1.5;
+    }
+    #hint-overlay .modal-content { border-top: 8px solid var(--secondary-color); }
+    #hint-overlay h2 { color: var(--secondary-color); }
+    #hint-overlay .modal-btn { background-color: var(--secondary-color); }
+
+    #feedback-modal-overlay .modal-content { border-top: 8px solid; }
+
+    /* Completion Overlay */
+    #completion-overlay { 
+        background-image: url('https://placehold.co/1200x675/5D04B2/FFFFFF?text=Complete!');
+        background-size: cover; background-position: center;
+        flex-direction: column; justify-content: center; align-items: center;
+    }
+    .completion-title-banner { 
+        font-size: clamp(2rem, 7vmin, 4rem); text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        text-align: center; color: #fff; font-family: var(--header-font);
+        position: absolute; top: 15%; width: 100%;
+        font-weight: 500;
+    }
+     #completion-overlay .modal {
+        background: transparent; box-shadow: none; padding: 0; overflow: visible;
+        width: auto; max-width: none;
+    }
+    .completion-buttons {
+        position: absolute; bottom: 5%; width: 100%; display: flex;
+        justify-content: center; gap: 1.5rem;
+    }
+    .completion-btn {
+       background: #FBB03B; color: #fff; font-weight: 700;
+       font-size: 1.1rem; border: 0.1875rem solid #fff;
+       border-radius: 3rem; padding: 0.75rem 2.25rem;
+       cursor: pointer; letter-spacing: 0.02em;
+       transition: all 0.2s; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+    }
+    .completion-btn:hover { transform: scale(1.05); }
+    
+    .visually-hidden {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+    }
+    
+    @media (max-width: 991px) {
+       #game-wrapper {
+            width: 100vw !important; height: 100vh !important;
+            min-width: 100vw !important; min-height: 100vh !important;
+            border-radius: 0 !important; max-width: none !important;
+            aspect-ratio: unset !important; box-shadow: none;
+        }
+    }
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+   <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>Rusting Race</h1>
+            <button class="start-button">Start Activity</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <div class="game-top-section">
+               <h1 id="game-title">Virtual Lab: Rusting Race</h1>
+               <div class="progress-area">
+                   <div id="progress-container"><div id="progress-bar"></div></div>
+                   <div id="progress-text">0 / 5</div>
+               </div>
+               <div class="instructions-icon" id="instructions-icon">
+                   <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+               </div>
+            </div>
+            <div class="game-content">
+                <h2 id="experiment-title"></h2>
+                <main id="canvas-container">
+                    <canvas id="activityCanvas" role="img" aria-label="Rusting experiment simulation area with five test tubes."></canvas>
+                </main>
+                 <div class="hint-icon" id="hint-icon">
+                    <svg viewBox="0 0 24 24"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"></path></svg>
+                </div>
+            </div>
+            <div id="controls-and-predictions">
+                <div class="prediction-section">
+                    <h3>What's your prediction?</h3>
+                    <div class="prediction-buttons">
+                         <button class="prediction-btn" data-prediction="rust">Will Rust</button>
+                         <button class="prediction-btn" data-prediction="no-rust">Will Not Rust</button>
+                    </div>
+                </div>
+                <button id="start-reaction-btn" disabled>Start Reaction</button>
+            </div>
+        </div>
+
+        <!-- Modals and Overlays -->
+        <div id="activity-intro-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 style='color: var(--primary-color);'>🧪 Welcome to the Rusting Race!</h2>
+                <p>You are now a virtual lab assistant. Your task is to test how iron nails rust under different conditions. For each test tube, select your prediction, then start the reaction to observe the results. Let the Rusting Race begin!</p>
+                <button class="modal-btn" id="intro-continue-btn">Let's Start!</button>
+            </div>
+        </div>
+
+        <div id="instructions-overlay" class="modal-overlay hidden">
+           <div class="modal-content">
+               <h2 style='color: var(--primary-color);'>Learner Instructions</h2>
+               <ul>
+                   <li>For each test tube, a different set of conditions is prepared for you.</li>
+                   <li>Examine the conditions (e.g., presence of air, water, salt).</li>
+                   <li>Choose your prediction: will the nail rust or not?</li>
+                   <li>Click “Start Reaction” to run the experiment and see the animation.</li>
+                   <li>Compare your prediction with the actual outcome and read the feedback.</li>
+                   <li>Complete all 5 experiments to finish the activity!</li>
+               </ul>
+               <button class="modal-btn" id="close-instructions-btn">Got it!</button>
+           </div>
+        </div>
+
+        <div id="hint-overlay" class="modal-overlay hidden">
+           <div class="modal-content">
+               <h2>💡 Here's a Hint...</h2>
+               <ul>
+                   <li>Rust forms when iron reacts with **oxygen (from air) and water together**.</li>
+                   <li>Removing just one of those ingredients (air or water) will stop rust from forming.</li>
+                   <li>Salt acts as a catalyst, which means it **speeds up** the rusting process significantly. Think about how quickly things rust near the sea!</li>
+               </ul>
+               <button class="modal-btn" id="close-hint-btn">Got it</button>
+           </div>
+        </div>
+       
+        <div id="feedback-modal-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 id="feedback-title"></h2><p id="feedback-text"></p>
+                <button class="modal-btn" id="feedback-continue-btn">Next Experiment</button>
+            </div>
+        </div>
+
+        <div id="completion-overlay" class="overlay hidden">
+             <div class="completion-title-banner">Activity Complete!</div>
+             <div class="modal"></div>
+             <div class="completion-buttons">
+                 <button class="completion-btn btn-restart">Restart Activity</button>
+             </div>
+        </div>
+        
+        <div id="aria-live-announcer" class="visually-hidden" aria-live="polite"></div>
+        
+    <!-- Audio Files -->
+    <audio id="ding-sound" src="https://cdn.jsdelivr.net/gh/mural-digital/mural-assets/audio/correct-choice.mp3" preload="auto"></audio>
+    <audio id="buzz-sound" src="https://cdn.jsdelivr.net/gh/mural-digital/mural-assets/audio/incorrect-choice.mp3" preload="auto"></audio>
+    <audio id="intro-sound" src="https://cdn.jsdelivr.net/gh/mural-digital/mural-assets/audio/activity-intro.mp3" preload="auto"></audio>
+    <audio id="outro-sound" src="https://cdn.jsdelivr.net/gh/mural-digital/mural-assets/audio/activity-outro.mp3" preload="auto"></audio>
+    <audio id="bubble-sound" src="https://cdn.jsdelivr.net/gh/mural-digital/mural-assets/audio/bubbles.mp3" preload="auto" loop></audio>
+   </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Game Data ---
+    const EXPERIMENTS = [
+        { label: 'A', condition: 'Air only', hasWater: false, hasSalt: false, hasAir: true, hasOil: false, shouldRust: false },
+        { label: 'B', condition: 'Water only (sealed)', hasWater: true, hasSalt: false, hasAir: false, hasOil: false, shouldRust: false },
+        { label: 'C', condition: 'Air + Water', hasWater: true, hasSalt: false, hasAir: true, hasOil: false, shouldRust: true },
+        { label: 'D', condition: 'Salt Water + Air', hasWater: true, hasSalt: true, hasAir: true, hasOil: false, shouldRust: true },
+        { label: 'E', condition: 'Sealed, oil-covered water', hasWater: true, hasSalt: false, hasAir: true, hasOil: true, shouldRust: false }
+    ];
+
+    const FEEDBACK = {
+        A: { correct: "Great thinking! Without water, rusting does not happen.", incorrect: "Not quite. Air alone cannot cause rust—moisture is also needed." },
+        B: { correct: "Spot on! Without air (oxygen), the nail stays rust-free.", incorrect: "Water alone is not enough. Air must be present too." },
+        C: { correct: "Correct! Both air and water together cause rust to form.", incorrect: "Think again. Rusting always needs both moisture and air." },
+        D: { correct: "Excellent! Salt speeds up the rusting process greatly.", incorrect: "Missed it! Salt in water makes iron rust even faster." },
+        E: { correct: "Yes! The oil layer blocks air from reaching the water, preventing the rusting reaction.", incorrect: "Try again. Oil seals off oxygen, so no rust forms." }
+    };
+
+    // --- DOM Elements ---
+    const startScreen = document.getElementById('start-screen'), gameScreen = document.getElementById('game-screen');
+    const startBtn = document.querySelector('.start-button');
+    const canvas = document.getElementById('activityCanvas'), ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvas-container');
+    const gameTitle = document.getElementById('game-title');
+    const experimentTitle = document.getElementById('experiment-title');
+    const startReactionBtn = document.getElementById('start-reaction-btn');
+    const predictionBtns = document.querySelectorAll('.prediction-btn');
+    const progressBar = document.getElementById('progress-bar'), progressText = document.getElementById('progress-text');
+    const activityIntroOverlay = document.getElementById('activity-intro-overlay'), introContinueBtn = document.getElementById('intro-continue-btn');
+    const instructionsIcon = document.getElementById('instructions-icon'), instructionsOverlay = document.getElementById('instructions-overlay'), closeInstructionsBtn = document.getElementById('close-instructions-btn');
+    const hintIcon = document.getElementById('hint-icon'), hintOverlay = document.getElementById('hint-overlay'), closeHintBtn = document.getElementById('close-hint-btn');
+    const feedbackModalOverlay = document.getElementById('feedback-modal-overlay'), feedbackTitle = document.getElementById('feedback-title'), feedbackText = document.getElementById('feedback-text'), feedbackContinueBtn = document.getElementById('feedback-continue-btn');
+    const completionOverlay = document.getElementById('completion-overlay');
+    const dingSound = document.getElementById('ding-sound'), buzzSound = document.getElementById('buzz-sound'), introSound = document.getElementById('intro-sound'), outroSound = document.getElementById('outro-sound'), bubbleSound = document.getElementById('bubble-sound');
+
+    // --- Get CSS Variables for Canvas ---
+    const PRIMARY_COLOR = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+    const HEADER_FONT = getComputedStyle(document.body).fontFamily;
+
+    // --- Canvas & Sizing ---
+    let W, H, dpr = window.devicePixelRatio || 1;
+    let testTubes = [];
+
+    // --- Game State ---
+    let isPaused = true;
+    let currentExperimentIndex = 0;
+    let userPrediction = null; // 'rust' or 'no-rust'
+    let animationState = { running: false, startTime: 0, duration: 5000 };
+    let bubbles = [];
+
+    // --- Sound Management ---
+    function playSound(sound) { if(sound) { sound.currentTime = 0; sound.play().catch(e => console.error("Audio play failed:", e)); } }
+    function stopSound(sound) { if(sound) { sound.pause(); sound.currentTime = 0; } }
+
+    // --- Game Setup ---
+    function setupExperiments() {
+        testTubes = [];
+        const tubeCount = EXPERIMENTS.length;
+        const tubeWidth = W / (tubeCount + 2);
+        const tubeHeight = H * 0.7;
+        const spacing = (W - tubeCount * tubeWidth) / (tubeCount + 1);
+
+        EXPERIMENTS.forEach((exp, i) => {
+            testTubes.push({
+                ...exp,
+                x: spacing * (i + 1) + tubeWidth * i,
+                y: H * 0.15,
+                width: tubeWidth,
+                height: tubeHeight,
+                nailRustLevel: 0,
+                isActive: i === currentExperimentIndex,
+            });
+        });
+    }
+
+    function loadExperiment(index) {
+        if (index >= EXPERIMENTS.length) {
+            showCompletionScreen();
+            return;
+        }
+        isPaused = false;
+        userPrediction = null;
+        animationState.running = false;
+        bubbles = [];
+        stopSound(bubbleSound);
+
+        testTubes.forEach((tube, i) => {
+            tube.isActive = (i === index);
+            if (i < index) tube.nailRustLevel = tube.shouldRust ? 1 : 0; // Final state for past tubes
+        });
+        
+        experimentTitle.textContent = `Experiment ${EXPERIMENTS[index].label}: ${EXPERIMENTS[index].condition}`;
+        
+        predictionBtns.forEach(btn => btn.classList.remove('selected'));
+        startReactionBtn.disabled = true;
+        updateProgress();
+    }
+
+    // --- UI, Feedback & State ---
+    function updateProgress() {
+        const total = EXPERIMENTS.length;
+        progressBar.style.width = `${(currentExperimentIndex / total) * 100}%`;
+        progressText.textContent = `${currentExperimentIndex} / ${total}`;
+    }
+
+    function showFeedbackModal(isCorrectGuess, isRusting) {
+        isPaused = true;
+        const experiment = EXPERIMENTS[currentExperimentIndex];
+        const feedback = FEEDBACK[experiment.label];
+        const resultText = isRusting ? "The nail rusted!" : "The nail did not rust.";
+        
+        const title = isCorrectGuess ? `Correct! ${resultText}` : `Not Quite! ${resultText}`;
+        const message = isCorrectGuess ? feedback.correct : feedback.incorrect;
+        
+        const modalContent = feedbackModalOverlay.querySelector('.modal-content');
+        const modalBtn = feedbackModalOverlay.querySelector('.modal-btn');
+        feedbackTitle.textContent = title;
+        feedbackText.textContent = message;
+
+        const color = isCorrectGuess ? 'var(--correct-color)' : 'var(--incorrect-color)';
+        modalContent.style.borderColor = color;
+        feedbackTitle.style.color = color;
+        modalBtn.style.backgroundColor = color;
+
+        if (currentExperimentIndex === EXPERIMENTS.length - 1) {
+            feedbackContinueBtn.textContent = "Finish Activity";
+        } else {
+            feedbackContinueBtn.textContent = "Next Experiment";
+        }
+        
+        feedbackModalOverlay.classList.remove('hidden');
+        playSound(isCorrectGuess ? dingSound : buzzSound);
+    }
+    
+    function showCompletionScreen(){
+        isPaused = true;
+        gameScreen.classList.add('hidden');
+        completionOverlay.classList.remove('hidden');
+        playSound(outroSound);
+        if (window.sendEvent) {
+            sendEvent('END_ACTIVITY', { activityName: 'Rusting Race', completed: true });
+        }
+    }
+    
+    // --- Drawing Functions ---
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(dpr, dpr);
+
+        testTubes.forEach(tube => {
+            drawTestTube(tube);
+            drawNail(tube);
+            if (tube.hasWater) drawWater(tube);
+            if (tube.hasOil) drawOilLayer(tube);
+            drawLabel(tube);
+        });
+
+        if (animationState.running) {
+            drawBubbles();
+        }
+
+        ctx.restore();
+    }
+    
+    function drawTestTube(tube) {
+        ctx.save();
+        ctx.strokeStyle = tube.isActive ? PRIMARY_COLOR : '#aaa';
+        ctx.lineWidth = tube.isActive ? 4 : 2;
+        ctx.fillStyle = 'rgba(230, 240, 255, 0.5)';
+        
+        const r = tube.width / 2;
+        const h = tube.height - r;
+        ctx.beginPath();
+        ctx.moveTo(tube.x, tube.y);
+        ctx.lineTo(tube.x, tube.y + h);
+        ctx.arc(tube.x + r, tube.y + h, r, Math.PI, 0, false);
+        ctx.lineTo(tube.x + tube.width, tube.y);
+        ctx.stroke();
+        ctx.globalAlpha = tube.isActive ? 0.3 : 0.1;
+        ctx.fill();
+        ctx.closePath();
+        
+        // Cork
+        if (!tube.hasAir || tube.hasOil) {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(tube.x - 5, tube.y - 10, tube.width + 10, 15);
+        }
+        ctx.restore();
+    }
+
+    function drawNail(tube) {
+        const nailHeight = tube.height * 0.7;
+        const nailWidth = tube.width * 0.15;
+        const headWidth = nailWidth * 2.5;
+        const centerX = tube.x + tube.width / 2;
+        const bottomY = tube.y + tube.height - tube.width/2 - 10;
+
+        // Rust color based on rust level
+        const rustColor = `rgba(139, 69, 19, ${tube.nailRustLevel})`;
+        const rustHighlight = `rgba(165, 42, 42, ${tube.nailRustLevel})`;
+        
+        // Base nail
+        ctx.fillStyle = '#c0c0c0'; // Silver
+        ctx.beginPath();
+        ctx.moveTo(centerX - nailWidth/2, bottomY - nailHeight);
+        ctx.lineTo(centerX + nailWidth/2, bottomY - nailHeight);
+        ctx.lineTo(centerX, bottomY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Head
+        ctx.fillRect(centerX - headWidth / 2, bottomY - nailHeight - 5, headWidth, 5);
+
+        // Rust overlay
+        ctx.fillStyle = rustColor;
+        ctx.fill();
+        ctx.fillRect(centerX - headWidth / 2, bottomY - nailHeight - 5, headWidth, 5);
+        
+        // Rust highlights/texture
+        if(tube.nailRustLevel > 0.1){
+             ctx.fillStyle = rustHighlight;
+             for(let i=0; i<tube.nailRustLevel * 20; i++){
+                const x = centerX + (Math.random() - 0.5) * nailWidth;
+                const y = bottomY - Math.random() * nailHeight;
+                ctx.fillRect(x,y,2,2);
+             }
+        }
+    }
+
+    function drawWater(tube) {
+        const r = tube.width / 2;
+        const waterHeight = tube.height * 0.6;
+        const topY = tube.y + tube.height - waterHeight;
+        
+        ctx.fillStyle = tube.hasSalt ? 'rgba(173, 216, 230, 0.7)' : 'rgba(135, 206, 250, 0.7)';
+        
+        ctx.beginPath();
+        ctx.moveTo(tube.x, topY);
+        ctx.lineTo(tube.x, tube.y + tube.height - r);
+        ctx.arc(tube.x + r, tube.y + tube.height - r, r, Math.PI, 0, false);
+        ctx.lineTo(tube.x + tube.width, topY);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Salt particles
+        if (tube.hasSalt) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 15; i++) {
+                const x = tube.x + Math.random() * tube.width;
+                const y = topY + Math.random() * (waterHeight);
+                if (y < tube.y + tube.height -r) ctx.fillRect(x, y, 2, 2);
+            }
+        }
+    }
+
+    function drawOilLayer(tube) {
+        const waterTopY = tube.y + tube.height - tube.height * 0.6;
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.4)';
+        ctx.fillRect(tube.x, waterTopY - 10, tube.width, 10);
+        ctx.beginPath();
+        ctx.ellipse(tube.x + tube.width/2, waterTopY-10, tube.width/2, 4, 0, 0, 2*Math.PI);
+        ctx.fill();
+    }
+
+    function drawLabel(tube) {
+        ctx.fillStyle = '#333';
+        ctx.font = `bold ${tube.width * 0.3}px ${HEADER_FONT}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(tube.label, tube.x + tube.width / 2, tube.y + tube.height + 20);
+    }
+    
+    function createBubble() {
+        const tube = testTubes[currentExperimentIndex];
+        if (!tube || !tube.hasWater || tube.hasOil) return;
+        const r = Math.random() * 3 + 1;
+        const x = tube.x + tube.width * 0.2 + Math.random() * tube.width * 0.6;
+        const y = tube.y + tube.height - tube.width / 2 - 10;
+        bubbles.push({ x, y, r, startTime: performance.now() });
+    }
+
+    function drawBubbles() {
+        const tube = testTubes[currentExperimentIndex];
+        if(!tube) return;
+        const waterTop = tube.y + tube.height - tube.height * 0.6;
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+        ctx.lineWidth = 1;
+
+        bubbles.forEach((b, i) => {
+            const elapsed = (performance.now() - b.startTime) / 1000;
+            b.y -= elapsed * 20;
+            b.x += Math.sin(elapsed * Math.PI) * 0.5;
+
+            if (b.y < waterTop) {
+                bubbles.splice(i, 1);
+            } else {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            }
+        });
+    }
+
+    // --- Animation & Game Loop ---
+    function gameLoop(timestamp) {
+        if (animationState.running) {
+            const elapsed = timestamp - animationState.startTime;
+            let progress = Math.min(elapsed / animationState.duration, 1);
+            
+            const tube = testTubes[currentExperimentIndex];
+            if (tube && tube.shouldRust) {
+                tube.nailRustLevel = progress;
+            }
+            if(tube && tube.hasAir && tube.hasWater && !tube.hasOil && Math.random() > 0.8) {
+                createBubble();
+            }
+
+            if (progress >= 1) {
+                animationState.running = false;
+                stopSound(bubbleSound);
+                const currentTube = testTubes[currentExperimentIndex];
+                const isCorrect = (userPrediction === 'rust' && currentTube.shouldRust) || (userPrediction === 'no-rust' && !currentTube.shouldRust);
+                showFeedbackModal(isCorrect, currentTube.shouldRust);
+            }
+        }
+        
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function startAnimation() {
+        const tube = EXPERIMENTS[currentExperimentIndex];
+        if (!tube) return;
+        
+        let duration = 5000;
+        if (tube.shouldRust && tube.hasSalt) duration = 2500;
+        if (!tube.shouldRust) duration = 2000;
+
+        animationState.running = true;
+        animationState.startTime = performance.now();
+        animationState.duration = duration;
+        
+        if (tube.hasAir && tube.hasWater && !tube.hasOil) {
+            playSound(bubbleSound);
+        }
+        
+        startReactionBtn.disabled = true;
+        predictionBtns.forEach(btn => btn.style.pointerEvents = 'none');
+    }
+    
+    // --- Event Handlers ---
+    function handlePrediction(e) {
+        if (animationState.running || isPaused) return;
+
+        userPrediction = e.currentTarget.dataset.prediction;
+        predictionBtns.forEach(btn => btn.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+        startReactionBtn.disabled = false;
+
+        if (window.sendEvent) {
+            sendEvent('PREDICTION_MADE', { 
+                experiment: EXPERIMENTS[currentExperimentIndex].label, 
+                prediction: userPrediction 
+            });
+        }
+    }
+
+    // --- Initialization ---
+    function resize() {
+        const r = canvasContainer.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return;
+
+        W = r.width;
+        H = r.height;
+
+        canvas.style.width = `${W}px`;
+        canvas.style.height = `${H}px`;
+        canvas.width = Math.floor(W * dpr);
+        canvas.height = Math.floor(H * dpr);
+        
+        setupExperiments();
+        loadExperiment(currentExperimentIndex);
+    }
+    
+    function init() {
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            activityIntroOverlay.classList.remove('hidden');
+            isPaused = true;
+            resize(); 
+            playSound(introSound);
+            if (window.sendEvent) {
+                sendEvent('START_ACTIVITY', { activityName: 'Rusting Race' });
+            }
+        });
+
+        introContinueBtn.addEventListener('click', () => {
+            activityIntroOverlay.classList.add('hidden');
+            stopSound(introSound);
+            loadExperiment(currentExperimentIndex);
+        });
+        
+        feedbackContinueBtn.addEventListener('click', () => {
+             feedbackModalOverlay.classList.add('hidden');
+             currentExperimentIndex++;
+             loadExperiment(currentExperimentIndex);
+             predictionBtns.forEach(btn => btn.style.pointerEvents = 'auto');
+        });
+
+        instructionsIcon.addEventListener('click', () => { instructionsOverlay.classList.remove('hidden'); isPaused = true; });
+        closeInstructionsBtn.addEventListener('click', () => { instructionsOverlay.classList.add('hidden'); if(currentExperimentIndex < EXPERIMENTS.length) isPaused = false; });
+        
+        hintIcon.addEventListener('click', () => { hintOverlay.classList.remove('hidden'); isPaused = true; });
+        closeHintBtn.addEventListener('click', () => { hintOverlay.classList.add('hidden'); if(currentExperimentIndex < EXPERIMENTS.length) isPaused = false; });
+
+        predictionBtns.forEach(btn => btn.addEventListener('click', handlePrediction));
+        startReactionBtn.addEventListener('click', startAnimation);
+
+        completionOverlay.querySelector('.btn-restart').addEventListener('click', () => {
+            stopSound(outroSound);
+            completionOverlay.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            currentExperimentIndex = 0;
+            setupExperiments();
+            loadExperiment(currentExperimentIndex);
+        });
+        
+        window.addEventListener('resize', resize);
+        requestAnimationFrame(gameLoop);
+    }
+
+    init();
+});
+</script>
+<!-- 
+Libraries Used:
+- No external JavaScript libraries were used in this implementation. 
+- It is built with vanilla JavaScript and the HTML5 Canvas API.
+-->
+</body>
+</html>
+

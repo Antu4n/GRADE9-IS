@@ -129,7 +129,7 @@
     }
     #start-screen h1 {
       color: var(--text-color-light);
-      font-size: 3.2rem;
+      font-size: 4rem;
       font-family: var(--header-font);
       font-weight: 500;
     }
@@ -174,8 +174,8 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
     #game-title {
-      font-size: clamp(1.2rem, 4vmin, 1.8rem);
-      font-weight: 500;
+      font-size: clamp(1.8rem, 4vmin, 2.8rem);
+      font-weight: 600;
       margin: 0;
       font-family: var(--header-font);
     }
@@ -230,7 +230,7 @@
     #progress-text {
       font-weight: 700; 
       color: #fff;
-      font-size: clamp(0.75rem, 2vmin, 1rem);
+      font-size: clamp(1rem, 2vmin, 1.4rem);
     }
     
     /* ====== HINT ICON ====== */
@@ -398,7 +398,7 @@
     }
     
     .modal h2 {
-      font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem; font-family: var(--header-font);
+      font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; font-family: var(--header-font);
     }
     .modal p, .modal li, .modal ul, .modal ol {
       font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); text-align: left;
@@ -486,7 +486,6 @@
     @media (max-width: 991px) {
       html { font-size: 3.2vmin; }
       #completion-image { max-width: 55%; }
-      #drop-zones-container { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
       #hint-overlay .modal { border-top: 8px solid var(--secondary-color); height: 95vh; overflow-y: auto;}
 
     }
@@ -540,7 +539,7 @@
         <div id="activity-intro-overlay" class="overlay hidden">
            <div class="modal">
                 <h2>Activity Introduction</h2>
-                <p>Metals become stronger and more useful when mixed to form alloys. In this activity, your challenge is to match the correct alloy to the object it helps make. Let's test your material science skills!</p>
+                <p>Metals and alloys are everywhere, from the cables that power your devices to the shiny rings we wear. In this challenge, match each metal or alloy to the object it is best used to make. Use your knowledge of their special properties to find the perfect match!</p>
                 <button id="close-intro-btn">Continue</button>
            </div>
        </div>
@@ -560,7 +559,7 @@
 
         <div id="hint-overlay" class="overlay hidden">
             <div class="modal">
-                <h2>Hint: Common Metals & Alloys</h2>
+                <h2>Here is a hint</h2>
                 <ul>
                     <li><strong>Gold:</strong> A precious metal, often used for jewellery due to its shine and resistance to tarnish.</li>
                     <li><strong>Copper:</strong> An excellent conductor, making it ideal for electrical wires.</li>
@@ -570,7 +569,7 @@
                     <li><strong>Brass:</strong> An alloy with great acoustic properties, used for musical instruments.</li>
                     <li><strong>Stainless Steel:</strong> An alloy that is rust-resistant and shiny, perfect for kitchen sinks.</li>
                 </ul>
-                <button id="close-hint-btn">Close Hint</button>
+                <button id="close-hint-btn">Got It!</button>
             </div>
         </div>
        

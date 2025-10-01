@@ -7,7 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-    <style>
+    
+ <style>
         html {
             font-size: 1.5vmin; 
         }
@@ -195,7 +196,7 @@
             position: static;
             width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             gap: 1.5rem;
             padding: 0 2rem 2rem 2rem;
             box-sizing: border-box;
@@ -239,11 +240,12 @@
         #instructions-banner {
             width: 100%;
             text-align: center;
-            font-size: var(--font-lg);
-            font-weight: 700;
+            font-size: 3rem;
+            font-weight: 900;
             color: var(--primary-color);
-            padding: var(--pad-sm) 0;
+            /* padding: var(--pad-sm) 0; */
             flex-shrink: 0;
+            margin-top: 2.8rem;
         }
 
         #main-activity-area {
@@ -281,6 +283,7 @@
             gap: var(--pad-sm);
             justify-content: center;
             align-content: flex-start;
+            align-items: center;
             min-height: 15rem;
         }
 
@@ -319,13 +322,16 @@
         }
         .object-body {
             padding: var(--pad-sm);
-            font-size: 3.5rem;
-            font-weight: 700;
             flex-grow: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
+        }
+        .object-body img {
+            max-width: 90%;
+            max-height: 9rem;
+            object-fit: contain;
         }
         .object-card.disabled {
             opacity: 0.5;
@@ -337,7 +343,6 @@
         }
         .object-card.correct-match {
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: var(--correct-color);
             color: white;
             border-color: var(--secondary-color);
         }
@@ -399,8 +404,9 @@
             border-color: white;
         }
         .alloy-item.in-builder {
-            position: absolute;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 12rem;
+            height: 10rem;
         }
 
         .drop-zone.drag-over {
@@ -475,12 +481,53 @@
         }
 
         /* --- Media Query for smaller screens --- */
-        @media (min-width: 1200px) {
-           .game-content {
+        @media (min-width: 1400px) {
+            #object-cards-container
+            {
+                max-height: 36vh;
+                overflow-y: auto;
+            }
+            #instructions-banner{
+                margin-top:4.7rem;
+            }
+             .object-body img{
+                max-height: 6rem;
+             }
+             .game-content {
                 padding: 1rem var(--pad-md) var(--pad-md) var(--pad-md);
                 gap: 1rem;
             }
         }
+        @media (min-width: 1200px) and (max-width: 1399px) {
+           .game-content {
+                padding: 1rem var(--pad-md) var(--pad-md) var(--pad-md);
+                gap: 1rem;
+            }
+            .object-body img{
+                max-height: 6rem;
+             }
+            #instructions-banner{
+                margin-top: 4rem;
+            }
+        }
+        @media(min-width: 992px) and (max-width: 1199px) {
+            .game-content {
+                padding: 3rem var(--pad-md) var(--pad-md) var(--pad-md);
+                gap: var(--pad-sm);
+            }
+            /* #object-cards-container{
+                max-height: 50vh;
+                overflow-y: auto;
+                gap:1rem;
+            } */
+             .object-body img{
+                max-height: 5rem;
+             }
+             .completion-image{
+                width: 57%;
+             }
+        }
+
         @media (max-width: 991px) {
             .game-content {
                 padding-top: 6rem;
@@ -497,7 +544,14 @@
             #builder-drop-zone {
                  min-height: 12rem;
             }
+            #instructions-banner{
+                margin-top: 0rem;
+            }
+            .completion-image{
+                width: 70%;
+             }
         }
+        
         
         @media (max-width: 768px), (max-height: 500px) {
             body { padding: 0; }
@@ -652,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
         intro: "Metals become stronger or more useful when mixed with other metals or non-metals to form alloys. In this simulation, your challenge is to build the right alloy by dragging the correct components into the builder box. Then, match that alloy to the object it helps make. Let us test your material science skills!",
         instructions: "<ul><li>Drag the correct element(s) into the Alloy Builder Box to make the alloy.</li><li>Check the alloy name that appears.</li><li>Drag the alloy to the object that is made from it.</li><li>Read the feedback carefully before going to the next round.</li></ul>",
         hint: "<b>Alloy</b>: A mixture of two or more elements, usually metals, to improve properties.<br><b>Steel</b>: Iron + Carbon → Strong and durable.<br><b>Bronze</b>: Copper + Tin → Decorative and corrosion-resistant.<br><b>Brass</b>: Copper + Zinc → Good for instruments and fittings.<br><b>Stainless Steel</b>: Iron + Chromium (+ Carbon) → Rust-resistant and shiny.<br><b>Duralumin</b>: Aluminium + Copper → Light and strong for aircraft.",
-        conclusionTitle: "Superb Alloy Engineering!",
+        conclusionTitle: "Activity Wrap Up!",
         conclusionText: "You have explored how metals combine to form useful materials like Steel, Bronze, Brass, Stainless Steel, and Duralumin. Each alloy is chosen for its special strength, shine, or resistance to rust. You are now ready to design with metals like a real scientist!"
     };
 
@@ -664,9 +718,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const objects = [
-        { id: 'padlock', text: '🔐', name: 'Padlock' }, { id: 'medal', text: '🏅', name: 'Medal' },
-        { id: 'trumpet', text: '🎺', name: 'Trumpet' }, { id: 'sink', text: '🚰', name: 'Kitchen Sink' },
-        { id: 'airplane', text: '✈️', name: 'Airplane Body' }
+        { id: 'padlock', text: '<img src="images/padlock.png" alt="Padlock" onerror="this.outerHTML = \'🔐\'">', name: 'Padlock' },
+        { id: 'medal', text: '<img src="images/medal.png" alt="Medal" onerror="this.outerHTML = \'🏅\'">', name: 'Medal' },
+        { id: 'trumpet', text: '<img src="images/trumpet.png" alt="Trumpet" onerror="this.outerHTML = \'🎺\'">', name: 'Trumpet' },
+        { id: 'sink', text: '<img src="images/sink.jpg" alt="Kitchen Sink" onerror="this.outerHTML = \'🚰\'">', name: 'Kitchen Sink' },
+        { id: 'airplane', text: '<img src="images/airplane.png" alt="Airplane Body" onerror="this.outerHTML = \'✈️\'">', name: 'Airplane Body' }
     ];
 
     const rounds = [
@@ -705,14 +761,19 @@ document.addEventListener('DOMContentLoaded', () => {
         componentsInBuilder = [];
         containers.builder.innerHTML = '';
         containers.elements.innerHTML = '';
-        containers.objects.innerHTML = '';
 
         elements.forEach(el => containers.elements.appendChild(createElement(el)));
-        objects.forEach(obj => containers.objects.appendChild(createObjectCard(obj)));
+        
+        if (score === 0) {
+            containers.objects.innerHTML = '';
+            objects.forEach(obj => containers.objects.appendChild(createObjectCard(obj)));
+            addDropZoneListeners();
+        } else {
+            document.querySelectorAll('.object-card.disabled').forEach(c => c.classList.remove('disabled'));
+        }
         
         updateInstructions();
         addDraggableListeners();
-        addDropZoneListeners();
     }
     
     // --- UI CREATION ---
@@ -751,9 +812,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- DRAG & DROP LOGIC ---
+    // Global variables for touch drag handling
+    let touchDragClone = null;
+    let lastDropZone = null;
+
     function addDraggableListeners() {
         const draggables = document.querySelectorAll('.element-item, .alloy-item');
         draggables.forEach(draggable => {
+            // Mouse Events
             draggable.addEventListener('dragstart', e => {
                 draggedItem = draggable;
                 setTimeout(() => draggable.classList.add('dragging'), 0);
@@ -762,7 +828,86 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (draggedItem) draggedItem.classList.remove('dragging');
                 draggedItem = null;
             });
+            // Touch Events
+            draggable.addEventListener('touchstart', handleTouchStart, { passive: false });
         });
+    }
+
+    function handleTouchStart(e) {
+        e.preventDefault();
+        if (draggedItem) return; // Prevent multiple simultaneous drags
+
+        draggedItem = e.currentTarget;
+        draggedItem.classList.add('dragging');
+
+        // Create a clone for visual feedback during drag
+        touchDragClone = draggedItem.cloneNode(true);
+        touchDragClone.classList.add('dragging');
+        touchDragClone.style.position = 'absolute';
+        touchDragClone.style.zIndex = '1001';
+        touchDragClone.style.pointerEvents = 'none'; // Prevents it from interfering with elementFromPoint
+        touchDragClone.style.width = `${draggedItem.offsetWidth}px`;
+        touchDragClone.style.height = `${draggedItem.offsetHeight}px`;
+        document.body.appendChild(touchDragClone);
+
+        updateClonePosition(e.touches[0]);
+
+        // Add move and end listeners to the whole document
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd, { once: true });
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault();
+        if (!touchDragClone || !draggedItem) return;
+
+        updateClonePosition(e.touches[0]);
+
+        const touch = e.touches[0];
+        touchDragClone.style.display = 'none'; // Hide clone to find what's underneath
+        const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+        touchDragClone.style.display = ''; // Show clone again
+
+        const currentDropZone = elementUnder ? elementUnder.closest('.drop-zone, .object-card') : null;
+        
+        // Manage 'drag-over' class for visual feedback
+        if (lastDropZone && lastDropZone !== currentDropZone) {
+            lastDropZone.classList.remove('drag-over');
+        }
+        if (currentDropZone && currentDropZone !== lastDropZone) {
+            currentDropZone.classList.add('drag-over');
+        }
+        lastDropZone = currentDropZone;
+    }
+
+    function handleTouchEnd(e) {
+        document.removeEventListener('touchmove', handleTouchMove);
+        const originalItem = draggedItem;
+
+        if (lastDropZone) {
+            lastDropZone.classList.remove('drag-over');
+            handleDrop(lastDropZone); // Use the existing drop handler logic
+        }
+        
+        if (touchDragClone) {
+            touchDragClone.remove();
+        }
+        
+        if (originalItem) {
+           originalItem.classList.remove('dragging');
+        }
+
+        // Reset state
+        draggedItem = null;
+        touchDragClone = null;
+        lastDropZone = null;
+    }
+
+    function updateClonePosition(touch) {
+        if (touchDragClone) {
+            touchDragClone.style.left = `${touch.clientX - touchDragClone.offsetWidth / 2}px`;
+            touchDragClone.style.top = `${touch.clientY - touchDragClone.offsetHeight / 2}px`;
+        }
     }
 
     function addDropZoneListeners() {
@@ -806,18 +951,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkBuild() {
         const currentRound = rounds[currentRoundIndex];
-        const correctComponents = [...currentRound.components].sort().join(',');
-        const builtComponents = [...componentsInBuilder].sort().join(',');
+        const requiredComponents = currentRound.components;
+        
+        // Sort copies of both arrays to compare them regardless of order
+        const sortedRequired = [...requiredComponents].sort();
+        const sortedBuilt = [...componentsInBuilder].sort();
 
-        if (correctComponents === builtComponents) {
+        // Check if the sorted arrays are identical
+        const isCorrect = sortedRequired.length === sortedBuilt.length &&
+                          sortedRequired.every((value, index) => value === sortedBuilt[index]);
+
+        if (isCorrect) {
             showFeedback(true, currentRound.feedback.buildCorrect, () => {
                 gameState = 'matching';
                 containers.builder.innerHTML = '';
+                componentsInBuilder = [];
                 createAlloyItem(currentRound);
                 updateInstructions();
             });
         } else {
-            const incorrectFeedback = currentRound.feedback.buildIncorrect[builtComponents] || "That's not the right combination. Try again!";
+            // Use the sortedBuilt string to check for specific incorrect feedback messages
+            const builtComponentsString = sortedBuilt.join(',');
+            const incorrectFeedback = currentRound.feedback.buildIncorrect[builtComponentsString] || "That's not the right combination. Try again!";
             showFeedback(false, incorrectFeedback, () => {
                 componentsInBuilder = [];
                 containers.builder.innerHTML = '';
@@ -954,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof sendEvent !== 'undefined' && typeof ActivityEvent !== 'undefined') {
             sendEvent(ActivityEvent.END_ACTIVITY, { activityName: activityData.name });
         }
-        console.log("Next Activity Clicked");
+        window.location.href = "../ACTIVITY2/index.html";
     });
     
     getEl('continue-narration-btn').addEventListener('click', () => {

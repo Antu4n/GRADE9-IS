@@ -115,6 +115,7 @@
       font-size: 3.2rem;
       font-family: var(--header-font);
       text-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.4);
+      font-weight: 500;
     }
     
     .start-button {
@@ -160,8 +161,8 @@
         }
         
         #game-title {
-          font-size: 1.8rem;
-          font-weight: 800;
+          font-size: 2.2rem;
+          font-weight: 600;
           margin: 0;
         }
         
@@ -370,7 +371,7 @@
         }
         
         .modal .modal-title {
-          font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem;
+          font-size: 2.5rem; font-weight: 500; margin-bottom: 1.5rem;
           color: var(--primary-color);
         }
         .modal p { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark, #333); }
@@ -436,12 +437,13 @@
             line-height: 1.8;
         }
         #scenario-title {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             color: var(--primary-color);
             font-family: var(--header-font);
             margin-bottom: 1.5rem;
             opacity: 0;
             text-align: left;
+            font-weight: 600;
         }
         #scenario-title.fade-in-up {
              animation: fadeInUp 0.6s ease-out forwards;
@@ -481,15 +483,9 @@
           margin-bottom: 1rem;
           text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
           text-align: center;
+          font-weight: 500;
         }
-        .completion-message {
-            font-size: 1.5rem;
-            text-align: center;
-            padding: 0 3rem;
-            max-width: 60rem;
-            line-height: 1.5;
-            text-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.4);
-        }
+
         .completion-modal-content {
             background: transparent;
             box-shadow: none;
@@ -530,7 +526,7 @@
           font-family: var(--header-font);
           background: #FBB03B;
           color: #fff;
-          font-weight: 900;
+          font-weight: 500;
           font-size: 1.5rem;
           border: 0.3rem solid #fff;
           border-radius: 3rem;
@@ -582,7 +578,6 @@
                 font-size: 3vmin;
             }
             .completion-header { font-size: 3rem; }
-            .completion-message { font-size: 1.2rem; padding: 0 1.5rem; }
             .completion-buttons-footer {
                 gap: 1rem;
                 bottom: 1rem;
@@ -626,7 +621,7 @@
             <div id="activity-description-overlay" class="overlay hidden">
                 <div class="modal">
                     <h2 class="modal-title">Activity Introduction</h2>
-                    <p>Alloys are not just metal mixtures—they are science-built materials! In this activity, you will explore how atoms are arranged inside pure metals compared to alloys. Click each hotspot to uncover the hidden science behind why alloys are often stronger and more useful than pure metals.</p>
+                    <p>Alloys are not just metal mixtures, they are science-built materials! In this activity, you will explore how atoms are arranged inside pure metals compared to alloys. Click each hotspot to uncover the hidden science behind why alloys are often stronger and more useful than pure metals.</p>
                     <button class="modal-close-btn" onclick="closeActivityDescription();">Continue</button>
                 </div>
             </div>
@@ -651,28 +646,23 @@
 
             <div id="completion-overlay" class="screen hidden">
                 <h2 class="completion-header">Activity Wrap Up!</h2>
-                 <p class="completion-message">Excellent work! You have just uncovered the atomic-level difference between soft, bendable metals and their stronger, more durable alloy versions. By adding different atoms, we can change how metals behave—stronger, harder, and more useful. That is the real magic of alloys!</p>
                  <div class="completion-modal-content">
                     <img src="images/complete.jpg" alt="Illustration of a stylized atom" class="completion-image" onerror="this.src='https://placehold.co/400x300/e67e22/ffffff?text=Complete!'; this.onerror=null;">
                 </div>
                 <div class="completion-buttons-footer">
                     <button class="completion-btn" onclick="previousActivity()">Previous Activity</button>
                     <button class="completion-btn" onclick="restartGame()">Restart Activity</button>
-                    <a href="#" class="completion-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Inside an Alloy' });">Next Activity</a>
+                    <a href="#" class="completion-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Inside an Alloy' }); window.location.href='../ACTIVITY3/index.html'">Next Activity</a>
                 </div>
             </div>
         </div>
     </div>
 
     <audio id="ding-sound" src="audio/ding.mp3" preload="auto"></audio>
-    <audio id="intro-audio" src="audio/alloy-intro.mp3" preload="auto"></audio>
-    <audio id="outro-audio" src="audio/alloy-outro.mp3" preload="auto"></audio>
+    <audio id="intro-audio" src="audio/intro.mp3" preload="auto"></audio>
+    <audio id="outro-audio" src="audio/outro.mp3" preload="auto"></audio>
     
-    <audio id="uniform-atoms-audio" src="audio/uniform-atoms.mp3" preload="auto"></audio>
-    <audio id="irregular-sizes-audio" src="audio/irregular-sizes.mp3" preload="auto"></audio>
-    <audio id="grain-boundaries-audio" src="audio/grain-boundaries.mp3" preload="auto"></audio>
-    <audio id="impurity-atoms-audio" src="audio/impurity-atoms.mp3" preload="auto"></audio>
-
+   
 
     <script>
         // --- DATA ---
@@ -682,7 +672,7 @@
                 title: 'Uniform Atoms in Pure Metal',
                 explanation: 'In pure metals, atoms are arranged in a neat, repeating pattern with all atoms the same size. This regular structure allows the layers to slide over each other easily when force is applied, which is why many pure metals are softer and more malleable.',
                 tooltipText: 'Neat, repeating layers make pure metals soft and easy to shape.',
-                coords: { top: '50%', left: '35%', width: '15%', height: '25%' },
+                coords: { top: '45%', left: '38%', width: '15%', height: '25%' },
                 tooltipPosition: 'left', // As requested
                 audioId: 'uniform-atoms-audio'
             },
@@ -700,7 +690,7 @@
                 title: 'Grain Boundaries in Alloy',
                 explanation: 'Alloys are made up of many small crystals, each with a slightly different arrangement of atoms. The points where these crystals meet are called grain boundaries. These boundaries block the movement of atoms, making the material more resistant to cracks and deformation.',
                 tooltipText: 'Crystal meeting points (boundaries) block atom movement, resisting cracks.',
-                coords: { top: '65%', left: '85%', width: '15%', height: '25%' }, // Repositioned to prevent overflow
+                coords: { top: '65%', left: '77%', width: '15%', height: '25%' }, // Repositioned to prevent overflow
                 tooltipPosition: 'bottom', // As requested
                 audioId: 'grain-boundaries-audio'
             },
@@ -709,7 +699,7 @@
                 title: 'Impurity Atoms Added to Alloy',
                 explanation: 'Impurity atoms are added to change the properties of a metal. Because they differ in size and type from the main atoms, they distort the structure, which can increase strength, improve corrosion resistance, or help the alloy withstand heat.',
                 tooltipText: 'Added \'impurity\' atoms distort the structure to boost strength or resist corrosion.',
-                coords: { top: '50%', left: '70%', width: '10%', height: '18%' },
+                coords: { top: '50%', left: '65%', width: '10%', height: '18%' },
                 tooltipPosition: 'right', // As requested
                 audioId: 'impurity-atoms-audio'
             }
