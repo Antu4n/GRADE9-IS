@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity: Juma’s Water Woes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        html {
+            font-size: 1.5vmin; /* Increased for better base readability */
+        }
+        ::-webkit-scrollbar{
+            display: none;
+        }
+        
+        @font-face {
+            font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --font-xs: 1.1rem;
+            --font-sm: 1.4rem;
+            --font-md: 1.6rem;
+            --font-lg: 2rem;
+            --font-xl: 4rem;
+            --pad-sm: 1rem;
+            --pad-md: 1.6rem;
+            --pad-lg: 2.4rem;
+            --primary-color: #5D04B2;
+            --secondary-color: #FBB03B;
+            --progress-color: #FFFF00;
+            --correct-color: #5cb85c;
+            --incorrect-color: #d9534f;
+            --text-color-dark: #333;
+            --text-color-light: #fff;
+            --card-background-light: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+            --header-font: 'Fredoka', 'Poppins', sans-serif;
+            --body-font: 'Fredoka', 'Nunito', sans-serif;
+            --border-radius: 1.4rem;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            font-family: var(--body-font);
+            font-size: var(--font-md);
+        }
+
+        #game-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 1.5rem 4rem var(--shadow-dark);
+            overflow: hidden;
+            position: relative;
+            background: #fff;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--pad-lg);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        /* --- HEADER --- */
+        .game-header {
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: var(--pad-sm) var(--pad-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            position: absolute;
+            top: 0; left: 0; z-index: 10;
+            box-shadow: 0 0.2rem 1rem rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .game-header.visible { opacity: 1; }
+        .game-header h1 { font-size: var(--font-lg); font-weight: 800; margin: 0; }
+
+        /* --- PROGRESS BAR STYLING --- */
+        .header-progress {
+            display: flex;
+            align-items: center;
+            gap: var(--pad-md);
+        }
+        #header-progress-container {
+            width: 20rem;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 1.6rem;
+            height: 2rem;
+            border: 0.2rem solid white;
+            position: relative;
+            overflow: hidden;
+        }
+        #header-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--progress-color);
+            border-radius: 1.3rem;
+            transition: width 0.5s ease;
+        }
+        #header-progress-text {
+            font-weight: 700;
+            font-size: var(--font-sm);
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        #start-screen h1 {
+            font-size: var(--font-xl);
+            color: var(--text-color-light);
+            margin-bottom: 1.9rem;
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 0 0.4rem 1rem rgba(0,0,0,0.3);
+        }
+        .start-button {
+            font-family: var(--header-font);
+            background: var(--secondary-color); color: var(--text-color-light);
+            font-weight: 600;
+            font-size: var(--font-md);
+            border: 0.3rem solid #fff;
+            border-radius: 4.8rem;
+            padding: var(--pad-sm) var(--pad-lg);
+            margin-top: 1.6rem;
+            cursor: pointer;
+            text-shadow: 0 0.2rem 0 #b88b2a;
+            transition: all 0.2s;
+        }
+        .start-button:hover { transform: scale(1.06); }
+
+        /* ===== COMPLETION OVERLAY ===== */
+        #completion-overlay {
+            background-image: url('images/gamebg.jpg');
+            background-size: cover; background-position: center; color: #fff;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 1rem; padding: 1rem;
+        }
+        .completion-title-banner {
+            font-size: clamp(2rem, 7vmin, 4rem);
+            text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+            text-align: center; font-family: var(--header-font);
+        }
+        #completion-text {
+            color: white;
+            font-size: var(--font-md);
+            text-align: center;
+            max-width: 60ch;
+            background-color: rgba(0,0,0,0.3);
+            padding: var(--pad-md);
+            border-radius: var(--border-radius);
+            margin-top: -1rem;
+            margin-bottom: 1rem;
+        }
+        #completion-overlay .modal {
+            background: transparent; box-shadow: none; width: auto; max-width: none;
+            display: flex; justify-content: center; align-items: center; padding: 0; overflow: visible;
+            border-top:0rem;
+        }
+        #completion-image {
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            border: 3px solid var(--secondary-color);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-top: 0.5rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .completion-buttons {
+            position: static;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0 2rem 2rem 2rem;
+            box-sizing: border-box;
+            align-items: flex-end;
+            margin-top: 0;
+        }
+        .completion-btn {
+            background: #FBB03B;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 0.3rem solid #fff;
+            border-radius: 3rem;
+            padding: 0.75rem 2.25rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+        }
+        .completion-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        }
+        
+        /* --- GAME SCREEN & LAYOUT --- */
+        #game-screen {
+            justify-content: flex-start;
+            padding: 0;
+            overflow: hidden;
+            background-color: #e9eef2;
+        }
+        .game-content {
+            width: 100%;
+            height: 100%;
+            padding: 7rem var(--pad-lg) var(--pad-md) var(--pad-lg);
+            display: flex;
+            flex-direction: column; 
+            gap: var(--pad-md);
+        }
+        
+        #case-study-container {
+            display: grid;
+            grid-template-columns: 40% 1fr;
+            gap: var(--pad-lg);
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #story-card {
+            background: var(--card-background-light);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px var(--shadow-light);
+            padding: var(--pad-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--pad-md);
+            overflow-y: auto;
+        }
+        #story-image {
+            width: 100%;
+            border-radius: calc(var(--border-radius) / 2);
+            aspect-ratio: 16/10;
+            object-fit: cover;
+        }
+        #story-text h3 {
+            font-size: var(--font-lg);
+            color: var(--primary-color);
+            margin-bottom: var(--pad-sm);
+        }
+        #story-text p {
+            font-size: var(--font-sm);
+            line-height: 1.6;
+            color: var(--text-color-dark);
+        }
+
+        #options-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--pad-sm);
+            overflow: hidden;
+        }
+        #options-container h2 {
+            font-size: var(--font-lg);
+            text-align: center;
+            color: var(--text-color-dark);
+            flex-shrink: 0;
+        }
+        #choices-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--pad-md);
+            overflow-y: auto;
+            padding: 0 var(--pad-sm) var(--pad-sm) 0;
+            height: 100%;
+        }
+
+        .choice-item {
+            background-color: var(--card-background-light);
+            padding: var(--pad-md);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px var(--shadow-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-color-dark);
+            border: 3px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Aligned to the left for labels */
+            text-align: left; /* Aligned to the left for labels */
+        }
+
+        .choice-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--shadow-light);
+            border-color: var(--primary-color);
+        }
+
+        .choice-item.clicked {
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .choice-item.correct {
+            background-color: #e8f5e9;
+            border-color: var(--correct-color);
+        }
+        .choice-item.incorrect {
+            background-color: #fbe9e7;
+            border-color: var(--incorrect-color);
+        }
+
+        /* --- BUTTONS --- */
+        #help-button, .hint-icon { animation: glow-pulse-white 2.5s infinite ease-in-out; }
+        #help-button {
+            width: 4rem; height: 4rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 0.2rem solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; padding: 0; color: white; }
+        #help-button svg { width: 50%; height: 50%; fill: white; }
+        #help-button:hover { transform: scale(1.1); animation: none; }
+
+        #hint-button {
+            position: absolute;
+            bottom: 2rem; right: 2rem;
+            z-index: 20;
+            width: 5rem; height: 5rem;
+            background: var(--secondary-color);
+            border: 0.3rem solid white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0.4rem 1.5rem rgba(251, 176, 59, 0.4);
+            animation: glow-pulse 2.5s infinite ease-in-out;
+        }
+        #hint-button:hover { animation: none; transform: scale(1.1); box-shadow: 0 0.6rem 2.5rem rgba(251, 176, 59, 0.8); }
+        #hint-button svg { width: 2.4rem; height: 2.4rem; fill: white; }
+        #hint-button.hidden { display: none; }
+
+        /* --- NEW MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4); backdrop-filter: blur(0.3125rem);
+            z-index: 3000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 1rem;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .modal {
+            background-color: #ffffff; padding: 2.5rem; border-radius: 1rem;
+            text-align: center; width: 90%; max-width: 37.5rem; /* 600px */
+            border-top: 0.5rem solid; /* 8px */
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active .modal { transform: scale(1); }
+        
+        .modal-title { 
+            font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem; 
+            display: flex; align-items: center; justify-content: center; gap: 0.75rem; 
+        }
+        .modal-title svg { width: 2rem; height: 2rem; }
+        
+        .modal-text { 
+            font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); margin-bottom: 1.5rem; 
+        }
+        
+        .modal-button {
+            width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+            border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .modal-button:hover { transform: scale(1.02); }
+        
+        /* Specific Modal Styles */
+        #narration-modal-overlay .modal, #help-modal-overlay .modal { border-color: var(--primary-color); }
+        #narration-modal-overlay .modal-title, #help-modal-overlay .modal-title { color: var(--primary-color); }
+        #narration-modal-overlay .modal-button, #help-modal-overlay .modal-button { background-color: var(--primary-color); }
+        
+        #hint-modal-overlay .modal { border-color: var(--secondary-color); }
+        #hint-modal-overlay .modal-title { color: var(--secondary-color); }
+        #hint-modal-overlay .modal-button { background-color: var(--secondary-color); }
+        
+        #feedback-modal-overlay .modal.correct-feedback { border-color: var(--correct-color); }
+        #feedback-modal-overlay .modal.correct-feedback .modal-title { color: var(--correct-color); }
+        #feedback-modal-overlay .modal.correct-feedback .modal-button { background-color: var(--correct-color); }
+        
+        #feedback-modal-overlay .modal.incorrect-feedback { border-color: var(--incorrect-color); }
+        #feedback-modal-overlay .modal.incorrect-feedback .modal-title { color: var(--incorrect-color); }
+        #feedback-modal-overlay .modal.incorrect-feedback .modal-button { background-color: var(--incorrect-color); }
+
+        .narration-text {
+            font-size: 1.3rem; line-height: 1.6; color: var(--text-color-dark); margin-bottom: 1.5rem;
+            text-align: left; background: #f8f9fa; padding: 1.5rem;
+            border-radius: 0.75rem; border-left: 0.25rem solid var(--primary-color);
+        }
+        #help-modal .modal-text { text-align: left; }
+
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5); transform: scale(1.1); }
+        }
+        @keyframes glow-pulse-white {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+        }
+
+        /* --- Media Query for smaller screens --- */
+        @media (max-width: 991px) {
+            #completion-image { max-width: 56vw; width: 100%; }
+            /* Stack elements vertically, keeping the story first */
+            #case-study-container { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto 1fr; /* Let story define its height */
+            }
+        }
+        @media (max-width: 768px), (max-height: 500px) {
+            body { padding: 0; }
+            #game-wrapper { aspect-ratio: unset; width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; }
+            html { font-size: 2.8vmin; } /* Adjusted for better mobile scaling */
+            .game-content { flex-direction: column; padding: 7rem var(--pad-sm) var(--pad-sm) var(--pad-sm); }
+            #case-study-container { display: flex; flex-direction: column; }
+            #story-card { flex-shrink: 1; min-height: 15rem; }
+            #options-container { flex-grow: 1; }
+            #choices-grid { grid-template-columns: 1fr; }
+            .choice-item { font-size: var(--font-sm); padding: var(--pad-sm); }
+            .completion-buttons { gap: 0.75rem; position: static; padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-wrapper">
+        <div id="game-container">
+            <div class="game-header">
+                <h1 id="activity-title">Juma’s Water Woes</h1>
+                <div class="header-progress">
+                    <div id="header-progress-container">
+                        <div id="header-progress-bar"></div>
+                    </div>
+                    <div id="header-progress-text">0 / 4</div>
+                    <button id="help-button" class="help-icon" title="Help">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="start-screen" class="screen">
+                <h1>Juma’s Water Woes</h1>
+                <button class="start-button">Start Activity</button>
+            </div>
+
+            <div id="game-screen" class="screen hidden">
+                <div class="game-content">
+                    <div id="case-study-container">
+                        <div id="story-card">
+                            <img id="story-image" src="images/scenario.jpg" alt="Illustration shows Juma by a laundry bucket with no lather, a kettle with white scale, and old, rusty lead pipes." onerror="this.src='https://placehold.co/600x400/e9eef2/333?text=Juma%27s+Water+Woes'; this.onerror=null;">
+                            <div id="story-text">
+                                <h3>Juma's Situation</h3>
+                                <p>Juma visits his grandparents. Their water causes soap not to lather, the kettle has white scale, and the pipes are old. They want to continue using the water but avoid waste and health problems.</p>
+                            </div>
+                        </div>
+                        <div id="options-container">
+                            <h2>Which of these are good decisions Juma should make?</h2>
+                            <div id="choices-grid"></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="hint-button" class="hint-icon hidden" title="Get a Hint">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/></svg>
+                </button>
+            </div>
+
+            <div id="completion-overlay" class="screen hidden">
+                <h2 class="completion-title-banner">Activity Wrap Up!</h2>
+                <p id="completion-text"></p>
+                <div class="modal">
+                     <img id="completion-image" src="images/complete.jpg" alt="Activity summary showing completed classification." onerror="this.src='https://placehold.co/600x400/5D04B2/ffffff?text=Well+Done!'; this.onerror=null;">
+                </div>
+                <div class="completion-buttons">
+                    <button class="completion-btn" id="restart-activity-btn">Restart Activity</button>
+                    <button class="completion-btn" id="next-activity-btn">Next Activity</button>
+                </div>
+            </div>
+
+            <div id="feedback-modal-overlay" class="modal-overlay">
+                <div id="feedback-modal" class="modal">
+                    <h2 class="modal-title" id="feedback-title"></h2>
+                    <p class="modal-text" id="feedback-modal-text"></p>
+                    <button class="modal-button" id="feedback-modal-btn">Continue</button>
+                </div>
+            </div>
+
+            <div id="narration-modal-overlay" class="modal-overlay">
+                <div id="narration-modal" class="modal">
+                    <h2 class="modal-title">Activity Introduction</h2>
+                    <p class="narration-text" id="narration-text"></p>
+                    <button class="modal-button" id="continue-narration-btn">Continue</button>
+                </div>
+            </div>
+
+            <div id="help-modal-overlay" class="modal-overlay">
+                <div id="help-modal" class="modal">
+                    <h2 class="modal-title">Learner Instructions</h2>
+                    <div class="modal-text" id="help-modal-text"></div>
+                    <button class="modal-button" id="help-modal-btn">Got It!</button>
+                </div>
+            </div>
+
+            <div id="hint-modal-overlay" class="modal-overlay">
+                <div id="hint-modal" class="modal">
+                    <h2 class="modal-title">Here's a Hint...</h2>
+                    <p class="modal-text" id="hint-modal-text"></p>
+                    <button class="modal-button" id="hint-modal-btn">Got It!</button>
+                </div>
+            </div>
+            
+            <audio id="intro-audio" src="audio/intro.mp3" preload="auto"></audio>
+            <audio id="outro-audio" src="audio/outro.mp3" preload="auto"></audio>
+            <audio id="correct-audio" src="audio/ding.mp3" preload="auto"></audio>
+            <audio id="incorrect-audio" src="audio/buzz.mp3" preload="auto"></audio>
+
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- CONSTANTS ---
+    const endScreenDelay = 500;
+    const ACTIVITY_NAME = 'Juma’s Water Woes';
+
+    // --- DOM ELEMENTS ---
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const completionOverlay = document.getElementById('completion-overlay');
+    const gameHeader = document.querySelector('.game-header');
+    const startBtn = document.querySelector('.start-button');
+    const narrationModalOverlay = document.getElementById('narration-modal-overlay');
+    const narrationText = document.getElementById('narration-text');
+    const continueNarrationBtn = document.getElementById('continue-narration-btn');
+    const modalOverlay = document.getElementById('feedback-modal-overlay');
+    const modal = document.getElementById('feedback-modal');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackText = document.getElementById('feedback-modal-text');
+    const feedbackModalBtn = document.getElementById('feedback-modal-btn');
+    const choicesGrid = document.getElementById('choices-grid');
+    const helpButton = document.getElementById('help-button');
+    const helpModalOverlay = document.getElementById('help-modal-overlay');
+    const helpModalText = document.getElementById('help-modal-text');
+    const helpModalBtn = document.getElementById('help-modal-btn'); // FIX: Ensure this variable is defined
+    const hintButton = document.getElementById('hint-button');
+    const hintModalOverlay = document.getElementById('hint-modal-overlay');
+    const hintModalText = document.getElementById('hint-modal-text');
+    const hintModalBtn = document.getElementById('hint-modal-btn');
+    const progressBar = document.getElementById('header-progress-bar');
+    const progressText = document.getElementById('header-progress-text');
+    const restartActivityBtn = document.getElementById('restart-activity-btn');
+    const completionText = document.getElementById('completion-text');
+    const introAudio = document.getElementById('intro-audio');
+    const outroAudio = document.getElementById('outro-audio');
+    const correctAudio = document.getElementById('correct-audio');
+    const incorrectAudio = document.getElementById('incorrect-audio');
+
+    // --- GAME DATA ---
+    const gameContent = {
+        intro: "Juma has noticed problems while staying at his grandparents’ rural home. The water causes soap to fail, a white layer coats the kettle, and the pipes are very old. Can you help him make the best decisions to solve these challenges using your science skills?",
+        instructions: "<p>Read Juma’s situation carefully.</p><p>Click on the decisions you think will help Juma and his grandparents.</p><p>Some decisions are good, others are not  think before you select.</p><p>You may select more than one option.</p>",
+        hint: "<p>Think about how to remove hardness in water.</p><p>Consider both health and appliance protection.</p><p>Avoid solutions that waste resources.</p>",
+        conclusion: "Excellent work! You helped Juma and his grandparents make smart, science-based water decisions. You now understand the effects of hard water and how to manage it at home!"
+    };
+
+    const gameData = [
+        { id: 'boil-water', text: 'Boil water before laundry', correct: true, feedback: 'Correct. Boiling removes temporary hardness by forming insoluble calcium carbonate.' },
+        { id: 'add-soda', text: 'Add washing soda to laundry', correct: true, feedback: 'Right! Washing soda removes calcium and magnesium ions  improving lather.' },
+        { id: 'drink-hard', text: 'Drink the hard water', correct: true, feedback: 'Yes! Hard water contains calcium and magnesium which are good for bones and muscles.' },
+        { id: 'replace-pipes', text: 'Replace pipes with non-lead ones', correct: true, feedback: 'Great choice. Soft water can dissolve lead, so replacing old pipes prevents health risks.' },
+        { id: 'more-soap', text: 'Use more soap than usual', correct: false, feedback: 'Try again. This wastes soap and money. It does not solve the hardness issue.' },
+        { id: 'ignore-deposits', text: 'Ignore the white deposits', correct: false, feedback: 'Not a good decision. These deposits can damage kettles and heating appliances over time.' }
+    ];
+
+    const icons = {
+        correct: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+        incorrect: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+    };
+
+    let score = 0;
+    const totalCorrectChoices = gameData.filter(item => item.correct).length;
+
+    function shuffleArray(array) {
+        // Fisher-Yates shuffle
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initializeGame() {
+        score = 0;
+        
+        narrationText.innerHTML = gameContent.intro;
+        helpModalText.innerHTML = gameContent.instructions;
+        hintModalText.innerHTML = gameContent.hint;
+        completionText.innerHTML = gameContent.conclusion;
+
+        choicesGrid.innerHTML = '';
+
+        // Shuffle a copy of gameData for display
+        const shuffledChoices = shuffleArray([...gameData]);
+
+        shuffledChoices.forEach((itemData, index) => {
+            const itemEl = document.createElement('div');
+            const label = String.fromCharCode('A'.charCodeAt(0) + index);
+            itemEl.className = 'choice-item';
+            itemEl.innerHTML = `<strong>${label}.</strong>&nbsp;${itemData.text}`; // Add label
+            itemEl.dataset.id = itemData.id;
+            itemEl.dataset.correct = itemData.correct;
+            itemEl.dataset.feedback = itemData.feedback;
+            itemEl.addEventListener('click', handleChoiceClick);
+            choicesGrid.appendChild(itemEl);
+        });
+
+        updateProgressBar();
+    }
+    
+    function handleChoiceClick(event) {
+        const choiceEl = event.currentTarget;
+        if (choiceEl.classList.contains('clicked')) return;
+
+        choiceEl.classList.add('clicked');
+        const isCorrect = choiceEl.dataset.correct === 'true';
+        const feedbackMessage = choiceEl.dataset.feedback;
+
+        if (isCorrect) {
+            score++;
+            updateProgressBar();
+            choiceEl.classList.add('correct');
+            showFeedback(true, feedbackMessage);
+        } else {
+            choiceEl.classList.add('incorrect');
+            showFeedback(false, feedbackMessage);
+        }
+    }
+
+    function switchScreen(hideScreen, showScreen) {
+        hideScreen.classList.add('hidden');
+        if (showScreen === gameScreen) {
+            gameHeader.classList.add('visible');
+            hintButton.classList.remove('hidden');
+        } else if (hideScreen === gameScreen) {
+            gameHeader.classList.remove('visible');
+            hintButton.classList.add('hidden');
+        }
+        setTimeout(() => showScreen.classList.remove('hidden'), 50);
+    }
+
+    function updateProgressBar() {
+        const percentage = totalCorrectChoices > 0 ? (score / totalCorrectChoices) * 100 : 0;
+        progressBar.style.width = `${percentage}%`;
+        progressText.textContent = `${score} / ${totalCorrectChoices}`;
+    }
+
+    function showFeedback(isCorrect, message) {
+        let titleText;
+        let sound;
+
+        modal.className = 'modal'; // Reset classes
+
+        if (isCorrect) {
+            titleText = "Correct!";
+            sound = correctAudio;
+            modal.classList.add('correct-feedback');
+            feedbackTitle.innerHTML = `${icons.correct} ${titleText}`;
+        } else {
+            titleText = "Consider This...";
+            sound = incorrectAudio;
+            modal.classList.add('incorrect-feedback');
+            feedbackTitle.innerHTML = `${icons.incorrect} ${titleText}`;
+        }
+
+        feedbackText.innerHTML = message;
+        
+        sound.currentTime = 0;
+        sound.play().catch(e => console.log("Audio play failed."));
+
+        modalOverlay.classList.add('active');
+
+        feedbackModalBtn.onclick = () => {
+             modalOverlay.classList.remove('active');
+             checkGameCompletion();
+        };
+    }
+
+    function checkGameCompletion() {
+        if (score === totalCorrectChoices) {
+            setTimeout(() => {
+                switchScreen(gameScreen, completionOverlay);
+                outroAudio.play().catch(e => console.log("Outro audio play failed."));
+            }, endScreenDelay);
+        }
+    }
+
+    function showNarration() {
+        introAudio.currentTime = 0;
+        introAudio.play().catch(e => console.log("Intro audio play failed."));
+        narrationModalOverlay.classList.add('active');
+    }
+    
+    function stopAllAudio() {
+        [introAudio, outroAudio, correctAudio, incorrectAudio].forEach(audio => {
+            if (audio && !audio.paused) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    startBtn.addEventListener('click', () => {
+        switchScreen(startScreen, gameScreen);
+        initializeGame();
+        showNarration();
+        if (typeof sendEvent !== 'undefined' && typeof ActivityEvent !== 'undefined') {
+            sendEvent(ActivityEvent.START_ACTIVITY, { activityName: ACTIVITY_NAME });
+        }
+    });
+
+    restartActivityBtn.addEventListener('click', () => {
+        stopAllAudio();
+        initializeGame();
+        switchScreen(completionOverlay, gameScreen);
+    });
+    
+    document.querySelectorAll('.completion-buttons button').forEach(button => {
+        button.addEventListener('click', stopAllAudio);
+    });
+
+    continueNarrationBtn.addEventListener('click', () => {
+        narrationModalOverlay.classList.remove('active');
+        stopAllAudio();
+    });
+
+    helpButton.addEventListener('click', () => helpModalOverlay.classList.add('active'));
+    helpModalBtn.addEventListener('click', () => helpModalOverlay.classList.remove('active')); // FIX: Attaching listener to the now-defined button
+    
+    hintButton.addEventListener('click', () => hintModalOverlay.classList.add('active'));
+    hintModalBtn.addEventListener('click', () => hintModalOverlay.classList.remove('active'));
+
+    document.getElementById('next-activity-btn').addEventListener('click', () => {
+        if (typeof sendEvent !== 'undefined' && typeof ActivityEvent !== 'undefined') {
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: ACTIVITY_NAME });
+        }
+        window.location.href = "../ACTIVITY3/index.html"; // Update with actual next activity URL
+    });
+});
+</script>
+
+</body>
+</html>
