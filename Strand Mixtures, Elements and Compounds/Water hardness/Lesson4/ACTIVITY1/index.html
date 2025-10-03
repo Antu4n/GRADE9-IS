@@ -209,18 +209,15 @@
             margin-top: 0;
         }
         .completion-btn {
-            background: #FBB03B;
-            color: #fff;
-            font-weight: 700;
-            font-size: 1.1rem;
-            border: 0.3rem solid #fff;
-            border-radius: 3rem;
-            padding: 0.75rem 2.25rem;
-            margin-top: 1rem;
-            cursor: pointer;
-            letter-spacing: 0.02em;
-            transition: all 0.2s;
-            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+            font-family: var(--header-font); background: var(--secondary-color); color: #fff;
+            font-weight: 500; 
+            font-size: 1.3rem;
+            border: 0.1875rem solid #fff; border-radius: 3rem; 
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            text-shadow: 0 0.125rem 0 #b88b2a; text-decoration: none;
+            min-width: 8.75rem; /* 140px */
         }
         .completion-btn:hover { 
             transform: scale(1.05); 
@@ -803,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.classList.add('correct-feedback');
             feedbackTitle.innerHTML = `${icons.correct} ${titleText}`;
         } else {
-            titleText = "Try Again...";
+            titleText = "Try Again";
             sound = incorrectAudio;
             modal.classList.add('incorrect-feedback');
             feedbackTitle.innerHTML = `${icons.incorrect} ${titleText}`;

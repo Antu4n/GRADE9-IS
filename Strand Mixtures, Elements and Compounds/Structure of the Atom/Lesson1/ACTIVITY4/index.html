@@ -7,8 +7,8 @@
 <style>
     /* Font Imports and Keyframes */
     @font-face {
-        font-family: 'Chevin Pro Medium';
-        src: url('../assets/Chevin_Pro.otf') format('opentype');
+        font-family: 'Fredoka';
+        src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
     }
     @keyframes glow-pulse-white {
         0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); transform: scale(1); }
@@ -28,7 +28,7 @@
         --card-background-light: #ffffff;
         --shadow-dark: rgba(0, 0, 0, 0.3);
         --border-radius: 1rem;
-        --header-font: 'Chevin Pro Medium', sans-serif;
+        --header-font: 'Fredoka', sans-serif;
     }
 
     /* Global Reset & Base Styles */
@@ -92,9 +92,10 @@
        color: var(--text-color-light);
        margin-bottom: 1.2rem;
        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+       font-weight: 500;
     }
     .start-button { 
-        background: #FBB03B; color: #fff; font-weight: 900;
+        background: #FBB03B; color: #fff; font-weight: 700;
         font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
         padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
         text-shadow: 0 2px 0 #b88b2a; transition: all 0.2s;
@@ -112,7 +113,7 @@
     }
     
     #game-title {
-        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 800;
+        font-size: clamp(1.2rem, 4vmin, 1.8rem); font-weight: 600;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1 1 300px; min-width: 0;
     }
 
@@ -190,7 +191,7 @@
         position: relative;
     }
     .modal-content h2, .modal h2 {
-      font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
+      font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem;
       color: var(--primary-color);
     }
     .modal-content p, .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); }
@@ -236,6 +237,7 @@
         font-size: clamp(2rem, 7vmin, 4rem); text-shadow: 0 4px 8px rgba(0,0,0,0.3);
         text-align: center; color: #fff; font-family: var(--header-font);
         position: absolute; top: 5%; width: 100%;
+        font-weight: 600;
     }
     #completion-overlay .modal {
         background: transparent; box-shadow: none; padding: 0; overflow: visible;
@@ -251,7 +253,7 @@
         justify-content: space-between; gap: 1.5rem; padding: 0 2rem;
     }
     .completion-btn {
-       background: #FBB03B; color: #fff; font-weight: 700;
+       background: #FBB03B; color: #fff; font-weight: 500;
        font-size: 1.1rem; border: 0.1875rem solid #fff;
        border-radius: 3rem; padding: 0.75rem 2.25rem;
        margin-top: 1rem; cursor: pointer; letter-spacing: 0.02em;

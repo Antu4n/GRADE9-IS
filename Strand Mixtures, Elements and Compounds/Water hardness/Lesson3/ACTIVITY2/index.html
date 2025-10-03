@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fix the Distillation Setup - Sequencing Game</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Name the Distillation Setup</title>
     <style>
-        /* ====== IMPORTS ====== */
+        /* Font Imports */
         @font-face {
             font-family: 'Fredoka';
             src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
@@ -16,783 +13,1092 @@
         ::-webkit-scrollbar{
             display: none;
         }
-        /* ====== ROOT VARIABLES & SCALING ====== */
+        /* Root Variables */
         :root {
             --primary-color: #5D04B2;
             --secondary-color: #FBB03B;
-            --correct-color: #5cb85c;
-            --incorrect-color: #d9534f;
+            --correct-color: #4caf50;
+            --incorrect-color: #e74c3c;
             --text-color-dark: #333;
             --text-color-light: #fff;
+            --card-background-light: #ffffff;
+            --shadow-dark: rgba(0, 0, 0, 0.3);
             --border-radius: 1rem;
-            --header-font: 'Fredoka', 'Poppins', sans-serif;
-            --body-font: var(--header-font);
-        }
-        
-        html {
-             font-size: 1.8vmin;
+            --header-font: 'Fredoka', sans-serif;
         }
 
-        /* ===== HIDE SCROLLBAR ===== */
-        body::-webkit-scrollbar, .scenario-content::-webkit-scrollbar, .modal::-webkit-scrollbar { display: none; }
-        body, .scenario-content, .modal { scrollbar-width: none; -ms-overflow-style: none; }
+        /* Global Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
 
-        /* ====== GLOBAL BASE ====== */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; background: #f0f4f8;
-            font-family: var(--body-font);
-            overflow: hidden;
-        }
-        #game-wrapper {
-            width: 100%; max-width: 1200px; aspect-ratio: 16 / 9;
-            overflow: hidden;
-            display: flex; flex-direction: column; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        #game-container {
-            width: 100%; height: 100%; background: #fff;
-            position: relative; display: flex; flex-direction: column;
-        }
-        .screen {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 0.5s ease-in-out, visibility 0.5s;
-            pointer-events: all; visibility: visible;
-        }
-        .hidden { opacity: 0; pointer-events: none; visibility: hidden; }
-
-        /* ===== START SCREEN ===== */
-        #start-screen {
-            color: var(--text-color-light); text-align: center; padding: 2rem;
-            background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
-        }
-        #start-screen h1 {
-            color: var(--text-color-light); font-size: 3.2rem;
-            font-family: var(--header-font);
-            font-weight: 500;
-        }
-        .start-button { 
-            background: #FBB03B; color: #fff; font-weight: 900;
-            font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
-            padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
-            letter-spacing: 0.02em; text-shadow: 0 2px 0 #b88b2a;
-            transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
-
-
-        /* ===== GAME SCREEN STYLES ===== */
-        #game-screen { 
-            justify-content: flex-start; 
-            overflow: hidden; 
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .game-top-section { 
-            width: 100%; background-color: #5D04B2; 
-            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
-            display: flex; justify-content: space-between; align-items: center;
-            color: #fff; z-index: 10;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            flex-shrink: 0;
-        }
-        #game-title {
-            font-weight: 700;
-            margin: 0; font-family: var(--header-font);
-        }
-        .top-right-controls { display: flex; align-items: center; gap: 1rem; }
-        
-        #progress-container { 
-            width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
-            border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
-            border: 2px solid #fff; position: relative; overflow: hidden;
-        }
-        #progress-bar {
-            height: 100%; width: 0%; background: #FFFF00;
-            border-radius: 0.8rem; transition: width 0.5s ease;
-        }
-        #progress-text {
-            font-weight: 700; color: #fff;
-            text-shadow: none;
-        }
-
-        .instructions-icon {
-            width: 2.5rem; height: 2.5rem; background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
-            z-index: 15; flex-shrink: 0;
-            animation: glow-pulse-white 2s infinite;
-        }
-        .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
-        .instructions-icon svg { width: 1.25rem; height: 1.25rem; fill: white;}
-
-        .hint-icon {
-            position: absolute; bottom: 1.5rem; right: 1.5rem; width: 3.125rem; height: 3.125rem;
-            background: var(--secondary-color); border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
-            z-index: 1001;
-            border: 0.1875rem solid white;
-            animation: glow-pulse 2s infinite;
-        }
-        .hint-icon:hover { transform: scale(1.1); }
-        .hint-icon svg { fill: white; width: 1.5rem; height: 1.5rem; }
-
-        /* ===== MODALS ===== */
-        .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.4);
-            backdrop-filter: blur(5px);
-            z-index: 3000;
-            display: flex; justify-content: center; align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-        .overlay.hidden { display: none; visibility: hidden; opacity: 0; }
-        .modal {
-            background: #fff; padding: 2.5rem; border-radius: 1rem;
-            text-align: center; width: 90%; max-width: 600px;
-            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); } }
-
-        .modal h2 {
-            font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem;
-            font-family: var(--header-font);
-        }
-        .modal p, .modal ul { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark, #333); }
-        
-        #activity-intro-overlay .modal { border-top: 8px solid var(--primary-color); }
-        #activity-intro-overlay .modal h2 { color: var(--primary-color); }
-        #activity-intro-overlay .modal p {
-            text-align: left; background: #f8f9fa; padding: 1.5rem;
-            border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
-        }
-        
-        #instructions-overlay .modal { border-top: 8px solid var(--primary-color); }
-        #instructions-overlay .modal h2 { color: var(--primary-color); }
-        #instructions-overlay .modal ol { text-align: left; padding-left: 2rem; font-size: 1.2rem; }
-
-        #hint-overlay .modal { border-top: 8px solid var(--secondary-color); }
-        #hint-overlay .modal h2 { 
-            color: var(--secondary-color); display: flex; 
-            align-items: center; justify-content: center; gap: 0.75rem; 
-        }
-        #hint-overlay ul { text-align: left; list-style-position: inside; }
-
-        /* Modal Buttons */
-        .modal button {
-            width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
-            border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
-            transition: transform 0.2s, box-shadow 0.2s; margin-top: 1rem;
-        }
-        .modal button:hover { transform: scale(1.02); }
-        #activity-intro-overlay button, #instructions-overlay button { background-color: var(--primary-color); }
-        #hint-overlay button { background-color: var(--secondary-color); }
-
-        /* Feedback Modals */
-        .feedback-modal { max-width: 480px; }
-        .feedback-header { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1rem; }
-        .feedback-header h2 { font-size: 2rem; font-weight: 700; }
-        .feedback-header.correct h2 { color: var(--correct-color); }
-        .feedback-header.incorrect h2 { color: var(--incorrect-color); }
-        .feedback-btn.correct { background-color: var(--correct-color); }
-        .feedback-btn.incorrect { background-color: var(--incorrect-color); }
-        #feedback-correct-overlay .modal { border-top: 8px solid var(--correct-color); }
-        #feedback-incorrect-overlay .modal { border-top: 8px solid var(--incorrect-color); }
-
-        /* ===== COMPLETION SCREEN ===== */
-        #completion-overlay { 
-            background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
-            color: #fff; display: flex; flex-direction: column; justify-content: center;
-            align-items: center; gap: 1rem; padding: 1rem;
-        }
-        .completion-title-banner { 
-            font-size: clamp(2rem, 7vmin, 4rem);
-            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
-            text-align: center; font-family: var(--header-font);
-            font-weight: 500;
-        }
-        #completion-overlay .modal { 
-            background: transparent; box-shadow: none; width: auto; max-width: none;
-            display: flex; justify-content: center; align-items: center;
-            padding: 0; overflow: visible;
-        }
-        #completion-image { 
-            width: clamp(400px, 70%, 700px); max-width: 85%; height: auto;
-            border: 3px solid #FBB03B; border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-top: 0.5rem;
-        }
-        .completion-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 1.5rem;
-            width: 100%;
-            padding: 1rem 2rem;
-        }
-        .completion-btn {
-            background: #FBB03B; color: #fff; font-weight: 600;
-            font-size: 1.1rem; border: 0.1875rem solid #fff; border-radius: 3rem;
-            padding: 0.75rem 2.25rem; cursor: pointer; transition: all 0.2s;
-            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2); flex-basis: 30%; max-width: 250px;
-        }
-        .completion-btn:hover { transform: scale(1.05); box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2); }
-    
-        /* ===== TAKEAWAYS OVERLAY ===== */
-        #takeaways-overlay {
-            background-image: url(images/gamebg.jpg); flex-direction: column; justify-content: center;
-        }
-        .takeaways-main-header {
-            font-family: var(--header-font); color: white; font-size: 2.5rem;
-            position: absolute; top: 5%; text-align: center; width: 100%;
-            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.3);
-        }
-        #takeaways-overlay .modal { max-width: 800px; padding: 2rem; display: flex; flex-direction: column; align-items: center; height: 45vh;
-            overflow-y: auto;
-        }
-        .takeaways-header { color:var(--primary-color); display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
-        .takeaways-header h3 { font-family: var(--header-font); font-size: 1.8rem; color: var(--primary-color); }
-        #takeaways-list { list-style-type: none; padding: 0; width: 100%; }
-        #takeaways-list li { background-color: #f9f9f9; border-left: 4px solid var(--primary-color); margin-bottom: 0.75rem; padding: 1rem; border-radius: 0.5rem; font-size: 1.1rem; text-align: left; }
-        
-        .end-lesson-btn {
-            background: var(--secondary-color); font-family: var(--header-font); color: #fff; font-weight: 900;
-            font-size: clamp(0.9rem, 2.5vmin, 1.2rem); border: 3px solid #fff; border-radius: 3rem;
-            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
-            text-shadow: 0 2px 0 #b88b2a; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            width: auto; min-width: 180px; margin-top: 2rem;
-        }
-        .end-lesson-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
-
-
-        /* ===== DRAG AND DROP GAME STYLES ===== */
-        .game-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            gap: 1rem;
-            overflow: hidden;
-        }
-        #distillation-setup {
-            flex: 1;
-            background-image: url('images/lab-background.png');
-            background-size: cover;
-            background-position: center;
-            border-radius: var(--border-radius);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-            position: relative;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            align-items: end;
-            padding: 1rem;
-        }
-        #component-pool {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: #e9ecef;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            font-family: var(--header-font);
+            font-size: 16px;
+            overflow: hidden; /* Prevent body scrollbars */
         }
-        .component-drag {
+
+        #game-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            margin: auto;
+            height: auto;
+            position: relative;
             background: #fff;
-            padding: 0.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            cursor: grab;
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-align: center;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 0.25rem;
-            border: 2px solid #ccc;
-            width: clamp(80px, 12vw, 120px);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            overflow: hidden;
         }
-        .component-drag:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
         }
-        .component-drag.dragging {
-            opacity: 0.5;
-            cursor: grabbing;
+
+        /* Start Screen & End Screen Styles */
+        #start-screen, #completion-overlay {
+            background: var(--primary-color) url('images/gamebg.jpg') center center/cover no-repeat;
+            padding: 2rem;
+            z-index: 500;
         }
-        .component-icon {
-            font-size: 2.5rem;
+        
+        #start-screen h1 {
+            font-size: 4rem;
+            color: var(--text-color-light);
+            margin-bottom: 1.2rem;
+            text-align: center;
+            font-family: var(--header-font);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-weight: 500;
         }
-        .component-label {
-            font-size: 0.9rem;
+
+        .start-button, .completion-btn {
+            background: #FBB03B;
+            color: #fff;
+            font-weight: 500;
+            font-size: 1.32rem;
+            border: 3.6px solid #fff;
+            border-radius: 3rem;
+            padding: 0.72rem 2.64rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            text-shadow: 0 2px 0 #b88b2a;
+            transition: all 0.2s;
+            font-family: var(--header-font);
+            white-space: nowrap;
+        }
+
+        .start-button:hover, .completion-btn:hover {
+            transform: scale(1.06);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+        }
+
+        /* Game Screen Styles */
+        #game-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .game-top-section {
+            width: 100%;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary-color);
+            padding: 0.3rem 1.5rem;
+            position: relative;
+            z-index: 10;
+            height: 7vh;
+            box-sizing: border-box;
+        }
+        
+        #game-title {
+            color: var(--text-color-light);
+            font-size: clamp(1rem, 1.8vw, 1.8rem);
+            text-shadow: 0 2px 2px rgba(0,0,0,0.3);
+            font-family: var(--header-font);
             font-weight: 600;
         }
 
+        .game-top-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        #progress-bar-container {
+            width: clamp(120px, 18vw, 250px);
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            height: clamp(16px, 2vw, 22px);
+            border: 2px solid rgb(255, 255, 255);
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #ffff00; /* Updated color */
+            border-radius: 0.8rem;
+            transition: width 0.5s ease;
+        }
+
+        #progress-text {
+            color: var(--text-color-light);
+            font-weight: 500;
+            font-size: clamp(0.8rem, 1.2vw, 1.3rem);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+            white-space: nowrap;
+        }
+
+        .instructions-icon {
+            width: clamp(36px, 3vw, 44px);
+            height: clamp(36px, 3vw, 44px);
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 15;
+            flex-shrink: 0;
+            animation: glow-pulse-white 2s infinite;
+        }
+        .instructions-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .instructions-icon svg {
+            width: clamp(16px, 1.8vw, 22px);
+            height: clamp(16px, 1.8vw, 22px);
+            fill: white;
+        }
+
+        .hint-icon {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: clamp(40px, 3.5vw, 50px);
+            height: clamp(40px, 3.5vw, 50px);
+            background: var(--secondary-color);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            animation: glow-pulse 2s infinite;
+        }
+        .hint-icon:hover {
+             background: #ffc966;
+        }
+        .hint-icon svg {
+            width: clamp(20px, 2vw, 28px);
+            height: clamp(20px, 2vw, 28px);
+            fill: white;
+        }
+
+
+        /* Game Area */
+        .lab-game-area {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            background-color: #e8eaf6;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            overflow: hidden;
+        }
+        
+        #burner-container {
+            flex: 3;
+            height: 100%;
+            background-image: url('images/hotspot-img.jpg'); /* Updated Image */
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        #drag-items-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-auto-rows: min-content;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .drag-item {
+            background-color: var(--primary-color);
+            color: var(--text-color-light);
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+            font-size: clamp(0.8rem, 1.5vw, 1.2rem); 
+            padding: 0.8rem; 
+            min-height: 60px;
+        }
+        .drag-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .drag-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+            z-index: 1000;
+        }
+        .drag-item.placed {
+            visibility: hidden;
+        }
+        .drag-item.shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        .touch-clone {
+            position: fixed;
+            pointer-events: none;
+            transform-origin: center center;
+            z-index: 9999;
+        }
+
         .drop-zone {
+            position: absolute;
+            border: 2px dashed var(--primary-color);
+            border-radius: 0.25rem;
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.5);
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: clamp(0.7rem, 1.5vw, 1.1rem);
+            text-align: center;
+            padding: 0.5rem;
+        }
+        .drop-zone.drag-over {
+            background-color: rgba(251, 176, 59, 0.3);
+            border-color: var(--secondary-color);
+        }
+        .drop-zone.correct {
+            background-color: var(--correct-color);
+            border: 2px solid #fff;
+            color: #fff;
+            box-shadow: 0 0 10px var(--correct-color), 0 0 15px var(--correct-color);
+            border-radius: 0.5rem;
+            animation: none; /* Remove hint glow on correct */
+            font-weight: 500;
+        }
+        .drop-zone.hint-glow {
+            animation: hint-animation 2s ease-in-out;
+        }
+
+
+        /* Modals & Overlays */
+      #activity-description-overlay, #game-instructions-overlay, #feedback-overlay, #hint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            border: 3px dashed #aaa;
-            border-radius: 1rem;
-            transition: background-color 0.3s, border-color 0.3s;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        #game-instructions-overlay .modal-content p {
+            text-align: left;
+        }
+        #activity-description-overlay.hidden, #game-instructions-overlay.hidden, #feedback-overlay.hidden, #hint-overlay.hidden {
+            display: none;
+        }
+        .modal {
+            background: var(--card-background-light);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            border-top: 8px solid var(--primary-color);
+            animation: slideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-family: var(--header-font);
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .drop-zone.over {
-            background-color: rgba(0,0,0,0.05);
-            border-color: var(--primary-color);
+
+        .modal-title svg {
+            width: 2.5rem;
+            height: 2.5rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
         }
-        .drop-zone .component-drag {
-            cursor: default;
-            background-color: #f8f9fa;
-            border-color: var(--correct-color);
+        .modal-content p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text-color-dark);
+            margin-bottom: 1rem;
+        }
+        #activity-description-overlay .modal-content p {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-family: var(--header-font);
+            border-left: 3px solid var(--primary-color);
+            box-shadow: 0 4px 18px rgba(93, 4, 178, 0.15);
+            border-radius: 1rem;
+            padding: 1.2rem 1.5rem;
+            background: #f8f9ff;
+            margin: 0.5rem 0;
+        }
+        .modal-close-btn {
             width: 100%;
-            height: 100%;
-            justify-content: center;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            color: var(--text-color-light);
+            background: var(--primary-color);
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            font-family: var(--header-font);
         }
-        .drop-zone.correct-glow {
-            animation: green-glow 1s ease;
-        }
-        .drop-zone.incorrect-pulse {
-            animation: red-pulse 0.5s ease;
+        .modal-close-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(93, 4, 178, 0.3);
         }
         
-        /* Specific Drop Zone Positions */
-        #drop-zone-4 { grid-column: 1 / 2; grid-row: 3 / 4; } /* Heat Source */
-        #drop-zone-1 { grid-column: 2 / 3; grid-row: 2 / 4; } /* Round-bottom flask */
-        #drop-zone-2 { grid-column: 3 / 4; grid-row: 1 / 3; } /* Condenser */
-        #drop-zone-3 { grid-column: 3 / 4; grid-row: 1 / 3; display: none; } /* Inlet/outlet - visually part of condenser */
-        #drop-zone-5 { grid-column: 4 / 5; grid-row: 2 / 4; } /* Receiving flask */
+        #feedback-modal.correct-feedback .modal-close-btn { background-color: var(--correct-color); }
+        #feedback-modal.incorrect-feedback .modal-close-btn { background-color: var(--incorrect-color); }
+        #feedback-modal.correct-feedback .modal-close-btn:hover { box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4); }
+        #feedback-modal.incorrect-feedback .modal-close-btn:hover { box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); }
+        #feedback-modal.correct-feedback .modal-title { color: var(--correct-color); }
+        #feedback-modal.correct-feedback { border-top: 8px solid var(--correct-color); }
+        #feedback-modal.incorrect-feedback .modal-title { color: var(--incorrect-color); }
+        #feedback-modal.incorrect-feedback { border-top: 8px solid var(--incorrect-color); }
 
-        #steam-path {
+        /* Hint Modal Styles */
+        #hint-modal {
+            border-top: 5px solid var(--secondary-color);
+        }
+        #hint-modal #hint-title {
+            color: var(--secondary-color);
+        }
+        #hint-modal #hint-close-btn {
+            background: var(--secondary-color);
+            color: white;
+        }
+        #hint-modal #hint-close-btn:hover {
+            box-shadow: 0 5px 15px rgba(251, 176, 59, 0.4);
+        }
+        #hint-text-general {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        #hint-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        #hint-table th, #hint-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        #hint-table th {
+            background-color: #f8f9ff;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        #hint-table tbody tr:nth-child(even) {
+            background-color: #f8f9ff;
+        }
+        #hint-table td:first-child {
+            font-weight: 600;
+            width: 40%;
+        }
+
+        /* Completion Screen */
+        #completion-overlay .completion-modal {
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem; /* Added gap */
+        }
+        #completion-overlay #completion-title {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        #steam-path.visible {
-            opacity: 1;
-        }
-        #steam-line {
-            stroke-dasharray: 500;
-            stroke-dashoffset: 500;
-            animation: steam-flow 3s ease-in-out forwards;
+            top: 0rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-weight: 500;
         }
 
-        @keyframes green-glow {
-            0% { box-shadow: 0 0 0px var(--correct-color); }
-            50% { box-shadow: 0 0 20px var(--correct-color); }
-            100% { box-shadow: 0 0 0px var(--correct-color); }
+        /* ADD THESE RULES */
+        #completion-overlay .completion-image {
+            width: 100%;
+            height: auto;
+            margin: 0;
         }
-        @keyframes red-pulse {
-            0% { background-color: rgba(217, 83, 79, 0); }
-            50% { background-color: rgba(217, 83, 79, 0.3); }
-            100% { background-color: rgba(217, 83, 79, 0); }
-        }
-
-        /* ===== Glowing Pulsating Effect Keyframes ====== */
-        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 10px rgba(251,176,59,0.5), 0 0 20px rgba(251,176,59,0.3); transform: scale(1); } 50% { box-shadow: 0 0 20px rgba(251,176,59,0.8), 0 0 30px rgba(251,176,59,0.5); transform: scale(1.1); } }
-        @keyframes glow-pulse-white { 0%, 100% { box-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 20px rgba(255,255,255,0.5); transform: scale(1); } 50% { box-shadow: 0 0 20px rgba(255,255,255,1), 0 0 30px rgba(255,255,255,0.7); transform: scale(1.1); } }
-
-        @keyframes steam-flow {
-            to { stroke-dashoffset: 0; }
+        #completion-overlay .completion-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 1.5rem;
+            border: 3px solid var(--secondary-color);
+            width: 60%;
         }
 
-        /* ===== RESPONSIVE DESIGN ===== */
-        @media (max-width: 1199px) { #game-wrapper { width: 100vw; height: 100vh; border-radius: 0; aspect-ratio: unset; } html { font-size: 2.5vmin; } }
-        @media (max-width: 991px) {
-            html{ font-size: 3vmin; }
-            #component-pool { padding: 0.5rem; gap: 0.5rem;}
-            .component-drag { width: clamp(70px, 15vw, 100px); }
-            .component-icon { font-size: 2rem; }
-            .component-label { font-size: 0.8rem; }
-            .completion-buttons { flex-direction: column; align-items: center; }
-            #takeaways-overlay .modal{ height: 60vh; }
-            .completion-title-banner{ top:1%; }
-            #completion-image { width: 57%; }
+        .completion-buttons-footer {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 2rem;
+            right: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        @media (max-width: 768px) {
-            html { font-size: 3.3vmin; }
-            .game-area { padding: 0.5rem; }
-            #distillation-setup {
-                grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: repeat(4, 1fr);
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        @keyframes glow-pulse {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3);
+                transform: scale(1);
             }
-            #drop-zone-4 { grid-column: 1 / 2; grid-row: 4 / 5; }
-            #drop-zone-1 { grid-column: 1 / 2; grid-row: 3 / 4; }
-            #drop-zone-2 { grid-column: 2 / 3; grid-row: 2 / 4; }
-            #drop-zone-5 { grid-column: 3 / 4; grid-row: 3 / 4; }
-            #component-pool { flex-direction: column; height: 100%; flex: 0 0 120px; }
-            .game-area { flex-direction: row; }
-            .completion-title-banner { font-size: 1.8rem; }
-            #completion-image { max-width: 66%; }
-            .completion-btn { min-width: 180px; }
+            50% {
+                box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5);
+                transform: scale(1.1);
+            }
+        }
+        @keyframes glow-pulse-white {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7);
+                transform: scale(1.1);
+            }
+        }
+        @keyframes hint-animation {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(251, 176, 59, 0); border-color: var(--primary-color); }
+            50% { box-shadow: 0 0 25px 10px rgba(251, 176, 59, 0.8); border-color: var(--secondary-color); }
+        }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 991px) {
+             body { overflow: auto; }
+            #game-wrapper {
+                aspect-ratio: auto;
+                height: 100vh;
+                min-height: -webkit-fill-available;
+            }
+             #start-screen h1 {
+                font-size: 2.8rem;
+                margin-bottom: 1rem;
+            }
+            .game-top-section {
+                height: 10vh;
+            }
+            .lab-game-area {
+                padding: 0.75rem;
+                gap: 0.75rem;
+                height: 92vh;
+            }
+            #burner-container {
+                flex: 2.5; 
+            }
+            #drag-items-container {
+                flex: 1; 
+                padding: 0.25rem;
+                overflow-y: auto;
+            }
+            .drag-item {
+                font-size: clamp(0.65rem, 1.4vw, 0.85rem);
+                min-height: 45px;
+            }
+            .completion-btn{
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+                padding: 0.6rem 1.2rem;
+            }
+             #completion-overlay .completion-image img {
+            width: 45%;
+            }
+            
+        }
+
+        @media (max-width: 768px) {
+             #start-screen h1 {
+                font-size: 2.4rem;
+                margin-bottom: 1rem;
+            }
+            .lab-game-area {
+                flex-direction: row; 
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+            #burner-container {
+                flex: 2; 
+            }
+            #drag-items-container {
+                flex: 1;
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .game-top-section {
+                flex-direction: row;
+                height: auto;
+                padding: 0.5rem 1rem;
+                gap: 0.5rem;
+            }
+            #game-title {
+                width: auto;
+                text-align: left;
+                margin-bottom: 0;
+                font-size: 1.2rem;
+            }
+             .completion-buttons-footer {
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                gap: 0.5rem;
+                bottom: 1rem;
+            }
+             .completion-buttons-footer .completion-btn {
+                font-size: clamp(0.8rem, 2.5vw, 1rem);
+                padding: 0.6rem 1.2rem;
+            }
+            .completion-buttons-footer .restart-btn {
+                position: absolute; 
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .hint-icon {
+                bottom: 1rem;
+                right: 1rem;
+            }
+            #completion-overlay .completion-image img {
+            width: 69%;
+         }
+         
+        }
+
+        @media (max-width: 480px) {
+            #game-title {
+                font-size: 1rem;
+            }
+            .game-top-right {
+                gap: 0.5rem;
+            }
+            .completion-btn {
+                font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+                padding: 0.5rem 1rem;
+            }
+             .completion-buttons-footer {
+                bottom: 1rem;
+                left: 1rem;
+                right: 1rem;
+            }
+             #hint-table {
+                font-size: 0.9rem;
+            }
+            #hint-table td:first-child {
+                width: 35%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            #start-screen h1 {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <div id="game-wrapper">
+        <div id="game-container">
+            <div id="start-screen" class="screen">
+                <h1>Name the Distillation Setup</h1>
+                <button class="start-button" onclick="startGame()">Start Activity</button>
+            </div>
 
-<div id="game-wrapper">
-    <div id="game-container">
-        <div id="start-screen" class="screen">
-            <h1>Fix the Distillation Setup</h1>
-            <button class="start-button" onclick="showActivityIntro();">Start Activity</button>
-        </div>
-
-        <div id="game-screen" class="screen hidden">
-            <div class="game-top-section">
-                <h1 id="game-title">Sequencing Game</h1>
-                <div class="top-right-controls">
-                    <div id="progress-container">
-                        <div id="progress-bar"></div>
+            <div id="activity-description-overlay" class="screen hidden">
+                <div class="modal">
+                    <h2 class="modal-title">Activity Introduction</h2>
+                    <div class="modal-content">
+                        <p>Can you identify all the important parts of a real distillation apparatus? Drag the correct labels onto the diagram and check if you are right!</p>
                     </div>
-                    <span id="progress-text">0 / 5</span>
-                    <div class="instructions-icon" onclick="showInstructions()">
-                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                    <button class="modal-close-btn" onclick="closeActivityDescription()">Continue</button>
+                </div>
+            </div>
+
+            <div id="game-screen" class="screen hidden">
+                <div class="game-top-section">
+                    <h1 id="game-title">Name the Distillation Setup</h1>
+                    <div class="game-top-right">
+                        <div id="progress-bar-container">
+                            <div id="progress-bar"></div>
+                        </div>
+                        <div id="progress-text">0 / 5</div>
+                        <div class="instructions-icon" onclick="showGameInstructions()">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-game-area">
+                    <div id="burner-container">
+                        </div>
+                    <div id="drag-items-container">
+                        </div>
+                </div>
+                 <div class="hint-icon" onclick="showHint()">
+                    <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
+                </div>
+            </div>
+
+            <div id="game-instructions-overlay" class="screen hidden">
+                <div class="modal">
+                    <h2 class="modal-title">Learner Instructions</h2>
+                    <div class="modal-content">
+                        <p>"Drag each label to its correct place on the distillation setup."</p>
+                        <p>"Identify all the parts correctly to activate the system animation."</p>
+                        <p>Use the hint icon if you get stuck!</p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeGameInstructions()">Got It!</button>
+                </div>
+            </div>
+
+            <div id="feedback-overlay" class="hidden">
+                 <div class="modal" id="feedback-modal">
+                    <h2 id="feedback-title" class="modal-title">Correct!</h2>
+                    <div class="modal-content">
+                        <p id="feedback-text"></p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeFeedback()">Continue</button>
+                </div>
+            </div>
+
+            <div id="hint-overlay" class="screen hidden">
+                <div class="modal" id="hint-modal">
+                    <h2 id="hint-title" class="modal-title">Here is a hint</h2>
+                    <div class="modal-content">
+                       <table id="hint-table">
+                           <thead>
+                               <tr>
+                                   <th>Part</th>
+                                   <th>Placement Hint</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                               </tbody>
+                       </table>
+                    </div>
+                    <button class="modal-close-btn" id="hint-close-btn" onclick="closeHint()">Got It!</button>
+                </div>
+            </div>
+
+           <div id="completion-overlay" class="screen hidden">
+                <div class="completion-modal">
+                    <h2 id="completion-title">Activity Wrap-Up</h2>
+                    <div class="completion-image">
+                        <img src="images/complete.jpg" alt="Activity Complete">
+                    </div>
+                    <div class="completion-buttons-footer">
+                        <button class="completion-btn" onclick="window.location.href='../ACTIVITY1/index.html';sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Name the Distillation Setup'})">Previous Activity</button>
+                        <button class="completion-btn restart-btn" onclick="restartGame()">Restart Activity</button>
+                        <button class="completion-btn" onclick="window.location.href='../ACTIVITY3/index.html';sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Name the Distillation Setup'})">Next Activity</button>
                     </div>
                 </div>
             </div>
 
-            <div class="game-area">
-                <div id="distillation-setup">
-                    <div class="drop-zone" id="drop-zone-1" data-step="1"></div>
-                    <div class="drop-zone" id="drop-zone-2" data-step="2"></div>
-                    <div class="drop-zone" id="drop-zone-3" data-step="3"></div>
-                    <div class="drop-zone" id="drop-zone-4" data-step="4"></div>
-                    <div class="drop-zone" id="drop-zone-5" data-step="5"></div>
-                    <svg id="steam-path" viewBox="0 0 500 300" preserveAspectRatio="none">
-                        <path id="steam-line" d="M 170 150 C 200 50, 250 50, 320 150" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" />
-                    </svg>
-                </div>
-                <div id="component-pool">
-                    </div>
-            </div>
-            
-            <div class="hint-icon" id="hint-icon" onclick="showHint()">
-                <svg viewBox="0 0 24 24"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"></path></svg>
-            </div>
-        </div>
-
-        <div id="completion-overlay" class="overlay hidden">
-            <h2 class="completion-title-banner">Activity Wrap Up!</h2>
-            <img id="completion-image" src="images/complete.jpg" alt="Activity Complete Summary">
-            <div class="completion-buttons">
-                <button class="completion-btn btn-prev" onclick="goToPreviousActivity()">Previous Activity</button>
-                <button class="completion-btn btn-restart" onclick="restartGame()">Restart Activity</button>
-                <button class="completion-btn btn-next" onclick="gotoNextActivity()">Next Activity</button>
-            </div>
-        </div>
-
-        <div id="takeaways-overlay" class="overlay hidden">
-            <h2 class="takeaways-main-header">Lesson Complete!</h2>
-            <div class="modal">
-                <div class="takeaways-header">
-                    <h3>Key Takeaways</h3>
-                </div>
-                <ul id="takeaways-list"></ul>
-            </div>
-            <button class="end-lesson-btn" onclick="sendEvent(LessonEvent.END_LESSON, {lessonName: 'Fix the Distillation Setup'})">Exit Lesson</button>
-        </div>
-
-        <div id="activity-intro-overlay" class="overlay hidden">
-            <div class="modal">
-                <h2>Activity Introduction</h2>
-                <p id="intro-text"></p>
-                <button onclick="closeModal('activity-intro-overlay')">Continue</button>
-            </div>
-        </div>
-
-        <div id="instructions-overlay" class="overlay hidden">
-            <div class="modal">
-                <h2>Instructions</h2>
-                <ol id="instructions-list"></ol>
-                <button onclick="closeModal('instructions-overlay')">Got it!</button>
-            </div>
-        </div>
-        
-        <div id="hint-overlay" class="overlay hidden">
-            <div class="modal">
-                <h2>Here's a hint...</h2>
-                <ul id="hint-list"></ul>
-                <button onclick="closeModal('hint-overlay')">Got it!</button>
-            </div>
-        </div>
-        
-        <div id="feedback-correct-overlay" class="overlay hidden">
-            <div class="modal feedback-modal">
-                <div class="feedback-header correct"><h2>Correct!</h2></div>
-                <p id="correct-feedback-text"></p>
-                <button class="feedback-btn correct" onclick="closeModal('feedback-correct-overlay')">Continue</button>
-            </div>
-        </div>
-        
-        <div id="feedback-incorrect-overlay" class="overlay hidden">
-            <div class="modal feedback-modal">
-                <div class="feedback-header incorrect"><h2>Not Quite</h2></div>
-                <p id="incorrect-feedback-text"></p>
-                <button class="feedback-btn incorrect" onclick="closeModal('feedback-incorrect-overlay')">Try Again</button>
-            </div>
         </div>
     </div>
-</div>
 
-<script>
-    const activityData = {
-        title: "Fix the Distillation Setup",
-        introduction: "Can you set up a real working distillation unit? Drag the parts into the right sequence to build a complete system. Think like a lab scientist!",
-        instructions: [
-            "Drag each component to its correct position in the distillation setup.",
-            "Arrange the parts in the correct order from heating to collection.",
-            "Watch the system come to life once completed."
-        ],
-        hints: [
-            "Start where the water sample is heated.",
-            "Cooling happens after evaporation.",
-            "The final step is the collection of pure water."
-        ],
-        conclusion: "Well done! You correctly built a distillation system. Distillation removes all impurities by boiling the water and collecting the pure vapour. You are now ready to purify water like a professional.",
-        keyTakeaways: [
-            "<strong>Distillation:</strong> A process of separating components from a liquid mixture by selective boiling and condensation.",
-            "<strong>Boiling:</strong> The heat source provides energy to turn the liquid (impure water) in the round-bottom flask into vapour (steam).",
-            "<strong>Condensation:</strong> The Liebig condenser, cooled by circulating water, turns the hot vapour back into a pure liquid.",
-            "<strong>Collection:</strong> The pure liquid, now called the distillate, is collected in the receiving flask."
-        ],
-        components: [
-            { id: 1, name: "Round-bottom flask", icon: "🧪", hint: "This is where the heating starts. It holds the hard water sample.", correctFeedback: "Correct! This is where the impure water is first heated.", incorrectFeedback: "Not quite. This component should hold the hard water sample — try again." },
-            { id: 2, name: "Liebig condenser", icon: "🌡️", hint: "This cools the vapour into liquid. It must come after the flask.", correctFeedback: "Well placed! It cools the vapour into liquid.", incorrectFeedback: "This must come immediately after the boiling flask to cool the steam." },
-            { id: 3, name: "Cold water inlet and outlet", icon: "💧", hint: "These regulate cooling. One lets cold water in, the other lets it out.", correctFeedback: "Perfect! These keep the condenser cool.", incorrectFeedback: "These belong inside the condenser to control the temperature. Try again." },
-            { id: 4, name: "Heat source", icon: "🔥", hint: "This provides the energy to boil the hard water.", correctFeedback: "Right choice! This initiates boiling of the water.", incorrectFeedback: "Check again. This must be under the flask, not after the condenser." },
-            { id: 5, name: "Receiving flask", icon: "🧫", hint: "This catches the pure water after it condenses.", correctFeedback: "Well done! This catches the clean water after condensation.", incorrectFeedback: "This is the final step. It should not be placed before the condenser." }
-        ]
-    };
+    <audio id="ding-sound" src="audio/ding.mp3" preload="auto"></audio>
+    <audio id="intro-audio" src="audio/intro.mp3" preload="auto"></audio>
+    <audio id="outro-audio" src="audio/outro.mp3" preload="auto"></audio>
+    <audio id="click-sound" src="audio/buzz.mp3" preload="auto"></audio>
 
-    let correctPlacements = 0;
-    const totalComponents = activityData.components.length;
-    let introAudio, dingAudio, buzzAudio, outroAudio;
+    <script>
+        const activityData = [
+            { 
+                id: 'round-bottom-flask', 
+                name: 'Round-bottom flask', 
+                hint: 'Holds the hard water sample, where heating begins', 
+                feedback: 'Correct! This is where the impure water is first heated.', 
+                incorrectFeedback: 'Not quite. This component should hold the water sample — try again.', 
+                coords: { top: '55%', left: '0%', width: '20%', height: '10%' } 
+            },
+            { 
+                id: 'liebig-condenser', 
+                name: 'Liebig condenser', 
+                hint: 'Cools vapour into liquid, must follow the flask', 
+                feedback: 'Well placed! It cools the vapour into liquid.', 
+                incorrectFeedback: 'This comes directly after the boiling flask to condense steam.', 
+                coords: { top: '50%', left: '75%', width: '20%', height: '10%' } 
+            },
+            { 
+                id: 'cold-water-inlet-outlet', 
+                name: 'Cold water inlet', 
+                hint: 'Controls condenser cooling with water flow', 
+                feedback: 'Perfect! These regulate the condenser’s cooling.', 
+                incorrectFeedback: 'Not correct. These are the cooling connectors on the condenser.', 
+                coords: { top: '33%', left: '70%', width: '25%', height: '10%' } 
+            },
+            { 
+                id: 'heat-source', 
+                name: 'Heat source', 
+                hint: 'Sits under the flask, provides boiling energy', 
+                feedback: 'Right choice! This is the energy for boiling.', 
+                incorrectFeedback: 'Check again. The heat must go under the flask, not anywhere else.', 
+                coords: { top: '78%', left: '0%', width: '20%', height: '10%' } 
+            },
+            { 
+                id: 'receiving-flask', 
+                name: 'Receiving flask', 
+                hint: 'Collects pure water after condensation', 
+                feedback: 'Well done! This collects the purified water.', 
+                incorrectFeedback: 'Incorrect. This is the last stage, where pure water is collected.', 
+                coords: { top: '80%', left: '80%', width: '20%', height: '10%' } 
+            }
+        ];
 
-    function initAudio() {
-        try {
-            introAudio = new Audio('audio/intro.mp3');
-            dingAudio = new Audio('audio/ding.mp3');
-            buzzAudio = new Audio('audio/buzz.mp3');
-            outroAudio = new Audio('audio/outro.mp3');
-        } catch (e) {
-            console.warn("Audio could not be loaded.");
-            const mockAudio = { play: () => {}, pause: () => {}, currentTime: 0 };
-            introAudio = dingAudio = buzzAudio = outroAudio = mockAudio;
-        }
-    }
+        const TOTAL_PARTS = activityData.length;
+        let completedParts = new Set();
+        let draggedItem = null;
+        let touchClone = null;
+        let gameCompleted = false;
 
-    function playSound(audio) { if(audio) { audio.currentTime = 0; audio.play().catch(e => {}); } }
-    function stopSound(audio) { if(audio) { audio.pause(); } }
-
-    function initGame() {
-        correctPlacements = 0;
-        document.getElementById('steam-path').classList.remove('visible');
-        updateProgress();
-        setupGameBoard();
-    }
-    
-    function setupGameBoard() {
-        const pool = document.getElementById('component-pool');
-        const dropZones = document.querySelectorAll('.drop-zone');
-        pool.innerHTML = '';
+        // --- DOM ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const activityDescriptionOverlay = document.getElementById('activity-description-overlay');
+        const gameScreen = document.getElementById('game-screen');
+        const burnerContainer = document.getElementById('burner-container');
+        const dragItemsContainer = document.getElementById('drag-items-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const completionOverlay = document.getElementById('completion-overlay');
+        const gameInstructionsOverlay = document.getElementById('game-instructions-overlay');
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const hintOverlay = document.getElementById('hint-overlay');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackText = document.getElementById('feedback-text');
         
-        dropZones.forEach(zone => {
-            zone.innerHTML = '';
-            zone.addEventListener('dragover', handleDragOver);
-            zone.addEventListener('drop', handleDrop);
-            zone.addEventListener('dragenter', handleDragEnter);
-            zone.addEventListener('dragleave', handleDragLeave);
-        });
-
-        const shuffledComponents = [...activityData.components].sort(() => Math.random() - 0.5);
-
-        shuffledComponents.forEach(comp => {
-            const el = document.createElement('div');
-            el.className = 'component-drag';
-            el.id = `component-${comp.id}`;
-            el.draggable = true;
-            el.dataset.id = comp.id;
-            el.innerHTML = `<div class="component-icon">${comp.icon}</div><div class="component-label">${comp.name}</div>`;
-            el.addEventListener('dragstart', handleDragStart);
-            el.addEventListener('dragend', handleDragEnd);
-            pool.appendChild(el);
-        });
-    }
-
-    function handleDragStart(e) {
-        e.dataTransfer.setData('text/plain', e.target.dataset.id);
-        setTimeout(() => e.target.classList.add('dragging'), 0);
-    }
-
-    function handleDragEnd(e) {
-        e.target.classList.remove('dragging');
-    }
-
-    function handleDragOver(e) {
-        e.preventDefault();
-    }
-
-    function handleDragEnter(e) {
-        e.preventDefault();
-        if (e.target.classList.contains('drop-zone')) {
-            e.target.classList.add('over');
-        }
-    }
-
-    function handleDragLeave(e) {
-        if (e.target.classList.contains('drop-zone')) {
-            e.target.classList.remove('over');
-        }
-    }
-
-    function handleDrop(e) {
-        e.preventDefault();
-        const dropZone = e.target.closest('.drop-zone');
-        if (!dropZone) return;
-
-        dropZone.classList.remove('over');
-        const componentId = parseInt(e.dataTransfer.getData('text/plain'));
-        const dropZoneStep = parseInt(dropZone.dataset.step);
-        const componentData = activityData.components.find(c => c.id === componentId);
-
-        if (componentId === dropZoneStep && dropZoneStep === correctPlacements + 1) {
-            handleCorrectPlacement(componentId, dropZone, componentData);
-        } else {
-            handleIncorrectPlacement(dropZone, componentData, componentId === dropZoneStep);
-        }
-    }
-
-    function handleCorrectPlacement(componentId, dropZone, componentData) {
-        const draggedEl = document.getElementById(`component-${componentId}`);
-        draggedEl.classList.remove('dragging');
-        draggedEl.draggable = false;
-        dropZone.appendChild(draggedEl);
+        // --- AUDIO ---
+        const dingSound = document.getElementById('ding-sound');
+        const introAudio = document.getElementById('intro-audio');
+        const outroAudio = document.getElementById('outro-audio');
+        const clickSound = document.getElementById('click-sound');
         
-        // Special case for inlet/outlet - hide it as it's part of the condenser
-        if (componentId === 3) {
-            draggedEl.style.display = 'none';
+        function populateHintTable() {
+            const hintTableBody = document.querySelector("#hint-table tbody");
+            hintTableBody.innerHTML = ''; // Clear previous hints
+            activityData.forEach(part => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${part.name}</td>
+                    <td>${part.hint}</td>
+                `;
+                hintTableBody.appendChild(row);
+            });
         }
 
-        playSound(dingAudio);
-        showFeedbackPopup('correct', componentData.correctFeedback);
+        // --- INITIALIZATION ---
+        function initializeGame() {
+            burnerContainer.innerHTML = '';
+            dragItemsContainer.innerHTML = '';
+            completedParts.clear();
+            gameCompleted = false;
+
+            activityData.forEach(part => {
+                const zone = document.createElement('div');
+                zone.className = 'drop-zone';
+                zone.dataset.part = part.id;
+                zone.style.top = part.coords.top;
+                zone.style.left = part.coords.left;
+                zone.style.width = part.coords.width;
+                zone.style.height = part.coords.height;
+                burnerContainer.appendChild(zone);
+            });
+
+            const shuffledParts = [...activityData].sort(() => Math.random() - 0.5);
+            shuffledParts.forEach(part => {
+                const item = document.createElement('div');
+                item.className = 'drag-item';
+                item.dataset.part = part.id;
+                item.textContent = part.name;
+                item.draggable = true;
+                dragItemsContainer.appendChild(item);
+            });
+            
+            addDragListeners();
+            updateProgress();
+            populateHintTable();
+        }
+
+        // --- GAME FLOW ---
+       function startGame() {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden'); // Show game screen immediately
+            initializeGame(); // Load the game content
+
+            // Show the introduction overlay after the game screen has animated in
+            setTimeout(() => {
+                activityDescriptionOverlay.classList.remove('hidden');
+                if (introAudio) playSound(introAudio);
+            }, 500); // Match CSS transition
+
+            sendEvent(ActivityEvent.START_ACTIVITY, {activityName: 'Name the Distillation Setup'});
+        }
+
+        function closeActivityDescription() {
+            activityDescriptionOverlay.classList.add('hidden');
+            if (introAudio) introAudio.pause();
+        }
+        function restartGame() {
+            if (outroAudio) outroAudio.pause();
+            completionOverlay.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            initializeGame();
+        }
+
+        function showHint() {
+            hintOverlay.classList.remove('hidden');
+        }
+
+        function closeHint() {
+            hintOverlay.classList.add('hidden');
+        }
         
-        dropZone.classList.add('correct-glow');
-        setTimeout(() => dropZone.classList.remove('correct-glow'), 1000);
-
-        correctPlacements++;
-        updateProgress();
-
-        if (correctPlacements === totalComponents) {
-            setTimeout(endActivity, 1000);
+        // --- UI & FEEDBACK ---
+        function updateProgress() {
+            const progress = (completedParts.size / TOTAL_PARTS) * 100;
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `${completedParts.size} / ${TOTAL_PARTS}`;
         }
-    }
-    
-    function handleIncorrectPlacement(dropZone, componentData, isStepCorrectButOutOfOrder) {
-        playSound(buzzAudio);
-        const feedback = isStepCorrectButOutOfOrder ? "That's the right place for that piece, but you're not at that step yet. Follow the sequence!" : componentData.incorrectFeedback;
-        showFeedbackPopup('incorrect', feedback);
 
-        dropZone.classList.add('incorrect-pulse');
-        setTimeout(() => dropZone.classList.remove('incorrect-pulse'), 500);
-    }
-    
-    function updateProgress() {
-        document.getElementById('progress-bar').style.width = `${(correctPlacements / totalComponents) * 100}%`;
-        document.getElementById('progress-text').textContent = `${correctPlacements} / ${totalComponents}`;
-    }
-
-    function showFeedbackPopup(type, message) {
-        document.getElementById(`${type}-feedback-text`).innerHTML = message;
-        document.getElementById(`feedback-${type}-overlay`).classList.remove('hidden');
-    }
-    
-    function showActivityIntro() {
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        document.getElementById('activity-intro-overlay').classList.remove('hidden');
-        playSound(introAudio);
-        sendEvent(ActivityEvent.START_ACTIVITY, {activityName: activityData.title});
-    }
-
-    function showInstructions() { document.getElementById('instructions-overlay').classList.remove('hidden'); }
-    
-    function showHint() { document.getElementById('hint-overlay').classList.remove('hidden'); }
-
-    function showTakeaways() { 
-        document.getElementById('completion-overlay').classList.add('hidden');
-        stopSound(outroAudio);
-        document.getElementById('takeaways-overlay').classList.remove('hidden'); 
-        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: activityData.title});
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-        if (id === 'activity-intro-overlay') { 
-            stopSound(introAudio); 
-            initGame(); 
+        function showFeedback(part, isCorrect = true) {
+            if (isCorrect) {
+                feedbackTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Correct!`;
+                feedbackText.innerHTML = part.feedback;
+                feedbackModal.className = 'modal correct-feedback';
+            } else {
+                feedbackTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Try Again!`;
+                feedbackText.innerHTML = part.incorrectFeedback;
+                feedbackModal.className = 'modal incorrect-feedback';
+            }
+            feedbackOverlay.classList.remove('hidden');
         }
-    }
-    
-    function endActivity() {
-        document.getElementById('steam-path').classList.add('visible');
-        setTimeout(() => {
-             document.getElementById('game-screen').classList.add('hidden');
-             document.getElementById('completion-overlay').classList.remove('hidden');
-             playSound(outroAudio);
-        }, 3000);
-    }
-    
-    function restartGame() {
-        stopSound(outroAudio);
-        document.getElementById('completion-overlay').classList.add('hidden');
-        document.getElementById('takeaways-overlay').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        initGame();
-    }
 
-    function goToPreviousActivity() { 
-        // This link can be updated if necessary
-        // window.location.href = "../PREVIOUS_ACTIVITY/index.html"; 
-        stopSound(outroAudio);
-        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: activityData.title});
-    }
-    function gotoNextActivity() { 
-        // This link can be updated if necessary
-        // window.location.href = "../ACTIVITY3/index.html"; 
-        sendEvent(ActivityEvent.END_ACTIVITY, {activityName: activityData.title});
-    }
-    
-    function populateStaticContent() {
-        document.getElementById('intro-text').innerHTML = activityData.introduction;
-        document.querySelector('#start-screen h1').textContent = activityData.title;
-        document.querySelector('.completion-title-banner').innerHTML = activityData.conclusion;
+        function closeFeedback() {
+            feedbackOverlay.classList.add('hidden');
+            if (completedParts.size === TOTAL_PARTS && !gameCompleted) {
+                gameCompleted = true;
+                setTimeout(() => {
+                    gameScreen.classList.add('hidden');
+                    completionOverlay.classList.remove('hidden');
+                    if (outroAudio) playSound(outroAudio);
+                }, 300);
+            }
+        }
 
-        const instructionsList = document.getElementById('instructions-list');
-        instructionsList.innerHTML = activityData.instructions.map(item => `<li>${item}</li>`).join('');
+        // --- MODAL CONTROLS ---
+        function showGameInstructions() { gameInstructionsOverlay.classList.remove('hidden'); }
+        function closeGameInstructions() { gameInstructionsOverlay.classList.add('hidden'); }
 
-        const hintList = document.getElementById('hint-list');
-        hintList.innerHTML = activityData.hints.map(item => `<li>${item}</li>`).join('');
+        // --- DRAG AND DROP LOGIC ---
+        function addDragListeners() {
+            const draggables = document.querySelectorAll('.drag-item');
+            const dropzones = document.querySelectorAll('.drop-zone');
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', () => {
+                    draggable.classList.add('dragging');
+                    draggedItem = draggable;
+                });
+                draggable.addEventListener('dragend', () => {
+                    draggable.classList.remove('dragging');
+                    draggedItem = null;
+                });
+            });
+
+            dropzones.forEach(zone => {
+                zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+                zone.addEventListener('dragleave', () => { zone.classList.remove('drag-over'); });
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    handleDrop(draggedItem, zone);
+                });
+            });
+
+            draggables.forEach(draggable => { draggable.addEventListener('touchstart', handleTouchStart, { passive: false }); });
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+        }
+
+        function handleDrop(item, zone) {
+            if (item && zone && item.dataset.part === zone.dataset.part && !completedParts.has(item.dataset.part)) {
+                const partId = item.dataset.part;
+                const partData = activityData.find(p => p.id === partId);
+                completedParts.add(partId);
+                item.classList.add('placed');
+                item.style.display = 'none'; // Hide the original item
+                zone.classList.add('correct');
+                zone.textContent = partData.name;
+                playSound(dingSound);
+                showFeedback(partData, true);
+                updateProgress();
+            } else {
+                playSound(clickSound);
+                if (item) {
+                    const partId = item.dataset.part;
+                    const partData = activityData.find(p => p.id === partId);
+                    showFeedback(partData, false);
+                    item.classList.add('shake');
+                    setTimeout(() => item.classList.remove('shake'), 500);
+                }
+            }
+        }
         
-        const takeawaysList = document.getElementById('takeaways-list');
-        takeawaysList.innerHTML = activityData.keyTakeaways.map(item => `<li>${item}</li>`).join('');
+        function handleTouchStart(e) {
+            if (e.target.classList.contains('placed')) return;
+            e.preventDefault();
+            draggedItem = e.target;
+            draggedItem.classList.add('dragging');
+            touchClone = draggedItem.cloneNode(true);
+            touchClone.classList.add('touch-clone');
+            document.body.appendChild(touchClone);
+            const touch = e.touches[0];
+            moveClone(touch.clientX, touch.clientY);
+        }
 
-        document.getElementById('progress-text').textContent = `0 / ${totalComponents}`;
-    }
+        function handleTouchMove(e) {
+            if (!draggedItem || !touchClone) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            moveClone(touch.clientX, touch.clientY);
+            touchClone.style.display = 'none';
+            const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+            touchClone.style.display = '';
+            document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+            if (elementUnder && elementUnder.classList.contains('drop-zone')) {
+                elementUnder.classList.add('drag-over');
+            }
+        }
+        
+        function moveClone(x, y) {
+             if (!touchClone) return;
+             touchClone.style.left = `${x - touchClone.offsetWidth / 2}px`;
+             touchClone.style.top = `${y - touchClone.offsetHeight / 2}px`;
+        }
 
-    window.onload = () => { initAudio(); populateStaticContent(); };
-</script>
-<script src = "../eventSender.js"></script>
+        function handleTouchEnd(e) {
+            if (!draggedItem || !touchClone) return;
+            const touch = e.changedTouches[0];
+            touchClone.style.display = 'none';
+            const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            touchClone.style.display = '';
+            document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+            
+            if (dropTarget && dropTarget.classList.contains('drop-zone')) {
+                handleDrop(draggedItem, dropTarget);
+            } else {
+                 playSound(clickSound);
+                 if(draggedItem) {
+                    const partId = draggedItem.dataset.part;
+                    const partData = activityData.find(p => p.id === partId);
+                    showFeedback(partData, false);
+                    draggedItem.classList.add('shake');
+                    setTimeout(() => draggedItem.classList.remove('shake'), 500);
+                 }
+            }
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+            if (touchClone.parentNode === document.body) {
+                document.body.removeChild(touchClone);
+            }
+            touchClone = null;
+        }
+
+        function playSound(audioElement) {
+            if (audioElement) {
+                audioElement.currentTime = 0;
+                audioElement.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+    </script>
+    <script src ="../eventSender.js"></script>
 </body>
 </html>

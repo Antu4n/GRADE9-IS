@@ -181,6 +181,7 @@
             font-size: clamp(2rem, 7vmin, 4rem);
             text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
             text-align: center; font-family: var(--header-font);
+            font-weight: 600;
         }
         #completion-overlay .modal {
             background: transparent; box-shadow: none; width: auto; max-width: none;
@@ -213,9 +214,9 @@
         .completion-btn {
             background: #FBB03B;
             color: #fff;
-            font-weight: 700;
-            font-size: 1.1rem;
-            border: 0.3rem solid #fff;
+            font-weight: 500;
+            font-size: 1.3rem;
+            border: 3px solid #fff;
             border-radius: 3rem;
             padding: 0.75rem 2.25rem;
             margin-top: 1rem;
@@ -228,6 +229,36 @@
             transform: scale(1.05); 
             box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
         }
+
+        /* ====== KEY TAKEAWAYS SCREEN ====== */
+        .end-lesson-screen {
+            display: flex; flex-direction: column; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; justify-content: center; align-items: center;
+            padding: 2rem; background-color: var(--primary-color); text-align: center; color: white; gap: 1.5rem;
+        }
+        .end-lesson-screen h2 { font-size: 2.5rem; text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2); }
+        #key-takeaways-overlay{
+            background-image: url(images/gamebg.jpg);
+            background-size: cover;
+            background-position: center;
+        }
+        .takeaways-container {
+            background-color: white; color: var(--text-color-dark);
+            border-radius: 1rem; padding: 1.5rem 2rem; max-width: 45rem;
+            width: 90%; border-top: 0.3rem solid var(--secondary-color);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+        }
+        .takeaways-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 1.2rem; font-weight: 700; }
+        .takeaways-list { list-style-type: none; padding: 0; text-align: left; }
+        .takeaways-list li { position: relative; padding-left: 2rem; margin-bottom: 0.8rem; font-size: 1.1rem; line-height: 1.5; }
+        .takeaways-list li::before { content: "✓"; color: var(--correct-color); position: absolute; left: 0; top: 0; font-size: 1.2rem; font-weight: bold; }
+        .primary-action-btn {
+            background: var(--secondary-color); color: #fff; font-weight: 700; font-size: 1.3rem;
+            border: 3px solid #fff; border-radius: 3rem; padding: 0.75rem 2.5rem;
+            cursor: pointer; text-shadow: 0 0.125rem 0 #b88b2a; transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2); text-decoration: none;
+        }
+        .primary-action-btn:hover { transform: scale(1.06); }
         
         /* --- GAME SCREEN & LAYOUT --- */
         #game-screen {
@@ -447,6 +478,11 @@
         }
 
         /* --- Media Query for smaller screens --- */
+        @media(min-width: 1200px) {
+            .takeaways-list li{
+                line-height: 2.5;
+            }
+        }
         @media (max-width: 991px) {
             #completion-image { max-width: 56vw; width: 100%; }
             .items-landed-container .drag-item {
@@ -513,8 +549,18 @@
                 <div class="completion-buttons">
                     <button class="completion-btn" id="previous-activity-btn">Previous Activity</button>
                     <button class="completion-btn" id="restart-activity-btn">Restart Activity</button>
-                    <button class="completion-btn" id="next-activity-btn">Next Activity</button>
+                    <button class="completion-btn" id="key-takeaways-btn">Key Takeaways</button>
                 </div>
+            </div>
+            
+            <div id="key-takeaways-overlay" class="screen hidden end-lesson-screen">
+                <h2>Lesson Complete</h2>
+                <div class="takeaways-container">
+                    <div class="takeaways-title">Key Takeaways</div>
+                    <ul class="takeaways-list" id="takeaways-list-content">
+                    </ul>
+                </div>
+                <button class="primary-action-btn" id="exit-lesson-btn">Exit Lesson</button>
             </div>
 
             <div id="feedback-modal-overlay" class="modal-overlay">
@@ -566,6 +612,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const startScreen = document.getElementById('start-screen');
     const gameScreen = document.getElementById('game-screen');
     const completionOverlay = document.getElementById('completion-overlay');
+    const keyTakeawaysOverlay = document.getElementById('key-takeaways-overlay');
+    const takeawaysList = document.getElementById('takeaways-list-content');
+    const exitLessonBtn = document.getElementById('exit-lesson-btn');
     const gameHeader = document.querySelector('.game-header');
     const startBtn = document.querySelector('.start-button');
     const narrationModalOverlay = document.getElementById('narration-modal-overlay');
@@ -589,6 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.getElementById('header-progress-bar');
     const progressText = document.getElementById('header-progress-text');
     const restartActivityBtn = document.getElementById('restart-activity-btn');
+    const keyTakeawaysBtn = document.getElementById('key-takeaways-btn');
     const introAudio = document.getElementById('intro-audio');
     const outroAudio = document.getElementById('outro-audio');
     const correctAudio = document.getElementById('correct-audio');
@@ -599,7 +649,13 @@ document.addEventListener('DOMContentLoaded', () => {
         intro: "Different types of water are better suited for different tasks. Some are rich in minerals, while others are better for washing. Let us find the best match! Can you pair each household use with the right type of water?",
         instructions: "<p>Drag each household use to the correct water type category.</p><p>Think about the benefits or disadvantages of each water type.</p><p>You may try again if you make a mistake.</p>",
         hint: "<p>Hard water contains calcium and magnesium minerals.</p><p>Soft water lathers easily and prevents scum buildup.</p><p>Some uses require minerals, others need soap efficiency.</p>",
-        conclusion: "Excellent judgment! You matched each task to the right water type. Knowing which type to use makes daily life healthier, easier, and more efficient."
+        conclusion: "Excellent judgment! You matched each task to the right water type. Knowing which type to use makes daily life healthier, easier, and more efficient.",
+        keyTakeaways: [
+            "<b>Hard water uses:</b> Drinking and cooking (mineral benefits), preventing lead pipe corrosion.",
+            "<b>Soft water uses:</b> Washing clothes, bathing, cleaning, and hot water systems (avoids scale).",
+            "<b>Soft water advantages:</b> Saves soap, prevents staining, gentler on skin/hair.",
+            "<b>Knowledge of water type</b> helps select the right water for tasks and reduce costs/damage."
+        ]
     };
 
     const gameData = [
@@ -634,6 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
         narrationText.innerHTML = gameContent.intro;
         helpModalText.innerHTML = gameContent.instructions;
         hintModalText.innerHTML = gameContent.hint;
+        takeawaysList.innerHTML = gameContent.keyTakeaways.map(item => `<li>${item}</li>`).join('');
 
         dragItemsContainer.innerHTML = '';
         dropZonesContainer.innerHTML = '';
@@ -897,7 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sendEvent(ActivityEvent.START_ACTIVITY, { activityName: 'Water for Every Use' });
         }
     });
-    documnet.getElementById('previous-activity-btn').addEventListener('click', () => {
+    document.getElementById('previous-activity-btn').addEventListener('click', () => {
         if (typeof sendEvent !== 'undefined' && typeof ActivityEvent !== 'undefined') {
             sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Water for Every Use' });
         }
@@ -922,13 +979,18 @@ document.addEventListener('DOMContentLoaded', () => {
     hintModalBtn.addEventListener('click', () => hintModalOverlay.classList.remove('active'));
 
 
-    document.getElementById('next-activity-btn').addEventListener('click', () => {
+    keyTakeawaysBtn.addEventListener('click', () => {
         if (typeof sendEvent !== 'undefined' && typeof ActivityEvent !== 'undefined') {
             sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Water for Every Use' });
         }
-        // Placeholder for navigation logic
-        window.location.href = "../ACTIVITY2/index.html"; // Example navigation
+        switchScreen(completionOverlay, keyTakeawaysOverlay);
     });
+    
+    exitLessonBtn.addEventListener('click', () => {
+        // Reloading the page is a simple way to "exit" the activity.
+        sendEvent(LessonEvent.END_LESSON, { lessonName: 'Applications of Soft and Hard Water in Daily Life: Lesson 5' });
+    });
+
 });
 </script>
 

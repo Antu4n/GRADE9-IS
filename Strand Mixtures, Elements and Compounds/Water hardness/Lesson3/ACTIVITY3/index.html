@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Boil It or Not?</title>
+<style>
+    /* Font Imports and Keyframes */
+    @font-face {
+        font-family: 'Fredoka';
+        src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
+    }
+    @keyframes glow-pulse {
+        0%, 100% { box-shadow: 0 0 10px rgba(251, 176, 59, 0.5), 0 0 20px rgba(251, 176, 59, 0.3); transform: scale(1); }
+        50% { box-shadow: 0 0 20px rgba(251, 176, 59, 0.8), 0 0 30px rgba(251, 176, 59, 0.5); transform: scale(1.05); }
+    }
+    @keyframes glow-pulse-white {
+        0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); transform: scale(1); }
+        50% { box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.7); transform: scale(1.1); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+    
+    ::-webkit-scrollbar{ display: none; }
+
+    /* Root Variables */
+    :root {
+        --primary-color: #5D04B2;
+        --secondary-color: #fbb03b;
+        --correct-color: #28a745;
+        --incorrect-color: #dc3545;
+        --text-color-dark: #343a40;
+        --text-color-light: #fff;
+        --card-background-light: #ffffff;
+        --shadow-dark: rgba(0, 0, 0, 0.2);
+        --border-radius: 1rem;
+        --header-font: 'Fredoka', sans-serif;
+    }
+
+    /* Global Reset & Base Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f4f8;
+        font-family: var(--header-font), sans-serif;
+    }
+
+    #game-wrapper {
+        width: 100%;
+        max-width: 1200px;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        box-shadow: 0 0.9375rem 2.5rem var(--shadow-dark);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+    }
+
+    #game-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .screen {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        transition: opacity 0.5s ease-in-out;
+        overflow: hidden;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; }
+    
+    #start-screen {
+       background-image: url(images/gamebg.jpg);
+       background-size: cover;
+       background-position: center;
+       justify-content: center;
+       align-items: center;
+       padding: 2rem;
+       text-align: center;
+    }
+    #start-screen h1 {
+       font-size: clamp(2.5rem, 5vw, 4.2rem);
+       color: var(--text-color-light);
+       margin-bottom: 1.2rem;
+       text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+       font-weight: 500;
+    }
+    .start-button { 
+        background: var(--secondary-color); color: #fff; font-weight: 900;
+        font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
+        padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
+        text-shadow: 0 2px 0 #b88b2a; transition: all 0.2s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+
+    #game-screen { background: #f8f9ff; }
+
+    .game-top-section {
+        width: 100%; flex-shrink: 0; display: flex; justify-content: space-between;
+        align-items: center; background-color: var(--primary-color);
+        color: var(--text-color-light); padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2); gap: 1rem; flex-wrap: wrap;
+    }
+    
+    #game-title {
+        font-size: clamp(1.2rem, 3vmin, 1.8rem); font-weight: 600;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1 1 300px; min-width: 0;
+    }
+
+    .progress-area { display: flex; align-items: center; gap: clamp(0.5rem, 1.5vw, 1rem); flex-shrink: 0; }
+    #progress-container {
+        width: clamp(100px, 15vw, 200px); background-color: rgba(255,255,255,0.3);
+        border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
+        border: 2px solid #fff; position: relative; overflow: hidden;
+    }
+    #progress-bar {
+        height: 100%; width: 0%; background: #ffff00;
+        border-radius: 0.8rem; transition: width 0.5s ease;
+    }
+    #progress-text {
+        color: var(--text-color-light); font-weight: 700;
+        font-size: clamp(0.75rem, 2vmin, 1rem); text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    .instructions-icon {
+        width: clamp(30px, 4vmin, 40px); height: clamp(30px, 4vmin, 40px); background: rgba(255, 255, 255, 0.2); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: all 0.3s ease; flex-shrink: 0; animation: glow-pulse-white 2s infinite;
+    }
+    .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+    .instructions-icon svg { fill: white; width: 50%; height: 50%; }
+
+    .game-main {
+        flex: 1; display: flex;
+        padding: clamp(0.5rem, 1vw, 1rem); overflow: hidden;
+    }
+    #experiment-area {
+        width: 100%; height: 100%;
+        display: flex; gap: 1rem;
+    }
+    #canvas-container {
+        flex: 3; position: relative;
+        display: flex; align-items: center; justify-content: center;
+        min-width: 0;
+    }
+    canvas { display: block; background-color: transparent; width: 100%; height: 100%; }
+    
+    #controls-and-observations {
+        flex: 2; display: flex; flex-direction: column; justify-content: space-around;
+        padding: 1rem; background: #e9ecef; border-radius: var(--border-radius);
+        overflow-y: auto;
+    }
+
+    .control-buttons { display: flex; flex-direction: column; gap: 1rem; }
+    .action-btn {
+        font-family: var(--header-font); font-size: clamp(1rem, 2.5vmin, 1.2rem); font-weight: bold;
+        color: white; border: none; border-radius: 50px; padding: clamp(0.6rem, 2vmin, 0.8rem);
+        cursor: pointer; transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    }
+    .action-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.1); }
+    .action-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.2); }
+    .action-btn:disabled { background: #bdc3c7 !important; color: #7f8c8d !important; cursor: not-allowed; box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 -2px 0 rgba(0,0,0,0.1); }
+    #boil-btn { background: linear-gradient(145deg, #e74c3c, #c0392b); }
+    #add-soap-btn { background: linear-gradient(145deg, #3498db, #2980b9); }
+
+    #observation-section { margin-top: 1.5rem; }
+    #observation-section h3 {
+        text-align: center; color: var(--text-color-dark);
+        margin-bottom: 1rem; font-size: clamp(1.1rem, 2.5vmin, 1.3rem);
+    }
+    .drop-zones { display: flex; flex-direction: column; justify-content: space-around; gap: 1rem; position: relative; flex-grow: 1;}
+    .drop-zone {
+        flex: 1; padding: 1rem; border: 3px dashed #ccc;
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease; min-height: clamp(60px, 10vh, 80px);
+        display: flex; flex-direction: column;
+    }
+    .drop-zone-header { text-align: center; }
+    .drop-zone-header h4 { font-size: clamp(0.9rem, 2vmin, 1.1rem); color: #555; }
+    .drop-zone-header p { font-size: clamp(0.8rem, 1.8vmin, 0.9rem); color: #777; }
+    .drop-zone.over { background-color: #d4edda; border-color: var(--correct-color); }
+    .drop-zone.incorrect-over { background-color: #f8d7da; border-color: var(--incorrect-color); }
+    .drop-zone-content { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding-top: 0.5rem; }
+    .dropped-item {
+        background: var(--secondary-color); color: white; padding: 0.5rem; border-radius: 0.25rem;
+        width: 100%; text-align: center; font-weight: bold; font-size: clamp(0.9rem, 2.2vmin, 1.1rem);
+    }
+
+    #draggable-result {
+        background: var(--secondary-color); color: white;
+        border-radius: 0.25rem;
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+        display: flex; align-items: center; justify-content: center;
+        cursor: grab; transition: opacity 0.3s; position: absolute;
+        font-weight: bold; font-size: clamp(0.9rem, 2.2vmin, 1.2rem); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        z-index: 1000; user-select: none; opacity: 0; pointer-events: none;
+    }
+    #draggable-result.visible { opacity: 1; pointer-events: auto; }
+    #draggable-result:active { cursor: grabbing; }
+    
+    /* Hint Icon */
+    .hint-icon {
+        position: absolute; bottom: 1rem; right: 1rem; width: clamp(40px, 5vmin, 50px); height: clamp(40px, 5vmin, 50px);
+        background: var(--secondary-color); border-radius: 50%; border: 2px solid white;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: all 0.3s ease; z-index: 1001; box-shadow: 0 4px 15px rgba(251, 176, 59, 0.4);
+        animation: glow-pulse 2s infinite;
+    }
+    .hint-icon:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(251, 176, 59, 0.8); }
+    .hint-icon svg { fill: white; width: 50%; height: 50%; }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+        z-index: 3000; display: flex; justify-content: center; align-items: center;
+        animation: fadeIn 0.3s ease;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-content {
+        background: var(--card-background-light); padding: clamp(1.5rem, 3vw, 2.5rem);
+        border-radius: var(--border-radius); text-align: center;
+        width: 90%; max-width: 600px;
+        animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-content h2 {
+      font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 600; margin-bottom: 1.5rem;
+      color: var(--primary-color);
+    }
+    .modal-content p { font-size: clamp(1rem, 2.5vw, 1.2rem); line-height: 1.6; color: var(--text-color-dark); }
+     .modal-content ul {
+        list-style-type: none; text-align: left; margin-top: 1rem; padding: 0; font-size: clamp(0.9rem, 2vmin, 1.1rem);
+    }
+    .modal-content li { margin-bottom: 0.8rem; padding-left: 1.5rem; position: relative; }
+    .modal-content li::before { content: '💧'; position: absolute; left: 0; }
+
+    .modal-btn {
+        width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700;
+        border: none; border-radius: 0.75rem; cursor: pointer; color: #fff;
+        background-color: var(--primary-color); transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 1.5rem;
+    }
+    .modal-btn:hover { transform: scale(1.02); }
+    #activity-intro-overlay .modal-content, #instructions-overlay .modal-content { border-top: 8px solid var(--primary-color); }
+    #activity-intro-overlay .modal-content p{
+        text-align: left; background: #f8f9fa; padding: 1.5rem;
+        border-radius: 0.75rem; border-left: 4px solid var(--primary-color);
+    }
+    #hint-overlay .modal-content { border-top: 8px solid var(--secondary-color); }
+    #hint-overlay h2 { color: var(--secondary-color); }
+    #hint-overlay .modal-btn { background-color: var(--secondary-color); }
+
+    /* Feedback Popup */
+    .feedback-modal .modal-content { border-top: 8px solid; }
+    .feedback-modal.correct .modal-content { border-color: var(--correct-color); }
+    .feedback-modal.incorrect .modal-content { border-color: var(--incorrect-color); }
+    .feedback-modal h2 { font-weight: 700; }
+    .feedback-modal h2 svg {
+        vertical-align: middle;
+        width: 1.5em;
+        height: 1.5em;
+        margin-right: 0.4em;
+        display: inline-block;
+    }
+
+    /* Also style quiz feedback SVGs if needed (same selector works) */
+    .feedback-modal.correct h2 { color: var(--correct-color); }
+    .feedback-modal.incorrect h2 { color: var(--incorrect-color); }
+    .feedback-modal .modal-btn { background-color: #333; }
+    .feedback-modal.correct .modal-btn { background-color: var(--correct-color); }
+    .feedback-modal.incorrect .modal-btn { background-color: var(--incorrect-color); }
+
+    /* Quiz Styling from Reference */
+    #quiz-screen {
+        justify-content: flex-start;
+        align-items: center;
+    }
+    .quiz-title {
+        font-family: var(--header-font); color: var(--primary-color);
+        font-size: clamp(1.8rem, 4vmin, 2.2rem); text-align: center;
+        padding: 1rem; width: 100%; margin-bottom: 1rem;
+    }
+    .question-section {
+        display: flex; flex-direction: column; align-items: center;
+        width: 100%; max-width: 800px; margin: 0;
+        background-color: #f8f9fa; padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        flex: 1; justify-content: center;
+    }
+    .question-section h3 {
+        font-family: var(--header-font); color: var(--text-color-dark);
+        font-size: clamp(1.2rem, 3vmin, 1.5rem); margin-bottom: 1.5rem; text-align: center;
+        font-weight: 500;
+    }
+    .options-container { display: flex; flex-direction: column; gap: 1rem; width: 100%; max-width: 450px; }
+    .option-button {
+        background: #fff; border: 2px solid #ddd; border-radius: 1rem; padding: 1.2rem; cursor: pointer;
+        transition: all 0.3s ease; font-size: clamp(1rem, 2.5vmin, 1.2rem); color: var(--text-color-dark); font-weight: 700;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05); text-align: left;
+    }
+    .option-button:hover:not(:disabled) { transform: translateY(-3px); border-color: var(--primary-color); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+    .option-button.correct { background: var(--correct-color); color: white; border-color: #fff; transform: scale(1.02); }
+    .option-button.incorrect { background: var(--incorrect-color); color: white; animation: shake 0.5s; }
+    .option-button:disabled { cursor: not-allowed; opacity: 0.7; }
+
+    /* Completion Screen Styling from Reference */
+    #completion-overlay {
+        background-image: url('images/gamebg.jpg');
+        background-size: cover; background-position: center;
+        color: #fff; flex-direction: column;
+        justify-content: center; align-items: center; gap: 1rem; padding: 1rem;
+    }
+    .completion-title-banner {
+        font-size: clamp(2rem, 7vmin, 4rem); text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+        text-align: center; font-family: var(--header-font);
+        font-weight: 600;
+    }
+    #completion-overlay .modal-content {
+        background: transparent; box-shadow: none; width: auto; max-width: none;
+        display: flex; justify-content: center; align-items: center; padding: 0; overflow: visible;
+    }
+    #completion-image {
+        width: 60%;
+        max-width: 100%;
+        height: auto;
+        border: 3px solid var(--secondary-color);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin-top: 0.5rem;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 5rem;
+    }
+    .completion-buttons {
+        position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            right: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+    }
+    .completion-btn {
+        background: #FBB03B;
+        color: #fff;
+        font-weight: 500;
+        font-size: 1.32rem;
+        border: 3.6px solid #fff;
+        border-radius: 3rem;
+        padding: 0.72rem 2.64rem;
+        margin-top: 1rem;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        text-shadow: 0 2px 0 #b88b2a;
+        transition: all 0.2s;
+        font-family: var(--header-font);
+        white-space: nowrap;
+    }
+    .completion-btn:hover { transform: scale(1.05); box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2); }
+
+
+    .visually-hidden {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+    }
+
+    #orientation-lock {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: #f0f4f8;
+        z-index: 10000;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    @media (orientation: portrait) {
+        #game-wrapper { display: none; }
+        #orientation-lock { display: flex; }
+    }
+
+    @media (max-width: 1024px) {
+        body { padding: 0; }
+       
+    }
+    @media (max-width:991px){
+         #game-wrapper {
+            width: 100vw !important; height: 100vh !important;
+            border-radius: 0 !important; max-width: none !important;
+            aspect-ratio: unset !important; box-shadow: none;
+        }
+        #options-container {
+            display: grid;
+            grid-template-columns:repeat(2, auto);
+        }
+        .question-section{
+            height: 65vh;
+        }
+        .quiz-title{
+            margin-bottom: 0rem;
+        }
+         #completion-image {
+            width: 45%;
+         }
+         .completion-btn{
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+                padding: 0.6rem 1.2rem;
+         }
+    }
+    @media(max-width:786px){
+         #completion-image {
+            width: 60%;
+         }
+         
+    }
+</style>
+</head>
+<body>
+
+<div id="orientation-lock">
+    <h2>Please rotate your device to landscape mode to play.</h2>
+</div>
+
+<div id="game-wrapper">
+   <div id="game-container">
+        <div id="start-screen" class="screen">
+            <h1>Boil It or Not?</h1>
+            <button class="start-button">Start Activity</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-top-section">
+               <h1 id="game-title">Virtual Lab: Water Hardness</h1>
+               <div class="progress-area">
+                   <div id="progress-container"><div id="progress-bar"></div></div>
+                   <div id="progress-text">0 / 2</div>
+               </div>
+               <div class="instructions-icon">
+                   <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+               </div>
+            </div>
+            <main class="game-main">
+                <div id="experiment-area">
+                    <section id="canvas-container">
+                        <canvas id="activityCanvas" role="img" aria-label="Two test tubes with water samples for a boiling experiment."></canvas>
+                        <div id="draggable-result"></div>
+                    </section>
+                    <aside id="controls-and-observations">
+                        <div class="control-buttons">
+                            <button id="boil-btn" class="action-btn">
+                                Boil Sample <span id="current-sample-label">A</span>
+                            </button>
+                            <button id="add-soap-btn" class="action-btn" disabled>
+                                Add Soap
+                            </button>
+                        </div>
+                        <div id="observation-section">
+                            <h3>Record Your Observation</h3>
+                            <div class="drop-zones">
+                                <div class="drop-zone" data-hardness="temporary">
+                                    <div class="drop-zone-header">
+                                        <h4>Lather Forms</h4>
+                                        <p>(Temporary Hardness)</p>
+                                    </div>
+                                    <div class="drop-zone-content"></div>
+                                </div>
+                                <div class="drop-zone" data-hardness="permanent">
+                                     <div class="drop-zone-header">
+                                        <h4>Scum Remains</h4>
+                                        <p>(Permanent Hardness)</p>
+                                    </div>
+                                    <div class="drop-zone-content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </main>
+            <div class="hint-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"></path></svg>
+            </div>
+        </div>
+        
+        <div id="quiz-screen" class="screen hidden">
+            <div class="game-top-section">
+                <h1 id="game-title">Knowledge Check</h1>
+                 <div class="progress-area">
+                    <span id="quiz-progress-text">1 / 2</span>
+                 </div>
+            </div>
+            <h2 class="quiz-title" id="quiz-title-text"></h2>
+            <div class="question-section">
+                <h3 id="question-text"></h3>
+                <div class="options-container" id="options-container"></div>
+            </div>
+        </div>
+
+        <div id="activity-intro-overlay" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2>Activity Introduction</h2>
+                <p>Welcome to the Water Lab! Today you will test different samples to find out if boiling removes hardness. Watch the changes after boiling. Can you tell which type of water becomes soft?</p>
+                <button class="modal-btn" id="intro-continue-btn">Continue</button>
+            </div>
+        </div>
+        <div id="instructions-overlay" class="modal-overlay hidden">
+           <div class="modal-content">
+               <h2>Instructions</h2>
+               <ul id="instructions-list"></ul>
+               <button class="modal-btn" id="close-instructions-btn">Got it!</button>
+           </div>
+        </div>
+        <div id="hint-overlay" class="modal-overlay hidden">
+           <div class="modal-content">
+               <h2>Hint</h2>
+               <ul>
+                   <li>Boiling can remove some types of hardness but not all.</li>
+                   <li>Look for a change from scum to lather after boiling.</li>
+                   <li>Permanent hardness does not change after boiling.</li>
+               </ul>
+               <button class="modal-btn" id="close-hint-btn">Thanks!</button>
+           </div>
+        </div>
+        
+        <div id="feedback-overlay" class="modal-overlay feedback-modal hidden">
+            <div class="modal-content">
+                <h2 id="feedback-title"></h2>
+                <p id="feedback-text"></p>
+                <button class="modal-btn" id="feedback-continue-btn">Continue</button>
+            </div>
+        </div>
+
+        <div id="completion-overlay" class="modal-overlay hidden">
+            <h2 class="completion-title-banner">Activity Wrap Up!</h2>
+            <div class="modal-content">
+                 <img id="completion-image" src="images/complete.jpg" alt="Completion celebration">
+            </div>
+            <div class="completion-buttons">
+                <button class="completion-btn" id="prev-btn">Previous Activity</button>
+                <button class="completion-btn" id="restart-btn">Restart Activity</button>
+                <button class="completion-btn" id="next-btn">Next Activity</button>
+
+            </div>
+        </div>
+        
+        <div id="aria-live-announcer" class="visually-hidden" aria-live="polite"></div>
+        
+    <audio id="ding-sound" src="audio/ding.mp3" preload="auto"></audio>
+    <audio id="buzz-sound" src="audio/buzz.mp3" preload="auto"></audio>
+    <audio id="intro-sound" src="audio/intro.mp3" preload="auto"></audio>
+    <audio id="outro-sound" src="audio/outro.mp3" preload="auto"></audio>
+    <audio id="boil-sound" src="audio/boil.mp3" preload="auto" loop></audio>
+   </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Data ---
+    const SAMPLES = [
+        { label: 'A', name: 'Calcium hydrogen carbonate', hardnessType: 'temporary', result: 'lather', interpretation: 'Soft Water (Temporary hardness removed)' },
+        { label: 'B', name: 'Magnesium sulphate', hardnessType: 'permanent', result: 'scum', interpretation: 'Hard Water (Permanent hardness remains)' }
+    ];
+    const QUIZ = [
+        {
+            question: "Which sample showed that boiling removed hardness?",
+            options: ["Magnesium sulphate", "Calcium hydrogen carbonate", "Rainwater", "Sea water"],
+            answer: "Calcium hydrogen carbonate",
+            feedback: {
+                correct: "Correct! Calcium hydrogen carbonate is responsible for temporary hardness, which is removed by boiling.",
+                incorrect: "Try again. Remember: boiling only removes temporary hardness, not salts like magnesium sulphate."
+            }
+        },
+        {
+            question: "What kind of hardness cannot be removed by boiling?",
+            options: ["Temporary", "Soft", "Permanent", "Boiling"],
+            answer: "Permanent",
+            feedback: {
+                correct: "Correct! Permanent hardness, such as that caused by sulphates, requires other methods like distillation or washing soda.",
+                incorrect: "Boiling works only on temporary hardness. If there is no lather even after boiling, it is permanent hardness."
+            }
+        }
+    ];
+
+    // --- DOM Elements ---
+    const getEl = (id) => document.getElementById(id);
+    const query = (sel) => document.querySelector(sel);
+    const queryAll = (sel) => document.querySelectorAll(sel);
+    
+    const gameWrapper = getEl('game-wrapper');
+    const startScreen = getEl('start-screen'), gameScreen = getEl('game-screen'), quizScreen = getEl('quiz-screen');
+    const canvas = getEl('activityCanvas'), ctx = canvas.getContext('2d');
+    const canvasContainer = getEl('canvas-container');
+    const progressBar = getEl('progress-bar'), progressText = getEl('progress-text');
+    
+    // Buttons
+    const startBtn = query('.start-button');
+    const boilBtn = getEl('boil-btn');
+    const addSoapBtn = getEl('add-soap-btn');
+    const introContinueBtn = getEl('intro-continue-btn');
+    const closeInstructionsBtn = getEl('close-instructions-btn');
+    const closeHintBtn = getEl('close-hint-btn');
+    const restartBtn = getEl('restart-btn');
+
+    // Overlays & Modals
+    const activityIntroOverlay = getEl('activity-intro-overlay');
+    const instructionsOverlay = getEl('instructions-overlay');
+    const instructionsList = getEl('instructions-list');
+    const hintOverlay = getEl('hint-overlay');
+    const completionOverlay = getEl('completion-overlay');
+    const feedbackOverlay = getEl('feedback-overlay');
+    const feedbackTitle = getEl('feedback-title');
+    const feedbackText = getEl('feedback-text');
+    const feedbackContinueBtn = getEl('feedback-continue-btn');
+
+    // Icons
+    const instructionsIcon = query('.instructions-icon');
+    const hintIcon = query('.hint-icon');
+    const sampleLabelSpan = getEl('current-sample-label');
+
+    // Drag & Drop
+    const draggableResult = getEl('draggable-result');
+    const dropZones = queryAll('.drop-zone');
+
+    // Audio
+    const dingSound = getEl('ding-sound');
+    const buzzSound = getEl('buzz-sound');
+    const introSound = getEl('intro-sound');
+    const outroSound = getEl('outro-sound');
+    const boilSound = getEl('boil-sound');
+
+    // --- State ---
+    let dpr = window.devicePixelRatio || 1;
+    let W, H;
+    let testTubes = [];
+    let particles = { bubbles: [], scum: [], lather: [] };
+    let currentSampleIndex = 0;
+    let gameState = 'intro'; // intro, playing, boiling, soap, observe, quiz, done
+    let animationFrameId;
+    let thermometerTemp = 20;
+
+    let quizState = {
+        currentQuestion: 0,
+        score: 0,
+        selectedAnswer: null
+    };
+    let dragOffsetX = 0, dragOffsetY = 0;
+
+    // --- Sound Management ---
+    function playSound(sound) { if(sound) { sound.currentTime = 0; sound.play().catch(e => console.error("Audio failed:", e)); } }
+    function stopSound(sound) { if(sound) { sound.pause(); sound.currentTime = 0; } }
+
+    // --- Canvas Sizing & Drawing ---
+    function resize() {
+        const rect = canvasContainer.getBoundingClientRect();
+        W = rect.width; H = rect.height;
+        canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
+        canvas.width = W * dpr; canvas.height = H * dpr;
+        ctx.scale(dpr, dpr);
+        setupTubes();
+    }
+
+    function setupTubes() {
+        testTubes = SAMPLES.map((sample, i) => {
+            const tubeWidth = W / 4;
+            const tubeHeight = H * 0.7;
+            const spacing = (W - 2 * tubeWidth) / 3;
+            return {
+                ...sample,
+                x: spacing * (i + 1) + tubeWidth * i,
+                y: H * 0.2,
+                width: tubeWidth,
+                height: tubeHeight,
+                isBoiled: false,
+                soapAdded: false,
+            };
+        });
+    }
+
+    function draw() {
+        if (!W || !H) return;
+        ctx.clearRect(0, 0, W, H);
+        const currentTube = testTubes[currentSampleIndex];
+        
+        testTubes.forEach((tube, i) => {
+            const isActive = (i === currentSampleIndex);
+            drawTestTube(tube, isActive);
+            drawWater(tube);
+            drawBeakerLabel(tube);
+            if(particles.scum.length > 0 && tube.result === 'scum') drawScum(tube);
+            if(particles.lather.length > 0 && tube.result === 'lather') drawLather(tube);
+        });
+
+        if (gameState === 'boiling') {
+            drawBubbles(currentTube);
+            drawBurner(currentTube, true);
+        } else {
+            drawBurner(currentTube, false);
+        }
+        
+        drawThermometer(currentTube);
+    }
+    
+    function drawBeakerLabel(tube) {
+        ctx.fillStyle = '#333';
+        const baseFontSize = W / 35; // Increased base font size
+        ctx.font = `bold ${baseFontSize * 2.8}px var(--header-font)`; // Even larger size for Sample label
+        ctx.textAlign = 'center';
+        ctx.fillText(`Sample ${tube.label}`, tube.x + tube.width / 2, tube.y - baseFontSize * 3.5);
+        ctx.font = `${baseFontSize * 2.0}px var(--header-font)`; // Much larger size for chemical name
+        ctx.fillText(tube.name, tube.x + tube.width / 2, tube.y - baseFontSize * 1.5);
+    }    function drawTestTube(tube, isActive) {
+        ctx.strokeStyle = isActive ? 'var(--primary-color)' : '#aaa';
+        ctx.lineWidth = isActive ? 4 : 2;
+        ctx.fillStyle = 'rgba(230, 240, 255, 0.5)';
+        const r = tube.width / 4;
+        
+        ctx.beginPath();
+        ctx.moveTo(tube.x, tube.y);
+        ctx.lineTo(tube.x, tube.y + tube.height - r);
+        ctx.quadraticCurveTo(tube.x, tube.y + tube.height, tube.x + r, tube.y + tube.height);
+        ctx.lineTo(tube.x + tube.width - r, tube.y + tube.height);
+        ctx.quadraticCurveTo(tube.x + tube.width, tube.y + tube.height, tube.x + tube.width, tube.y + tube.height - r);
+        ctx.lineTo(tube.x + tube.width, tube.y);
+        ctx.stroke();
+        ctx.fill();
+    }
+    
+    function drawWater(tube) {
+        ctx.fillStyle = 'rgba(135, 206, 250, 0.7)';
+        const r = tube.width / 4;
+        const waterHeight = tube.height * 0.6;
+        const topY = tube.y + tube.height - waterHeight;
+        const bottomY = tube.y + tube.height;
+
+        ctx.beginPath();
+        ctx.moveTo(tube.x, topY);
+        ctx.lineTo(tube.x, bottomY - r);
+        ctx.quadraticCurveTo(tube.x, bottomY, tube.x + r, bottomY);
+        ctx.lineTo(tube.x + tube.width - r, bottomY);
+        ctx.quadraticCurveTo(tube.x + tube.width, bottomY, tube.x + tube.width, bottomY - r);
+        ctx.lineTo(tube.x + tube.width, topY);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawBurner(tube, active) {
+        if (!tube) return;
+        const baseX = tube.x + tube.width / 2;
+        const baseY = tube.y + tube.height + 20;
+        
+        ctx.fillStyle = '#777';
+        ctx.fillRect(baseX - 25, baseY, 50, 10);
+        ctx.fillStyle = '#999';
+        ctx.fillRect(baseX - 5, baseY - 30, 10, 30);
+        
+        if (active) {
+            ctx.fillStyle = `rgba(255, ${100 + Math.random() * 50}, 0, 0.8)`;
+            ctx.beginPath();
+            ctx.moveTo(baseX, baseY - 30);
+            ctx.bezierCurveTo(baseX - 20, baseY - 60, baseX + 20, baseY - 60, baseX, baseY - 30);
+            ctx.fill();
+            ctx.fillStyle = `rgba(255, 255, 0, 0.9)`;
+            ctx.beginPath();
+            ctx.moveTo(baseX, baseY - 30);
+            ctx.bezierCurveTo(baseX - 10, baseY - 50, baseX + 10, baseY - 50, baseX, baseY - 30);
+            ctx.fill();
+        }
+    }
+    
+    function drawThermometer(tube) {
+        if (!tube) return;
+        const x = tube.x - 40;
+        const y = tube.y + tube.height * 0.2;
+        const height = tube.height * 0.7;
+        
+        ctx.fillStyle = '#eee';
+        ctx.fillRect(x, y, 15, height);
+        ctx.beginPath();
+        ctx.arc(x + 7.5, y + height, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        const tempHeight = ((thermometerTemp - 0) / 100) * (height - 10);
+        ctx.fillStyle = '#e74c3c';
+        ctx.fillRect(x + 4, y + height - 5 - tempHeight, 7, tempHeight);
+        ctx.beginPath();
+        ctx.arc(x + 7.5, y + height, 8, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function createParticle(type, tube) {
+        const waterHeight = tube.height * 0.6;
+        const waterTop = tube.y + tube.height - waterHeight;
+        
+        if (type === 'bubble') {
+            particles.bubbles.push({
+                x: tube.x + 10 + Math.random() * (tube.width - 20),
+                y: tube.y + tube.height - 10,
+                r: Math.random() * 3 + 1,
+                speed: Math.random() * 1.5 + 0.5
+            });
+        } else if (type === 'scum') {
+             particles.scum.push({
+                x: tube.x + 10 + Math.random() * (tube.width - 20),
+                y: waterTop + Math.random() * (waterHeight - 20),
+                r: Math.random() * 4 + 2,
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: (Math.random() - 0.5) * 0.2
+            });
+        } else if (type === 'lather') {
+             particles.lather.push({
+                x: tube.x + 5 + Math.random() * (tube.width - 10),
+                y: waterTop + Math.random() * 10,
+                r: Math.random() * 8 + 5,
+                life: 1
+            });
+        }
+    }
+    
+    function drawBubbles(tube) {
+        if (!tube) return;
+        const waterTop = tube.y + tube.height - (tube.height * 0.6);
+        particles.bubbles.forEach((p, i) => {
+            p.y -= p.speed;
+            p.x += Math.sin(p.y * 0.1) * 0.5;
+            if (p.y < waterTop) {
+                particles.bubbles.splice(i, 1);
+            }
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fill();
+        });
+    }
+
+    function drawScum(tube) {
+        ctx.fillStyle = 'rgba(180, 180, 160, 0.8)';
+        const waterTop = tube.y + tube.height - tube.height * 0.6;
+        const waterBottom = tube.y + tube.height;
+        particles.scum.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < tube.x + p.r || p.x > tube.x + tube.width - p.r) p.vx *= -1;
+            if (p.y < waterTop + p.r || p.y > waterBottom - p.r) p.vy *= -1;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+        });
+    }
+    
+    function drawLather(tube) {
+        ctx.fillStyle = 'rgba(245, 245, 245, 0.9)';
+        const waterTop = tube.y + tube.height - tube.height * 0.6;
+        particles.lather.forEach(p => {
+            if (p.y > waterTop) p.y -= 0.2;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+        });
+    }
+
+    // --- Animation Loop ---
+    function loop() {
+        if (gameState === 'boiling') {
+            if (Math.random() > 0.5) createParticle('bubble', testTubes[currentSampleIndex]);
+            if (thermometerTemp < 100) thermometerTemp += 0.5;
+        } else {
+             if (thermometerTemp > 20) thermometerTemp -= 0.5;
+        }
+        draw();
+        animationFrameId = requestAnimationFrame(loop);
+    }
+    
+    // --- Game Logic & State Updates ---
+    function startGame() {
+        gameState = 'playing';
+        currentSampleIndex = 0;
+        quizState.currentQuestion = 0;
+        quizState.score = 0;
+        if (testTubes.length === 0) setupTubes();
+        testTubes.forEach(tube => {
+            tube.isBoiled = false;
+            tube.soapAdded = false;
+        });
+        dropZones.forEach(dz => dz.querySelector('.drop-zone-content').innerHTML = '');
+        updateProgress();
+        updateControls();
+        resetParticles();
+    }
+    
+    function updateProgress() {
+        const progress = currentSampleIndex > SAMPLES.length ? SAMPLES.length : currentSampleIndex;
+        progressBar.style.width = `${(progress / SAMPLES.length) * 100}%`;
+        progressText.textContent = `${progress} / ${SAMPLES.length}`;
+    }
+
+    function updateControls() {
+        if (currentSampleIndex >= SAMPLES.length) return;
+        const sample = SAMPLES[currentSampleIndex];
+        const tube = testTubes[currentSampleIndex];
+        sampleLabelSpan.textContent = sample.label;
+        boilBtn.disabled = tube.isBoiled;
+        addSoapBtn.disabled = !tube.isBoiled || tube.soapAdded;
+    }
+
+    function handleBoil() {
+        if (gameState !== 'playing') return;
+        gameState = 'boiling';
+        boilBtn.disabled = true;
+        playSound(boilSound);
+        setTimeout(() => {
+            gameState = 'playing';
+            stopSound(boilSound);
+            testTubes[currentSampleIndex].isBoiled = true;
+            thermometerTemp = 100;
+            updateControls();
+        }, 3000);
+    }
+
+    function handleAddSoap() {
+        if (gameState !== 'playing') return;
+        gameState = 'soap';
+        testTubes[currentSampleIndex].soapAdded = true;
+        updateControls();
+        const sample = SAMPLES[currentSampleIndex];
+        resetParticles();
+        for(let i=0; i<30; i++) {
+            createParticle(sample.result, testTubes[currentSampleIndex]);
+        }
+        setTimeout(() => {
+            gameState = 'observe';
+            showDraggable();
+        }, 1500);
+    }
+
+    function resetParticles() {
+        particles = { bubbles: [], scum: [], lather: [] };
+    }
+
+    function nextSample() {
+        draggableResult.classList.remove('visible');
+        resetParticles();
+        
+        if (currentSampleIndex < SAMPLES.length - 1) {
+            currentSampleIndex++;
+            updateProgress();
+            updateControls();
+            gameState = 'playing';
+        } else {
+            currentSampleIndex++;
+            updateProgress();
+            setTimeout(() => {
+                gameScreen.classList.add('hidden');
+                quizScreen.classList.remove('hidden');
+                showQuiz();
+            }, 500);
+        }
+    }
+    
+    function showFeedbackPopup(isCorrect, interpretation) {
+        const incorrectMessage = "That's not the right spot. Try again!";
+        feedbackOverlay.classList.remove('hidden', 'correct', 'incorrect');
+        feedbackOverlay.classList.add(isCorrect ? 'correct' : 'incorrect');
+        // SVGs for feedback
+    const correctSVG = `<svg class=\"feedback-icon\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"></path><polyline points=\"22 4 12 14.01 9 11.01\"></polyline></svg>`;
+    const incorrectSVG = `<svg class=\"feedback-icon\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line></svg>`;
+    feedbackTitle.innerHTML = (isCorrect ? correctSVG : incorrectSVG) + (isCorrect ? "Correct!" : "Incorrect");
+        feedbackText.textContent = isCorrect ? interpretation : incorrectMessage;
+        
+        feedbackContinueBtn.onclick = () => {
+            feedbackOverlay.classList.add('hidden');
+            if (isCorrect) {
+                nextSample();
+            } else {
+                showDraggable(); 
+            }
+        };
+        feedbackOverlay.classList.remove('hidden');
+    }
+    
+    // --- Drag & Drop Logic ---
+    function showDraggable() {
+        const tube = testTubes[currentSampleIndex];
+        draggableResult.textContent = `Sample ${tube.label}`;
+        const rect = canvasContainer.getBoundingClientRect();
+        const wrapperRect = gameWrapper.getBoundingClientRect();
+
+        draggableResult.style.left = `${rect.left - wrapperRect.left + (tube.x + tube.width / 2) - draggableResult.offsetWidth / 2}px`;
+        draggableResult.style.top = `${rect.top - wrapperRect.top + tube.y - draggableResult.offsetHeight - 5}px`;
+        draggableResult.classList.add('visible');
+    }
+
+    function onDragStart(e) {
+        e.preventDefault();
+        const clientX = e.clientX ?? e.touches[0].clientX;
+        const clientY = e.clientY ?? e.touches[0].clientY;
+        const dragRect = draggableResult.getBoundingClientRect();
+
+        // Center the draggable item under the cursor using actual element dimensions
+        dragOffsetX = dragRect.width / 2;
+        dragOffsetY = dragRect.height / 0.5;
+
+        window.addEventListener('mousemove', onDragMove);
+        window.addEventListener('mouseup', onDragEnd);
+        window.addEventListener('touchmove', onDragMove, { passive: false });
+        window.addEventListener('touchend', onDragEnd);
+    }
+
+    function onDragMove(e) {
+        e.preventDefault();
+        const clientX = e.clientX ?? e.touches[0].clientX;
+        const clientY = e.clientY ?? e.touches[0].clientY;
+        const wrapperRect = gameWrapper.getBoundingClientRect();
+        
+        // Position the element so its center is directly under the cursor
+        draggableResult.style.left = `${clientX - wrapperRect.left - dragOffsetX}px`;
+        draggableResult.style.top = `${clientY - wrapperRect.top - dragOffsetY}px`;
+
+        dropZones.forEach(zone => {
+            const rect = zone.getBoundingClientRect();
+            if (clientX > rect.left && clientX < rect.right && clientY > rect.top && clientY < rect.bottom) {
+                const sample = SAMPLES[currentSampleIndex];
+                zone.classList.add(zone.dataset.hardness === sample.hardnessType ? 'over' : 'incorrect-over');
+            } else {
+                zone.classList.remove('over', 'incorrect-over');
+            }
+        });
+    }
+
+    function onDragEnd(e) {
+        const clientX = e.clientX ?? e.changedTouches[0].clientX;
+        const clientY = e.clientY ?? e.changedTouches[0].clientY;
+        
+        let dropHandled = false;
+        draggableResult.classList.remove('visible');
+
+        dropZones.forEach(zone => {
+            if (dropHandled) return;
+            zone.classList.remove('over', 'incorrect-over');
+            const rect = zone.getBoundingClientRect();
+             if (clientX > rect.left && clientX < rect.right && clientY > rect.top && clientY < rect.bottom) {
+                dropHandled = true;
+                const sample = SAMPLES[currentSampleIndex];
+                const isCorrectDrop = zone.dataset.hardness === sample.hardnessType;
+                
+                if (isCorrectDrop) {
+                    playSound(dingSound);
+                    const droppedLabel = document.createElement('div');
+                    droppedLabel.className = 'dropped-item';
+                    droppedLabel.textContent = `Sample ${sample.label}`;
+                    zone.querySelector('.drop-zone-content').appendChild(droppedLabel);
+                } else {
+                    playSound(buzzSound);
+                }
+                setTimeout(() => showFeedbackPopup(isCorrectDrop, sample.interpretation), 100);
+            }
+        });
+
+        if (!dropHandled) {
+            showDraggable();
+        }
+
+        window.removeEventListener('mousemove', onDragMove);
+        window.removeEventListener('mouseup', onDragEnd);
+        window.removeEventListener('touchmove', onDragMove);
+        window.removeEventListener('touchend', onDragEnd);
+    }
+
+    // --- Quiz Logic ---
+    function showQuiz() {
+        gameState = 'quiz';
+        quizState.currentQuestion = 0;
+        renderQuizQuestion();
+    }
+    
+    function showQuizFeedback(isCorrect, feedback) {
+        feedbackOverlay.classList.remove('hidden', 'correct', 'incorrect');
+        feedbackOverlay.classList.add(isCorrect ? 'correct' : 'incorrect');
+        // SVGs for feedback
+        const correctSVG = `<svg class=\"feedback-icon\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"></path><polyline points=\"22 4 12 14.01 9 11.01\"></polyline></svg>`;
+        const incorrectSVG = `<svg class=\"feedback-icon\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line></svg>`;
+        feedbackTitle.innerHTML = (isCorrect ? correctSVG : incorrectSVG) + (isCorrect ? "Correct!" : "Try Again!");
+        feedbackText.textContent = feedback;
+        feedbackOverlay.classList.remove('hidden');
+
+        feedbackContinueBtn.onclick = () => {
+            feedbackOverlay.classList.add('hidden');
+            if (isCorrect) {
+                 quizState.currentQuestion++;
+                if (quizState.currentQuestion < QUIZ.length) {
+                    renderQuizQuestion();
+                } else {
+                    showCompletion();
+                }
+            } else {
+                // Re-enable buttons for retry
+                quizScreen.querySelectorAll('.option-button').forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('incorrect');
+                });
+                // Reset selected answer state to allow another attempt
+                quizState.selectedAnswer = null;
+            }
+        };
+    }
+
+    function renderQuizQuestion() {
+        quizState.selectedAnswer = null;
+        const q = QUIZ[quizState.currentQuestion];
+        getEl('quiz-progress-text').textContent = `${quizState.currentQuestion + 1} / ${QUIZ.length}`;
+        getEl('quiz-title-text').textContent = `Question ${quizState.currentQuestion + 1}`;
+        const questionText = quizScreen.querySelector('#question-text');
+        const optionsContainer = quizScreen.querySelector('#options-container');
+
+        questionText.textContent = q.question;
+        optionsContainer.innerHTML = '';
+        q.options.forEach(opt => {
+            const button = document.createElement('button');
+            button.className = 'option-button';
+            button.textContent = opt;
+            button.onclick = () => selectAnswer(opt, button);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function selectAnswer(selectedOpt, btn) {
+        if(quizState.selectedAnswer) return;
+        quizState.selectedAnswer = selectedOpt;
+
+        const q = QUIZ[quizState.currentQuestion];
+        const isCorrect = selectedOpt === q.answer;
+        
+        quizScreen.querySelectorAll('.option-button').forEach(b => b.disabled = true);
+        
+        if(isCorrect) {
+            btn.classList.add('correct');
+            playSound(dingSound);
+            setTimeout(() => showQuizFeedback(true, q.feedback.correct), 500);
+        } else {
+            btn.classList.add('incorrect');
+            playSound(buzzSound);
+            setTimeout(() => showQuizFeedback(false, q.feedback.incorrect), 500);
+        }
+    }
+    
+    function showCompletion() {
+        gameState = 'done';
+        quizScreen.classList.add('hidden');
+        playSound(outroSound);
+        completionOverlay.classList.remove('hidden');
+    }
+    
+    function setInstructions() {
+        const instructions = [
+            "Click each test tube to start boiling the sample.",
+            "Add soap and observe if lather or scum forms.",
+            "A result icon will appear. Drag and drop it into the correct observation box.",
+            "Record your observation and decide the type of hardness.",
+            "Answer the questions based on your experiment results."
+        ];
+        instructionsList.innerHTML = instructions.map(item => `<li>${item}</li>`).join('');
+    }
+
+    // --- Init & Event Listeners ---
+    function init() {
+        setInstructions();
+        // Main flow
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            activityIntroOverlay.classList.remove('hidden');
+            playSound(introSound);
+            sendEvent(ActivityEvent.START_ACTIVITY, {activityName: 'Boil it or Not'});
+        });
+
+        introContinueBtn.addEventListener('click', () => {
+            activityIntroOverlay.classList.add('hidden');
+            stopSound(introSound);
+            resize();
+            startGame();
+            loop();
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            completionOverlay.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            startGame();
+        });
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            window.location.href = '../ACTIVITY2/index.html';
+            sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Boil it or Not'})
+        });
+        document.getElementById('next-btn').addEventListener('click', () => {
+            window.location.href = '../ACTIVITY4/index.html';
+            sendEvent(ActivityEvent.END_ACTIVITY, {activityName: 'Boil it or Not'})
+        });
+
+        // Controls
+        boilBtn.addEventListener('click', handleBoil);
+        addSoapBtn.addEventListener('click', handleAddSoap);
+        draggableResult.addEventListener('mousedown', onDragStart);
+        draggableResult.addEventListener('touchstart', onDragStart, { passive: false });
+
+        // Modals
+        instructionsIcon.addEventListener('click', () => instructionsOverlay.classList.remove('hidden'));
+        closeInstructionsBtn.addEventListener('click', () => instructionsOverlay.classList.add('hidden'));
+        hintIcon.addEventListener('click', () => hintOverlay.classList.remove('hidden'));
+        closeHintBtn.addEventListener('click', () => hintOverlay.classList.add('hidden'));
+
+        window.addEventListener('resize', resize);
+    }
+
+    init();
+});
+</script>
+<script src = "../eventSender.js"></script>
+</body>
+</html>

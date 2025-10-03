@@ -98,7 +98,7 @@
         .game-header {
             width: 100%;
             background-color: var(--primary-color);
-            padding: var(--pad-sm) var(--pad-md);
+            padding: 0.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -179,18 +179,9 @@
             font-size: clamp(2rem, 7vmin, 4rem);
             text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
             text-align: center; font-family: var(--header-font);
+            font-weight: 600;
         }
-        #completion-text {
-            color: white;
-            font-size: var(--font-md);
-            text-align: center;
-            max-width: 60ch;
-            background-color: rgba(0,0,0,0.3);
-            padding: var(--pad-md);
-            border-radius: var(--border-radius);
-            margin-top: -1rem;
-            margin-bottom: 1rem;
-        }
+     
         #completion-overlay .modal {
             background: transparent; box-shadow: none; width: auto; max-width: none;
             display: flex; justify-content: center; align-items: center; padding: 0; overflow: visible;
@@ -222,8 +213,8 @@
         .completion-btn {
             background: #FBB03B;
             color: #fff;
-            font-weight: 700;
-            font-size: 1.1rem;
+            font-weight: 500;
+            font-size: 1.3rem;
             border: 0.3rem solid #fff;
             border-radius: 3rem;
             padding: 0.75rem 2.25rem;
@@ -325,6 +316,7 @@
             align-items: center;
             justify-content: flex-start; /* Aligned to the left for labels */
             text-align: left; /* Aligned to the left for labels */
+            gap: 0.5rem;
         }
 
         .choice-item:hover {
@@ -443,22 +435,23 @@
 
         /* --- Media Query for smaller screens --- */
         @media (max-width: 991px) {
+            #game-wrapper { aspect-ratio: unset; width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; }
+
             #completion-image { max-width: 56vw; width: 100%; }
             /* Stack elements vertically, keeping the story first */
             #case-study-container { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: repeat(2, auto); 
                 grid-template-rows: auto 1fr; /* Let story define its height */
             }
         }
         @media (max-width: 768px), (max-height: 500px) {
             body { padding: 0; }
-            #game-wrapper { aspect-ratio: unset; width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; }
             html { font-size: 2.8vmin; } /* Adjusted for better mobile scaling */
             .game-content { flex-direction: column; padding: 7rem var(--pad-sm) var(--pad-sm) var(--pad-sm); }
-            #case-study-container { display: flex; flex-direction: column; }
-            #story-card { flex-shrink: 1; min-height: 15rem; }
+            #case-study-container { display: flex; }
+            #story-card { flex-shrink: 1; min-height: 15rem; width: 65vw;}
             #options-container { flex-grow: 1; }
-            #choices-grid { grid-template-columns: 1fr; }
+            #choices-grid { grid-template-columns: repeat(2, auto); }
             .choice-item { font-size: var(--font-sm); padding: var(--pad-sm); }
             .completion-buttons { gap: 0.75rem; position: static; padding: 1rem; }
         }
@@ -508,11 +501,11 @@
 
             <div id="completion-overlay" class="screen hidden">
                 <h2 class="completion-title-banner">Activity Wrap Up!</h2>
-                <p id="completion-text"></p>
                 <div class="modal">
                      <img id="completion-image" src="images/complete.jpg" alt="Activity summary showing completed classification." onerror="this.src='https://placehold.co/600x400/5D04B2/ffffff?text=Well+Done!'; this.onerror=null;">
                 </div>
                 <div class="completion-buttons">
+                    <button class="completion-btn" id="previous-activity-btn">Restart Activity</button>
                     <button class="completion-btn" id="restart-activity-btn">Restart Activity</button>
                     <button class="completion-btn" id="next-activity-btn">Next Activity</button>
                 </div>
@@ -590,7 +583,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.getElementById('header-progress-bar');
     const progressText = document.getElementById('header-progress-text');
     const restartActivityBtn = document.getElementById('restart-activity-btn');
-    const completionText = document.getElementById('completion-text');
     const introAudio = document.getElementById('intro-audio');
     const outroAudio = document.getElementById('outro-audio');
     const correctAudio = document.getElementById('correct-audio');
@@ -601,7 +593,6 @@ document.addEventListener('DOMContentLoaded', () => {
         intro: "Juma has noticed problems while staying at his grandparents’ rural home. The water causes soap to fail, a white layer coats the kettle, and the pipes are very old. Can you help him make the best decisions to solve these challenges using your science skills?",
         instructions: "<p>Read Juma’s situation carefully.</p><p>Click on the decisions you think will help Juma and his grandparents.</p><p>Some decisions are good, others are not  think before you select.</p><p>You may select more than one option.</p>",
         hint: "<p>Think about how to remove hardness in water.</p><p>Consider both health and appliance protection.</p><p>Avoid solutions that waste resources.</p>",
-        conclusion: "Excellent work! You helped Juma and his grandparents make smart, science-based water decisions. You now understand the effects of hard water and how to manage it at home!"
     };
 
     const gameData = [
@@ -636,7 +627,6 @@ document.addEventListener('DOMContentLoaded', () => {
         narrationText.innerHTML = gameContent.intro;
         helpModalText.innerHTML = gameContent.instructions;
         hintModalText.innerHTML = gameContent.hint;
-        completionText.innerHTML = gameContent.conclusion;
 
         choicesGrid.innerHTML = '';
 
@@ -707,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.classList.add('correct-feedback');
             feedbackTitle.innerHTML = `${icons.correct} ${titleText}`;
         } else {
-            titleText = "Consider This...";
+            titleText = "Try Again";
             sound = incorrectAudio;
             modal.classList.add('incorrect-feedback');
             feedbackTitle.innerHTML = `${icons.incorrect} ${titleText}`;
