@@ -10,20 +10,28 @@
     <style>
         /* ====== FONT IMPORTS ====== */
         @font-face {
-            font-family: 'Chevin Pro Medium';
-            src: url('../assets/Chevin_Pro.otf') format('opentype');
+            font-family: 'Fredoka';
+            src: url('../assets/Fredoka-VariableFont_wdth\,wght.ttf') format('truetype');
         }
 
         /* ====== ROOT VARIABLES & SCALING ====== */
         :root {
+            --font-xs: 1.1rem;
+            --font-sm: 1.4rem;
+            --font-md: 1.4rem;
+            --font-lg: 2rem;
+            --font-xl: 4rem;
+            --pad-sm: 1rem;
+            --pad-md: 1.6rem;
+            --pad-lg: 2.4rem;
             --primary-color: #5D04B2;
             --secondary-color: #FBB03B;
-            --correct-color: #5cb85c;
-            --incorrect-color: #d9534f;
-            --text-color-dark: #333;
+            --correct-color: #4caf50;
+            --incorrect-color: #E74C3C;
+            --text-color-dark: #34495E;
             --text-color-light: #fff;
             --border-radius: 1rem;
-            --header-font: 'Chevin Pro Medium', 'Poppins', sans-serif;
+            --header-font: 'Fredoka', 'Poppins', sans-serif;
             --body-font: var(--header-font);
         }
         
@@ -67,18 +75,28 @@
             color: var(--text-color-light); text-align: center; padding: 2rem;
             background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
         }
-        #start-screen h1 {
-            color: var(--text-color-light); font-size: 3.2rem;
+         #start-screen h1 {
+            color: var(--text-color-light);
+            font-size: 4rem;
             font-family: var(--header-font);
+            font-weight: 500;
+         }
+        .start-button {
+            font-family: var(--header-font);
+            background: var(--secondary-color);
+            color: var(--text-color-light);
+            font-weight: 500;
+            font-size: 1.2rem;
+            border: 3px solid #fff;
+            border-radius: 4.8rem;
+            padding: var(--pad-sm) var(--pad-lg);
+            margin-top: 1.6rem;
+            cursor: pointer;
+            text-shadow: 0 0.2rem 0 #b88b2a;
+            transition: all 0.2s;
         }
-        .start-button { 
-            background: #FBB03B; color: #fff; font-weight: 900;
-            font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
-            padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
-            letter-spacing: 0.02em; text-shadow: 0 2px 0 #b88b2a;
-            transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+    
+        .start-button:hover { transform: scale(1.06); }
 
 
         /* ===== GAME SCREEN STYLES ===== */
@@ -91,19 +109,21 @@
             background: #fff; /* Ensure background is white */
         }
         
-        .game-top-section { 
-            width: 100%; background-color: var(--primary-color); 
-            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
-            display: flex; justify-content: space-between; align-items: center;
-            color: #fff; z-index: 10;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            flex-shrink: 0;
-        }
-        #game-title {
-            font-weight: 800;
-            margin: 0; font-family: var(--header-font);
-        }
-        .top-right-controls { display: flex; align-items: center; gap: 1rem; }
+        .game-top-section {
+        width: 100%; background-color: #5D04B2; 
+        padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+        display: flex; justify-content: space-between; align-items: center;
+        color: #fff; z-index: 10;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        flex-shrink: 0;
+    }
+    
+    #game-title {
+        font-weight: 600;
+        margin: 0; font-family: var(--header-font);
+    }
+    
+    .top-right-controls { display: flex; align-items: center; gap: 1rem; }
         
         #progress-container { 
             width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
@@ -115,7 +135,7 @@
             border-radius: 0.8rem; transition: width 0.5s ease;
         }
         #progress-text {
-            font-weight: 700; color: #fff;
+            font-weight: 600; color: #fff;
             text-shadow: none;
         }
 
@@ -148,8 +168,10 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
-        .modal h2 {
-            font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;
+        .modal h2, .modal-title, .modal-header {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
             font-family: var(--header-font);
         }
         .modal p { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark, #333); }
@@ -179,13 +201,20 @@
         /* Feedback Modals */
         .feedback-modal { max-width: 480px; }
         .feedback-header { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1rem; }
-        .feedback-header h2 { font-size: 2rem; font-weight: 700; }
-        .feedback-header.correct h2 { color: var(--correct-color); }
-        .feedback-header.incorrect h2 { color: var(--incorrect-color); }
+        .feedback-header h2 { font-size: 1.8rem; font-weight: 600; margin: 0; }
+        .feedback-header.correct h2 { color: var(--correct-color) !important; }
+        .feedback-header.incorrect h2 { color: var(--incorrect-color) !important; }
+        #feedback-correct-overlay .feedback-header svg {
+            stroke: var(--correct-color) !important;
+        }
+        #feedback-incorrect-overlay .feedback-header svg {
+            stroke: var(--incorrect-color) !important;
+        }
+        .feedback-btn { width: 100%; }
         .feedback-btn.correct { background-color: var(--correct-color); }
         .feedback-btn.incorrect { background-color: var(--incorrect-color); }
-        #feedback-correct-overlay .modal { border-top: 8px solid var(--correct-color); }
-        #feedback-incorrect-overlay .modal { border-top: 8px solid var(--incorrect-color); }
+        #feedback-modal-overlay.correct-feedback .modal { border-top: 8px solid var(--correct-color); }
+        #feedback-modal-overlay.incorrect-feedback .modal { border-top: 8px solid var(--incorrect-color); }
 
         /* ===== COMPLETION SCREEN ===== */
         #completion-overlay { 
@@ -193,11 +222,13 @@
             color: #fff; display: flex; flex-direction: column; justify-content: center;
             align-items: center; gap: 1rem; padding: 1rem; text-align: center;
         }
-        .completion-title-banner { 
-            font-size: clamp(2rem, 6vmin, 3.5rem);
-            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
-            font-family: var(--header-font); font-weight: 700; padding: 0 1rem;
-        }
+        .completion-title-banner, .completion-header {
+  font-size: clamp(2rem, 7vmin, 4rem);
+  text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+  text-align: center;
+  font-family: var(--header-font);
+  font-weight: 500;
+}
         
         .completion-image-container {
             width: 90%;
@@ -225,14 +256,23 @@
         }
     
         .completion-btn {
-            background: #FBB03B; color: #fff; font-weight: 700;
-            font-size: 1.1rem; border: 0.1875rem solid #fff; border-radius: 3rem;
-            padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
-            letter-spacing: 0.02em; transition: all 0.2s;
-            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+            font-family: var(--header-font);
+            background: var(--secondary-color);
+            color: #fff;
+            font-weight: 500;
+            font-size: 1.3rem;
+            border: 0.1875rem solid #fff;
+            border-radius: 3rem;
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            text-shadow: 0 0.125rem 0 #b88b2a;
+            text-decoration: none;
+            min-width: 8.75rem;
         }
-        .completion-btn:hover { 
-            transform: scale(1.05); 
+        .completion-btn:hover {
+            transform: scale(1.05);
             box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
         }
         .btn-next {
@@ -386,7 +426,7 @@
 <div id="game-wrapper">
     <div id="game-container">
         <div id="start-screen" class="screen">
-            <h1>What Sticks? - A Static Electricity Challenge</h1>
+            <h1>A Static Electricity Challenge</h1>
             <button class="start-button" onclick="showActivityIntro();">Start Activity</button>
         </div>
 
@@ -433,7 +473,7 @@
 
         <div id="activity-intro-overlay" class="overlay hidden">
             <div class="modal">
-                <h2>Welcome to "What Sticks?"</h2>
+                <h2>Activity Introduction</h2>
                 <p>Everyday electric shocks and static cling are signs that tiny particles are on the move. In this activity, you will explore real-life events caused by static electricity and choose the correct particle responsible. Read each scenario, select your answer, and learn from the feedback. Let us go!</p>
                 <button onclick="closeModal('activity-intro-overlay')">Continue</button>
             </div>
@@ -454,7 +494,12 @@
         
         <div id="feedback-correct-overlay" class="overlay hidden">
             <div class="modal feedback-modal">
-                <div class="feedback-header correct"><h2>Correct!</h2></div>
+                <div class="feedback-header correct">
+                    <span id="feedback-icon-correct" style="display:inline;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:2rem;height:2rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </span>
+                    <h2>Correct!</h2>
+                </div>
                 <p id="correct-feedback-text"></p>
                 <button class="feedback-btn correct" onclick="closeModal('feedback-correct-overlay')">Continue</button>
             </div>
@@ -462,7 +507,12 @@
         
         <div id="feedback-incorrect-overlay" class="overlay hidden">
             <div class="modal feedback-modal">
-                <div class="feedback-header incorrect"><h2>Not Quite</h2></div>
+                <div class="feedback-header incorrect">
+                    <span id="feedback-icon-incorrect" style="display:inline;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:2rem;height:2rem;"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                    </span>
+                    <h2>Not Quite</h2>
+                </div>
                 <p id="incorrect-feedback-text"></p>
                 <button class="feedback-btn incorrect" onclick="handleTryAgain()">Try Again</button>
             </div>

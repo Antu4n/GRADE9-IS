@@ -16,6 +16,14 @@
     
     /* ====== ROOT VARIABLES & SCALING ====== */
     :root {
+         --font-xs: 1.1rem;
+        --font-sm: 1.4rem;
+        --font-md: 1.4rem;
+        --font-lg: 2rem;
+        --font-xl: 4rem;
+        --pad-sm: 1rem;
+        --pad-md: 1.6rem;
+        --pad-lg: 2.4rem;
       --primary-color: #5D04B2;
       --secondary-color: #FBB03B;
       --correct-color: #4caf50;
@@ -124,33 +132,29 @@
       align-items: center;
     }
     
-    #start-screen h1 {
+     #start-screen h1 {
       color: var(--text-color-light);
-      font-size: 3.2rem;
+      font-size: 4rem;
       font-family: var(--header-font);
       font-weight: 500;
     }
-    
     .start-button {
-      background: var(--secondary-color);
-      color: #fff;
-      font-weight: 900;
-      font-size: 1.1rem;
-      border: 3px solid #fff;
-      border-radius: 3rem;
-      padding: 0.75rem 2.25rem;
-      margin-top: 1rem;
-      cursor: pointer;
-      letter-spacing: 0.02em;
-      text-shadow: 0 2px 0 #b88b2a;
-      transition: all 0.2s;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        font-family: var(--header-font);
+        background: var(--secondary-color);
+        color: var(--text-color-light);
+        font-weight: 500;
+        font-size: 1.2rem;
+        border: 3px solid #fff;
+        border-radius: 4.8rem;
+        padding: var(--pad-sm) var(--pad-lg);
+        margin-top: 1.6rem;
+        cursor: pointer;
+        text-shadow: 0 0.2rem 0 #b88b2a;
+        transition: all 0.2s;
     }
     
-    .start-button:hover {
-      transform: scale(1.06);
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-    }
+    .start-button:hover { transform: scale(1.06); }
+    
     
     /* ===== GAME SCREEN BASE ===== */
     #game-screen {
@@ -160,80 +164,45 @@
       background: var(--game-bg);
     }
     
-    .game-top-section { 
-        width: 100%;
-        background-color: var(--primary-color);
-        padding: 0.75rem 1.25rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: #fff;
-        z-index: 10;
-        box-shadow: 0 0.1rem 0.5rem rgba(0,0,0,0.2);
+     .game-top-section {
+        width: 100%; background-color: #5D04B2; 
+        padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+        display: flex; justify-content: space-between; align-items: center;
+        color: #fff; z-index: 10;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         flex-shrink: 0;
     }
     
     #game-title {
-      font-weight: 800;
-      margin: 0;
-      font-family: var(--header-font);
+        font-weight: 600;
+        margin: 0; font-family: var(--header-font);
     }
     
-    .top-right-controls {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    
-    #progress-container {
-      width: clamp(100px, 20vw, 200px);
-      background-color: rgba(255, 255, 255, 0.3);
-      border-radius: 1rem;
-      height: clamp(15px, 2.5vmin, 20px);
-      border: 2px solid #fff;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    #progress-bar {
-      height: 100%;
-      width: 0%;
-      background: #FFFF00;
-      border-radius: 0.8rem;
-      transition: width 0.5s ease;
-    }
-    
-    #progress-text {
-      font-weight: 700;
-      color: #fff;
-    }
-    
-    .instructions-icon {
-      width: 2.5rem;
-      height: 2.5rem;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 15;
-      flex-shrink: 0;
-      animation: glow-pulse-white 2s infinite;
-    }
-    
-    .instructions-icon:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.1);
-    }
-    
-    .instructions-icon svg {
-      width: 1.25rem;
-      height: 1.25rem;
-      fill: white;
-    }
+    .top-right-controls { display: flex; align-items: center; gap: 1rem; }
+        
+        #progress-container { 
+            width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
+            border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
+            border: 2px solid #fff; position: relative; overflow: hidden;
+        }
+        #progress-bar {
+            height: 100%; width: 0%; background: #FFFF00;
+            border-radius: 0.8rem; transition: width 0.5s ease;
+        }
+        #progress-text {
+            font-weight: 600; color: #fff;
+            text-shadow: none;
+        }
+
+        .instructions-icon {
+            width: 2.5rem; height: 2.5rem; background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+            z-index: 15; flex-shrink: 0;
+            animation: glow-pulse-white 2s infinite;
+        }
+        .instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+        .instructions-icon svg { width: 1.25rem; height: 1.25rem; fill: white;}
 
     /* ====== Game Content Layout ====== */
     .game-content {
@@ -343,7 +312,7 @@
     .modal { background: #fff; padding: 2.5rem; border-radius: 1rem; text-align: center; width: 90%; max-width: 600px; animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    .modal h2 { font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem; font-family: var(--header-font); }
+    .modal h2 { font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; font-family: var(--header-font); }
     .modal p, .modal li { font-size: 1.2rem; line-height: 1.6; color: var(--text-color-dark); }
     #activity-intro-overlay .modal { border-top: 8px solid var(--primary-color); }
     #activity-intro-overlay .modal h2 { color: var(--primary-color); }
@@ -353,7 +322,7 @@
     #instructions-overlay .modal ol { text-align: left; padding-left: 2rem; font-size: 1.2rem; }
     .feedback-modal { max-width: 480px; }
     .feedback-header { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1rem; }
-    .feedback-header h2 { font-size: 2rem; font-weight: 700; margin: 0; }
+    .feedback-header h2 { font-size: 1.8rem; font-weight: 600; margin: 0; }
     .feedback-header.correct h2 { color: var(--correct-color); }
     .feedback-header.incorrect h2 { color: var(--incorrect-color); }
     .feedback-btn { width: 100%; }
@@ -361,29 +330,41 @@
     .feedback-btn.incorrect { background-color: var(--incorrect-color); }
     #feedback-modal-overlay.correct-feedback .modal { border-top: 8px solid var(--correct-color); }
     #feedback-modal-overlay.incorrect-feedback .modal { border-top: 8px solid var(--incorrect-color); }
-    .modal button { width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 700; border: none; border-radius: 0.75rem; cursor: pointer; color: #fff; transition: transform 0.2s, box-shadow 0.2s; margin-top: 1rem; }
+    .modal button { width: 100%; padding: 1rem; font-size: 1.2rem; font-weight: 600; border: none; border-radius: 0.75rem; cursor: pointer; color: #fff; transition: transform 0.2s, box-shadow 0.2s; margin-top: 1rem; }
     .modal button:hover { transform: scale(1.02); }
     #activity-intro-overlay button, #instructions-overlay button { background-color: var(--primary-color); }
     
     /* ===== COMPLETION OVERLAY ===== */
     #completion-overlay { background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center; color: #fff;flex-direction: column; justify-content: center; align-items: center; gap: 1.5rem; padding: 2rem; }
-    .completion-title-banner { font-size: clamp(2rem, 7vmin, 3.5rem); text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3); text-align: center; font-family: var(--header-font); font-weight: 500; }
-     .completion-buttons {
+    .completion-title-banner {
+            font-size: clamp(2rem, 7vmin, 4rem);
+            text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+            text-align: center; font-family: var(--header-font);
+            font-weight: 500;
+        }  
+         .completion-buttons {
         position: absolute; bottom: 2rem; width: 100%; display: flex;
         justify-content: space-between; gap: 1.5rem; padding: 0 2rem;
     }
-    .completion-btn {
-       background: #FBB03B; color: #fff; font-weight: 600;
-       font-size: 1.1rem; border: 0.1875rem solid #fff;
-       border-radius: 3rem; padding: 0.75rem 2.25rem;
-       margin-top: 1rem; cursor: pointer; letter-spacing: 0.02em;
-       transition: all 0.2s; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+   .completion-btn {
+        font-family: var(--header-font); background: var(--secondary-color); color: #fff;
+        font-weight: 500; 
+        font-size: 1.3rem;
+        border: 0.1875rem solid #fff; border-radius: 3rem; 
+        padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+        cursor: pointer; transition: all 0.2s;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+        text-shadow: 0 0.125rem 0 #b88b2a; text-decoration: none;
+        min-width: 8.75rem; /* 140px */
     }
-    .completion-btn:hover { transform: scale(1.05); }
+    .completion-btn:hover { 
+        transform: scale(1.05); 
+        box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+    }
     
     #completion-overlay .modal {
         background: transparent; box-shadow: none; padding: 0; overflow: visible;
-        width: auto; max-width: none;
+        width: auto; max-width: none;margin-bottom: 3rem;
     }
     #completion-image { 
         width: clamp(400px, 70%, 700px); max-width: 85%; height: auto;
@@ -506,6 +487,9 @@
             max-width: 69%;
             margin-bottom: 5rem;
         }
+        #completion-overlay .modal {
+            margin-bottom: 0rem;
+        }
 
     }
 </style>
@@ -563,7 +547,13 @@
         <div id="feedback-modal-overlay" class="overlay hidden">
             <div class="modal feedback-modal">
                 <div class="feedback-header">
-                    <h2 id="feedback-title"></h2>
+                    <span id="feedback-icon-correct" style="display:none;vertical-align:middle; color: #4caf50;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:2rem;height:2rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </span>
+                    <span id="feedback-icon-incorrect" style="display:none;vertical-align:middle;color: #C62828;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:2rem;height:2rem;"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                    </span>
+                    <h2 id="feedback-title" style="display:inline-block;margin-left:0.5rem;"></h2>
                 </div>
                 <p id="feedback-modal-text"></p>
                 <button id="next-question-button" class="feedback-btn">Continue</button>
@@ -836,6 +826,18 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackHeader.className = isCorrect ? 'feedback-header correct' : 'feedback-header incorrect';
         nextQuestionBtn.className = isCorrect ? 'feedback-btn correct' : 'feedback-btn incorrect';
         feedbackModalOverlay.className = isCorrect ? 'overlay correct-feedback' : 'overlay incorrect-feedback';
+
+        // Icon logic
+        var iconCorrect = document.getElementById('feedback-icon-correct');
+        var iconIncorrect = document.getElementById('feedback-icon-incorrect');
+        if (isCorrect) {
+            iconCorrect.style.display = '';
+            iconIncorrect.style.display = 'none';
+        } else {
+            iconCorrect.style.display = 'none';
+            iconIncorrect.style.display = '';
+        }
+
         playSound(isCorrect ? dingSound : buzzSound);
         feedbackModalOverlay.classList.remove('hidden');
     }

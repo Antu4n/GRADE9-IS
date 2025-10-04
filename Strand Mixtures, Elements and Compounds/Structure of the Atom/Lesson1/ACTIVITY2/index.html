@@ -5,29 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explore the Atom</title>
     <style>
-        /* Font Imports */
-        @font-face {
-            font-family: 'Chevin Pro Medium';
-            /* Assuming assets folder is one level up from where the HTML is. Adjust if needed. */
-            src: url('../assets/Chevin_Pro.otf') format('opentype');
-        }
-        ::-webkit-scrollbar {
-            display: none;
-        }
-        /* Root Variables */
-        :root {
-            --primary-color: #5D04B2;
-            --secondary-color: #fbb03b;
-            --progress-color: #ffff00;
-            --correct-color: #4caf50;
-            --text-color-dark: #333;
-            --text-color-light: #fff;
-            --card-background-light: #ffffff;
-            --header-font: 'Chevin Pro Medium', sans-serif;
-            --body-font: var(--header-font);
-        }
+        /* ====== FONT IMPORTS ====== */
+@font-face {
+  font-family: 'Fredoka';
+  src: url('../assets/Fredoka-VariableFont_wdth,wght.ttf') format('truetype');
+}
+:root {
+  --font-xs: 1.1rem;
+  --font-sm: 1.4rem;
+  --font-md: 1.4rem;
+  --font-lg: 2rem;
+  --font-xl: 4rem;
+  --pad-sm: 1rem;
+  --pad-md: 1.6rem;
+  --pad-lg: 2.4rem;
+  --primary-color: #5D04B2;
+  --secondary-color: #FBB03B;
+  --correct-color: #4caf50;
+  --incorrect-color: #E74C3C;
+  --text-color-dark: #34495E;
+  --text-color-light: #fff;
+  --border-radius: 1rem;
+  --header-font: 'Fredoka', 'Poppins', sans-serif;
+  --body-font: var(--header-font);
+  --card-background-light: #fff;
+}
 
-        /* Proportional Scaling System Setup */
+/* Proportional Scaling System Setup */
         html {
             /* Establishes a master scaling unit relative to the viewport's smallest dimension. */
             font-size: 1.8vmin;
@@ -111,31 +115,27 @@
     }
     
     #start-screen h1 {
-      color: var(--text-color-light);
-      font-size: 3.2rem;
-      font-family: var(--header-font);
-      text-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.4);
+    color: var(--text-color-light);
+    font-size: 4rem;
+    font-family: var(--header-font);
+    font-weight: 500;
     }
-    
     .start-button {
-      background: var(--secondary-color);
-      color: #fff;
-      font-weight: 900;
-      font-size: 1.1rem;
-      border: 3px solid #fff;
-      border-radius: 3rem;
-      padding: 0.75rem 2.25rem;
-      margin-top: 1rem;
-      cursor: pointer;
-      letter-spacing: 0.02em;
-      transition: all 0.2s;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+        font-family: var(--header-font);
+        background: var(--secondary-color);
+        color: var(--text-color-light);
+        font-weight: 500;
+        font-size: 1.3rem;
+        border: 3px solid #fff;
+        border-radius: 4.8rem;
+        padding: var(--pad-sm) var(--pad-lg);
+        margin-top: 1.6rem;
+        cursor: pointer;
+        text-shadow: 0 0.2rem 0 #b88b2a;
+        transition: all 0.2s;
+        }
     
-    .start-button:hover {
-      transform: scale(1.06);
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-    }
+    .start-button:hover { transform: scale(1.06); }
     
         /* Game Screen Styles */
         #game-screen {
@@ -160,43 +160,35 @@
         }
         
         #game-title {
-          font-size: 1.8rem;
-          font-weight: 800;
-          margin: 0;
-        }
+  font-weight: 600;
+  margin: 0;
+  font-family: var(--header-font);
+}
         
-        .progress-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
+        .top-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+        
         /* Progress Bar */
          #progress-container {
-            width: 12.5rem;
-            background-color: rgba(255,255,255,0.3);
-            border-radius: 1rem;
-            height: 1.25rem;
-            border: 2px solid #fff;
-            position: relative;
-            overflow: hidden;
-        }
+  width: clamp(100px, 20vw, 200px);
+  background-color: rgba(255,255,255,0.3);
+  border-radius: 1rem;
+  height: clamp(15px, 2.5vmin, 20px);
+  border: 2px solid #fff;
+  position: relative;
+  overflow: hidden;
+}
 
-        #progress-bar {
-            height: 100%;
-            width: 0%;
-            background: #FFFF00;
-            border-radius: 0.8rem;
-            transition: width 0.5s ease;
-        }
-
-        #progress-text {
-            color: var(--text-color-light);
-            font-weight: 700;
-            font-size: 1rem;
-            text-shadow: 0.0625rem 0.0625rem 0.125rem rgba(0,0,0,0.6);
-            white-space: nowrap;
-        }
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #FFFF00;
+  border-radius: 0.8rem;
+  transition: width 0.5s ease;
+}
             
         @keyframes glow-pulse-white {
             0%, 100% { box-shadow: 0 0 1rem rgba(255, 255, 255, 0.7), 0 0 2rem rgba(255, 255, 255, 0.5); transform: scale(1); }
@@ -204,25 +196,22 @@
         }
 
         .instructions-icon {
-            width: 3rem;
-            height: 3rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: 0.15rem solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 15;
-            flex-shrink: 0;
-            animation: glow-pulse-white 2s infinite ease-in-out;
-        }
-        .instructions-icon svg { width: 60%; height: 60%; fill: white; }
-        .instructions-icon:hover { 
-            transform: scale(1.1);
-            animation-play-state: paused;
-        }
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 15;
+  flex-shrink: 0;
+  animation: glow-pulse-white 2s infinite;
+}
+.instructions-icon:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+.instructions-icon svg { width: 1.25rem; height: 1.25rem; fill: white;}
         
         .lab-game-area {
             width: 100%;
@@ -356,7 +345,7 @@
         }
         
         .modal .modal-title {
-          font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem;
+          font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem;
           color: var(--primary-color);
         }
         .modal p { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark, #333); }
@@ -462,12 +451,13 @@
             justify-content: flex-start; /* Align content to the top */
             padding-top: 3%;
         }
-        .completion-header { 
-          font-size: 4rem;
-          margin-bottom: 1rem;
-          text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
-          text-align: center;
-        }
+        .completion-title-banner, .completion-header {
+  font-size: clamp(2rem, 7vmin, 4rem);
+  text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+  text-align: center;
+  font-family: var(--header-font);
+  font-weight: 500;
+}
         .completion-message {
             font-size: 1.5rem;
             text-align: center;
@@ -489,11 +479,12 @@
             margin-top: 0;
             border: none;
             margin-bottom: 1rem;
+            margin-top: 3rem;
         }
         .completion-image {
             display: block;
             margin: 0.5rem auto;
-            max-width: 50vw;
+            max-width: 100vw;
             width: 70%;
             height: auto;
             object-fit: contain;
@@ -501,37 +492,38 @@
             border: 2px solid var(--secondary-color);
             border-radius: 1rem;
         }
-        .completion-buttons-footer { 
-          position: absolute;
-          bottom: 1.5rem;
-          left: 0; right: 0;
-          width: 100%;
-          display: flex;
-          justify-content: space-between; /* Center buttons */
-          align-items: center;
-          gap: 2rem;
-          padding: 0 1.25rem;
+        .completion-btn {
+            font-family: var(--header-font);
+            background: var(--secondary-color);
+            color: #fff;
+            font-weight: 500;
+            font-size: 1.3rem;
+            border: 0.1875rem solid #fff;
+            border-radius: 3rem;
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            text-shadow: 0 0.125rem 0 #b88b2a;
+            text-decoration: none;
+            min-width: 8.75rem;
+            }
+        .completion-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
         }
-        .completion-btn { 
-          font-family: var(--header-font);
-          background: #FBB03B;
-          color: #fff;
-          font-weight: 900;
-          font-size: 1.5rem;
-          border: 0.3rem solid #fff;
-          border-radius: 3rem;
-          padding: 0.75rem 2.5rem;
-          cursor: pointer;
-          transition: all 0.2s;
-          box-shadow: 0 0.4rem 0.8rem rgba(0,0,0,0.2);
-          text-shadow: 0 0.2rem 0 #b88b2a;
-          text-decoration: none;
-          min-width: 14rem;
-          text-align: center;
+        .completion-buttons {
+        position: static;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0 2rem 2rem 2rem;
+        box-sizing: border-box;
+        align-items: flex-end;
+        margin-top: 2rem;
         }
-        .completion-btn:hover { transform: scale(1.06); box-shadow: 0 0.6rem 2.4rem rgba(0,0,0,0.18); }
-        
-        
+                
         /* MEDIA QUERIES */
         @media (max-aspect-ratio: 16/9) {
             #game-wrapper {
@@ -559,7 +551,10 @@
                 line-height: 1.5;
             }
             .completion-image {
-                width: 60%;
+                width: 72%;
+            }
+            .start-button{
+                font-size: 1.5rem;
             }
         }
         
@@ -579,7 +574,8 @@
             #scenario-title { font-size: 1.8rem; }
             .info-item p { font-size: 1.5rem; }
             .completion-image {
-                width: 80%;
+                width: 88%;
+                max-width: 100vw;
             }
         }
     </style>
@@ -597,7 +593,7 @@
             <div id="game-screen" class="screen hidden">
                 <div class="game-top-section">
                     <h1 id="game-title">Explore the Atom</h1>
-                    <div class="progress-wrapper">
+                    <div class="top-right-controls">
                          <div id="progress-container">
                             <div id="progress-bar"></div>
                         </div>
@@ -647,10 +643,10 @@
                  <div class="completion-modal-content">
                     <img src="images/complete.jpg" alt="Illustration of a stylized atom" class="completion-image" onerror="this.src='https://placehold.co/400x300/e67e22/ffffff?text=Complete!'; this.onerror=null;">
                 </div>
-                <div class="completion-buttons-footer">
+                <div class="completion-buttons">
                     <button class="completion-btn" onclick="previousActivity()">Previous Activity</button>
                     <button class="completion-btn" onclick="restartGame()">Restart Activity</button>
-                    <a href="#" class="completion-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Explore the Atom' });">Next Activity</a>
+                    <a href="#" class="completion-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Explore the Atom' }); window.location.href ='../ACTIVITY3/index.html'">Next Activity</a>
                 </div>
             </div>
         </div>
@@ -853,6 +849,29 @@
         }
         
         // --- UI & FEEDBACK ---
+        function showFeedback(isCorrect, message) {
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackText = document.getElementById('feedback-modal-text');
+            const feedbackHeader = document.querySelector('.feedback-header');
+            const nextQuestionBtn = document.getElementById('next-question-button');
+            const feedbackModalOverlay = document.getElementById('feedback-modal-overlay');
+            // Set text
+            feedbackTitle.textContent = isCorrect ? "Correct!" : "Not Quite...";
+            feedbackText.textContent = message;
+            // Set classes for color
+            feedbackHeader.className = isCorrect ? 'feedback-header correct' : 'feedback-header incorrect';
+            nextQuestionBtn.className = isCorrect ? 'feedback-btn correct' : 'feedback-btn incorrect';
+            feedbackModalOverlay.className = isCorrect ? 'overlay correct-feedback' : 'overlay incorrect-feedback';
+            // Toggle SVG icons
+            var iconCorrect = document.getElementById('feedback-icon-correct');
+            var iconIncorrect = document.getElementById('feedback-icon-incorrect');
+            if (iconCorrect && iconIncorrect) {
+                iconCorrect.style.display = isCorrect ? '' : 'none';
+                iconIncorrect.style.display = isCorrect ? 'none' : '';
+            }
+            feedbackModalOverlay.classList.remove('hidden');
+        }
+
         function updateProgress() {
             const progress = (completedActivities.size / TOTAL_ACTIVITIES) * 100;
             progressBar.style.width = `${progress}%`;

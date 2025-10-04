@@ -18,6 +18,14 @@
         }
         /* ====== ROOT VARIABLES & SCALING ====== */
         :root {
+            --font-xs: 1.1rem;
+        --font-sm: 1.4rem;
+        --font-md: 1.4rem;
+        --font-lg: 2rem;
+        --font-xl: 4rem;
+        --pad-sm: 1rem;
+        --pad-md: 1.6rem;
+        --pad-lg: 2.4rem;
             --primary-color: #5D04B2;
             --secondary-color: #FBB03B;
             --correct-color: #5cb85c;
@@ -70,18 +78,27 @@
             background-image: url('images/gamebg.jpg'); background-size: cover; background-position: center;
         }
         #start-screen h1 {
-            color: var(--text-color-light); font-size: 3.2rem;
-            font-family: var(--header-font);
-            font-weight: 500;
-        }
-        .start-button { 
-            background: #FBB03B; color: #fff; font-weight: 900;
-            font-size: 1.1rem; border: 3px solid #fff; border-radius: 3rem;
-            padding: 0.75rem 2.25rem; margin-top: 1rem; cursor: pointer;
-            letter-spacing: 0.02em; text-shadow: 0 2px 0 #b88b2a;
-            transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .start-button:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+      color: var(--text-color-light);
+      font-size: 4rem;
+      font-family: var(--header-font);
+      font-weight: 500;
+    }
+    .start-button {
+        font-family: var(--header-font);
+        background: var(--secondary-color);
+        color: var(--text-color-light);
+        font-weight: 500;
+        font-size: 1.2rem;
+        border: 3px solid #fff;
+        border-radius: 4.8rem;
+        padding: var(--pad-sm) var(--pad-lg);
+        margin-top: 1.6rem;
+        cursor: pointer;
+        text-shadow: 0 0.2rem 0 #b88b2a;
+        transition: all 0.2s;
+    }
+    
+    .start-button:hover { transform: scale(1.06); }
 
 
         /* ===== GAME SCREEN STYLES ===== */
@@ -93,21 +110,23 @@
             flex-direction: column;
         }
         
-        .game-top-section { 
-            width: 100%; background-color: #5D04B2; 
-            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
-            display: flex; justify-content: space-between; align-items: center;
-            color: #fff; z-index: 10;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            flex-shrink: 0;
-        }
-        #game-title {
-        font-weight: 700;
-            margin: 0; font-family: var(--header-font);
-        }
-        .top-right-controls { display: flex; align-items: center; gap: 1rem; }
+        .game-top-section {
+        width: 100%; background-color: #5D04B2; 
+        padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(0.75rem, 2vmin, 1.25rem);
+        display: flex; justify-content: space-between; align-items: center;
+        color: #fff; z-index: 10;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        flex-shrink: 0;
+    }
+    
+    #game-title {
+        font-weight: 600;
+        margin: 0; font-family: var(--header-font);
+    }
+    
+    .top-right-controls { display: flex; align-items: center; gap: 1rem; }
         
-        #progress-container { 
+    #progress-container { 
             width: clamp(100px, 20vw, 200px); background-color: rgba(255,255,255,0.3);
             border-radius: 1rem; height: clamp(15px, 2.5vmin, 20px);
             border: 2px solid #fff; position: relative; overflow: hidden;
@@ -117,7 +136,7 @@
             border-radius: 0.8rem; transition: width 0.5s ease;
         }
         #progress-text {
-            font-weight: 700; color: #fff;
+            font-weight: 600; color: #fff;
             text-shadow: none;
         }
 
@@ -162,7 +181,7 @@
         @keyframes slideIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); } }
 
         .modal h2 {
-            font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem;
+            font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem;
             font-family: var(--header-font);
         }
         .modal p, .modal ul { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark, #333); }
@@ -213,8 +232,8 @@
             align-items: center; gap: 1rem; padding: 1rem;
         }
         .completion-title-banner { 
-            font-size: clamp(2rem, 7vmin, 4rem);
-            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.2);
+             font-size: clamp(2rem, 7vmin, 4rem);
+            text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
             text-align: center; font-family: var(--header-font);
             font-weight: 500;
         }
@@ -237,12 +256,20 @@
             padding: 1rem 2rem;
         }
         .completion-btn {
-            background: #FBB03B; color: #fff; font-weight: 600;
-            font-size: 1.1rem; border: 0.1875rem solid #fff; border-radius: 3rem;
-            padding: 0.75rem 2.25rem; cursor: pointer; transition: all 0.2s;
-            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2); flex-basis: 30%; max-width: 250px;
+            font-family: var(--header-font); background: var(--secondary-color); color: #fff;
+            font-weight: 500; 
+            font-size: 1.3rem;
+            border: 0.1875rem solid #fff; border-radius: 3rem; 
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            text-shadow: 0 0.125rem 0 #b88b2a; text-decoration: none;
+            min-width: 8.75rem; /* 140px */
         }
-        .completion-btn:hover { transform: scale(1.05); box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2); }
+        .completion-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        }
     
         /* ===== TAKEAWAYS OVERLAY ===== */
         #takeaways-overlay {
@@ -254,12 +281,37 @@
             text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.3);
         }
         #takeaways-overlay .modal { max-width: 800px; padding: 2rem; display: flex; flex-direction: column; align-items: center; height: 45vh;
-            overflow-y: auto;
+            overflow-y: auto; margin-top: 3rem;
         }
         .takeaways-header { color:var(--primary-color); display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
         .takeaways-header h3 { font-family: var(--header-font); font-size: 1.8rem; color: var(--primary-color); }
         #takeaways-list { list-style-type: none; padding: 0; width: 100%; }
-        #takeaways-list li { background-color: #f9f9f9; border-left: 4px solid var(--primary-color); margin-bottom: 0.75rem; padding: 1rem; border-radius: 0.5rem; font-size: 1.1rem; text-align: left; }
+        #takeaways-list li {
+            background: none;
+            border-left: none;
+            margin-bottom: 0rem;
+            padding: 1rem 1rem 1rem 2.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            text-align: left;
+            position: relative;
+        }
+        #takeaways-list li::before {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.2rem;
+            height: 1.2rem;
+            background: none;
+            /* SVG checkmark as background-image */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%235cb85c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 10.8 17 4 10.8"/></svg>');
+            background-size: 1.2rem 1.2rem;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
         
         .end-lesson-btn {
             background: var(--secondary-color); font-family: var(--header-font); color: #fff; font-weight: 900;
@@ -439,7 +491,10 @@
         
         <div id="feedback-correct-overlay" class="overlay hidden">
             <div class="modal feedback-modal">
-                <div class="feedback-header correct"><h2>Correct!</h2></div>
+                                <div class="feedback-header correct" style="justify-content:center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--correct-color)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:2rem;height:2rem;margin-right:0.5rem;vertical-align:middle;display:inline-block;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                    <h2 style="margin:0;align-self:center;text-align:center;">Correct!</h2>
+                                </div>
                 <p id="correct-feedback-text"></p>
                 <button class="feedback-btn correct" onclick="closeModal('feedback-correct-overlay')">Continue</button>
             </div>
@@ -447,7 +502,10 @@
         
         <div id="feedback-incorrect-overlay" class="overlay hidden">
             <div class="modal feedback-modal">
-                <div class="feedback-header incorrect"><h2>Not Quite...</h2></div>
+                                <div class="feedback-header incorrect" style="justify-content:center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--incorrect-color)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:2rem;height:2rem;margin-right:0.5rem;vertical-align:middle;display:inline-block;"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <h2 style="margin:0;align-self:center;text-align:center;">Not Quite</h2>
+                                </div>
                 <p id="incorrect-feedback-text"></p>
                 <button class="feedback-btn incorrect" onclick="handleTryAgain()">Try Again</button>
             </div>

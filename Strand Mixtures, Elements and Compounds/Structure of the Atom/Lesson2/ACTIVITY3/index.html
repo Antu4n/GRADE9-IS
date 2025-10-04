@@ -16,6 +16,14 @@
         }
         /* Root Variables */
         :root {
+            --font-xs: 1.1rem;
+            --font-sm: 1.4rem;
+            --font-md: 1.5rem;
+            --font-lg: 2rem;
+            --font-xl: 4rem;
+            --pad-sm: 1rem;
+            --pad-md: 1.6rem;
+            --pad-lg: 2.4rem;
             --primary-color: #5D04B2;
             --secondary-color: #fbb03b;
             --progress-color: #ffff00;
@@ -117,31 +125,27 @@
     
     #start-screen h1 {
       color: var(--text-color-light);
-      font-size: 3.2rem;
+      font-size: 4rem;
       font-family: var(--header-font);
-      text-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.4);
+      font-weight: 500;
     }
-    
     .start-button {
-      background: var(--secondary-color);
-      color: #fff;
-      font-weight: 900;
-      font-size: 1.1rem;
-      border: 3px solid #fff;
-      border-radius: 3rem;
-      padding: 0.75rem 2.25rem;
-      margin-top: 1rem;
-      cursor: pointer;
-      letter-spacing: 0.02em;
-      transition: all 0.2s;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        font-family: var(--header-font);
+        background: var(--secondary-color);
+        color: var(--text-color-light);
+        font-weight: 500;
+        font-size: 1.2rem;
+        border: 3px solid #fff;
+        border-radius: 4.8rem;
+        padding: var(--pad-sm) var(--pad-lg);
+        margin-top: 1.6rem;
+        cursor: pointer;
+        text-shadow: 0 0.2rem 0 #b88b2a;
+        transition: all 0.2s;
     }
     
-    .start-button:hover {
-      transform: scale(1.06);
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-    }
-    
+    .start-button:hover { transform: scale(1.06); }
+
         /* Game Screen Styles */
         #game-screen {
              justify-content: flex-start;
@@ -166,7 +170,7 @@
         
         #game-title {
           font-size: 1.8rem;
-          font-weight: 800;
+          font-weight: 600;
           margin: 0;
         }
         
@@ -316,7 +320,7 @@
         }
         
         .modal .modal-title {
-          font-size: 2.5rem; font-weight: 600; margin-bottom: 1.5rem;
+          font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem;
           color: var(--primary-color);
         }
         .modal p { font-size: 1.5rem; line-height: 1.6; color: var(--text-color-dark, #333); }
@@ -357,7 +361,7 @@
             overflow: hidden; 
             animation: slideIn 0.6s ease; 
         }
-      
+    
         .scenario-content { 
             width: 100%;
             padding: 2.5rem; 
@@ -437,7 +441,7 @@
             border: 3px solid var(--secondary-color); border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-top: 0.5rem;
         }
-      
+    
         .completion-buttons-footer { 
           position: absolute;
           bottom: 1.5rem;
@@ -449,29 +453,73 @@
           gap: 2rem;
           padding: 0 1.25rem;
         }
-        .completion-btn { 
-          font-family: var(--header-font);
-          background: #FBB03B;
-          color: #fff;
-          font-weight: 600;
-          font-size: 1.5rem;
-          border: 0.3rem solid #fff;
-          border-radius: 3rem;
-          padding: 0.75rem 2.5rem;
-          cursor: pointer;
-          transition: all 0.2s;
-          box-shadow: 0 0.4rem 0.8rem rgba(0,0,0,0.2);
-          text-decoration: none;
-          min-width: 14rem;
-          text-align: center;
+         .completion-btn {
+            font-family: var(--header-font); background: var(--secondary-color); color: #fff;
+            font-weight: 500; 
+            font-size: 1.3rem;
+            border: 0.1875rem solid #fff; border-radius: 3rem; 
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            text-shadow: 0 0.125rem 0 #b88b2a; text-decoration: none;
+            min-width: 8.75rem; /* 140px */
         }
-        .completion-btn:hover { transform: scale(1.06); box-shadow: 0 0.6rem 2.4rem rgba(0,0,0,0.18); }
+        .completion-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.2);
+        }
         
+        /* ===== TAKEAWAYS OVERLAY ===== */
+        #takeaways-overlay {
+            background-image: url(images/gamebg.jpg); flex-direction: column; justify-content: center;
+        }
+        .takeaways-main-header {
+            font-family: var(--header-font); color: white; font-size: 3.5rem;
+            position: absolute; top: 5%; text-align: center; width: 100%;
+            text-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.3); font-weight: 500;
+        }
+        #takeaways-overlay .modal { 
+            max-width: 800px; padding: 2rem; display: flex; flex-direction: column; align-items: center; height: auto;
+            max-height: 60vh;
+            overflow-y: auto;
+            margin-top: 4rem;
+        }
+        .takeaways-header { color:var(--primary-color); display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .takeaways-header h3 { font-family: var(--header-font); font-size: 1.8rem; color: var(--primary-color); }
+        #takeaways-list { list-style-type: none; padding: 0; width: 100%; }
+        #takeaways-list li {
+            margin-bottom: 0.75rem;
+            padding: 1rem 1rem 1rem 2.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            text-align: left;
+            position: relative;
+            background: none;
+            border-left: none;
+        }
+        #takeaways-list li::before {
+            content: '\2714';
+            color: var(--correct-color, #4caf50);
+            font-size: 1.3rem;
+            position: absolute;
+            left: 0.7rem;
+            top: 1.1rem;
+            font-weight: bold;
+        }
         
-        /* MEDIA QUERIES */
-        @media (max-aspect-ratio: 16/9) {
-            #game-wrapper {
-                max-height: 100%;
+        .end-lesson-btn {
+            background: var(--secondary-color); font-family: var(--header-font); color: #fff; font-weight: 900;
+            font-size: 1.3rem; border: 3px solid #fff; border-radius: 3rem;
+            padding: clamp(0.5rem, 1.5vmin, 0.75rem) clamp(1.25rem, 3vmin, 2rem);
+            text-shadow: 0 2px 0 #b88b2a; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: auto; min-width: 180px; margin-top: 2rem;
+        }
+        .end-lesson-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+
+    /* MEDIA QUERIES */
+    @media (max-aspect-ratio: 16/9) {
+        #game-wrapper {
+            max-height: 100%;
                 max-width: calc(100vh * 16 / 9);
             }
         }
@@ -494,6 +542,9 @@
                 font-size: 1.8rem;
                 line-height: 1.5;
             }
+            #completion-image{
+                max-width: 51%;
+            }
         }
         
         @media (max-width: 768px) {
@@ -510,6 +561,9 @@
             }
             #scenario-title { font-size: 1.8rem; }
             .info-item p { font-size: 1.5rem; }
+            #completion-image{
+                max-width: 69%;
+            }
         }
     </style>
 </head>
@@ -535,7 +589,7 @@
                     </div>
                 </div>
                 <div class="lab-game-area" id="lab-game-area">
-                    </div>
+                </div>
             </div>
 
             <div id="activity-description-overlay" class="overlay hidden">
@@ -572,9 +626,26 @@
                 <div class="completion-buttons-footer">
                     <button class="completion-btn" onclick="previousActivity()">Previous Activity</button>
                     <button class="completion-btn" onclick="restartGame()">Restart Activity</button>
-                    <a href="#" class="completion-btn" onclick="sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Decode the Symbol' });">Next Activity</a>
+                    <button class="completion-btn" onclick="showTakeaways()">Key Takeaways</button>
                 </div>
             </div>
+            
+            <div id="takeaways-overlay" class="overlay hidden">
+                <h2 class="takeaways-main-header">Lesson Complete!</h2>
+                <div class="modal">
+                    <div class="takeaways-header">
+                        <h3>Key Takeaways</h3>
+                    </div>
+                    <ul id="takeaways-list">
+                        <li><strong>Atomic number (Z):</strong> Number of protons, used to identify elements.</li>
+                        <li><strong>Mass number (A):</strong> Protons + neutrons; always ≥ atomic number.</li>
+                        <li><strong>Atomic representation:</strong> Written as <sup>A</sup><sub>Z</sub>X (e.g., <sup>12</sup><sub>6</sub>C).</li>
+                        <li><strong>Isotopes:</strong> Atoms of the same element with same atomic number but different mass numbers (different neutrons).</li>
+                    </ul>
+                </div>
+                <button class="end-lesson-btn" onclick="exitLesson()">Exit Lesson</button>
+            </div>
+
         </div>
     </div>
 
@@ -676,6 +747,7 @@
             activityDescription: document.getElementById('activity-description-overlay'),
             gameInstructions: document.getElementById('game-instructions-overlay'),
             scenario: document.getElementById('scenario-overlay'),
+            takeaways: document.getElementById('takeaways-overlay')
         };
         const sounds = {
             ding: document.getElementById('ding-sound'),
@@ -798,16 +870,17 @@
 
             if (completedActivities.size === TOTAL_ACTIVITIES) {
                  setTimeout(() => {
-                     gameScreen.classList.add('hidden');
-                     completionOverlay.classList.remove('hidden');
-                     playSound(sounds.outro); 
-                 }, 800);
+                       gameScreen.classList.add('hidden');
+                       completionOverlay.classList.remove('hidden');
+                       playSound(sounds.outro); 
+                   }, 800);
             }
         }
         
         function restartGame() {
             stopSound(sounds.outro);
             completionOverlay.classList.add('hidden');
+            overlays.takeaways.classList.add('hidden');
             startScreen.classList.remove('hidden');
             initializeGame();
         }
@@ -816,8 +889,22 @@
             // This can be a placeholder or actual navigation
             console.log("Navigating to the previous activity.");
             sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Decode the Symbol' });
+            // Example: window.location.href = '../ACTIVITY2/index.html';
         }
         
+        function showTakeaways() {
+            stopSound(sounds.outro);
+            completionOverlay.classList.add('hidden');
+            overlays.takeaways.classList.remove('hidden');
+            sendEvent(ActivityEvent.END_ACTIVITY, { activityName: 'Decode the Symbol' });
+        }
+
+        function exitLesson() {
+            // This function can be customized to navigate to a main menu or the next lesson.
+            // For now, it will simply reload the activity page.
+            sendEvent(LessonEvent.END_LESSON, { lessonName: 'Understanding Atomic Number and Mass Number of Elements: Lesson 2' });
+        }
+
         // --- UI & FEEDBACK ---
         function updateProgress() {
             const progress = (completedActivities.size / TOTAL_ACTIVITIES) * 100;
@@ -857,5 +944,6 @@
             }
         }    
     </script>
+    <script src = "../eventSender.js"></script>
 </body>
 </html>
